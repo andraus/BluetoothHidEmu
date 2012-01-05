@@ -5,9 +5,14 @@ import java.io.IOException;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.content.Context;
 
-public class BluetoothConnHelperMotoImpl implements BluetoothConnHelperInterface {
+public class BluetoothConnHelperMotoImpl extends BluetoothConnHelperMotoAbstract {
 
+    BluetoothConnHelperMotoImpl() {
+        super(null);
+    }
+    
     /**
      * Returns current bluetooth device class number.
      * 
@@ -57,10 +62,9 @@ public class BluetoothConnHelperMotoImpl implements BluetoothConnHelperInterface
      * implementation.
      * 
      * @param adapter
-     * @param handle
      */
     @Override
-    public void dellHidDeviceSdpRecord(BluetoothAdapter adapter, int handle) {
+    public void delHidDeviceSdpRecord(BluetoothAdapter adapter) {
         // Not implemented - SDP Record will be automatically deleted once the application dies.
 
     }
@@ -86,11 +90,4 @@ public class BluetoothConnHelperMotoImpl implements BluetoothConnHelperInterface
         return true;
     }
     
-    /**
-     * Not used.
-     */
-    public String getSetupErrorMsg() {
-        return null;
-    }
-
 }

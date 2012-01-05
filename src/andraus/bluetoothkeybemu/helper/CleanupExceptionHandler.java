@@ -2,10 +2,10 @@ package andraus.bluetoothkeybemu.helper;
 
 public class CleanupExceptionHandler implements Thread.UncaughtExceptionHandler {
     
-    private BluetoothConnHelperInterface mConnHelper = null;
+    private BluetoothConnHelper mConnHelper = null;
     private Thread.UncaughtExceptionHandler mDefaultExceptionHandler = null ;
     
-    public CleanupExceptionHandler(BluetoothConnHelperInterface connHelper) {
+    public CleanupExceptionHandler(BluetoothConnHelper connHelper) {
         mDefaultExceptionHandler = Thread.getDefaultUncaughtExceptionHandler();
         mConnHelper = connHelper;
     }

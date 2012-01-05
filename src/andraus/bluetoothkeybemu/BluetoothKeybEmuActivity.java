@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.Set;
 
 import andraus.bluetoothkeybemu.helper.BluetoothConnHelperFactory;
-import andraus.bluetoothkeybemu.helper.BluetoothConnHelperInterface;
+import andraus.bluetoothkeybemu.helper.BluetoothConnHelper;
 import andraus.bluetoothkeybemu.helper.CleanupExceptionHandler;
 import andraus.bluetoothkeybemu.util.DoLog;
 import android.app.Activity;
@@ -44,7 +44,7 @@ public class BluetoothKeybEmuActivity extends Activity {
 	private BluetoothSocketThread mIntrThread = null;
 	
 	private final HidProtocolHelper mHidHelper = new HidProtocolHelper();
-	private BluetoothConnHelperInterface mConnHelper = null;
+	private BluetoothConnHelper mConnHelper = null;
 	
 	
 	/**
@@ -109,26 +109,24 @@ public class BluetoothKeybEmuActivity extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
-        Thread.setDefaultUncaughtExceptionHandler(new CleanupExceptionHandler(mConnHelper));
-        
         setupApp();
+        Thread.setDefaultUncaughtExceptionHandler(new CleanupExceptionHandler(mConnHelper));
 
-        if (!mConnHelper.setup()) {
+        if (!mConnHelper.validateBluetoothAdapter(mBluetoothAdapter) || !mConnHelper.setup()) {
             Toast.makeText(getApplicationContext(), mConnHelper.getSetupErrorMsg(), Toast.LENGTH_SHORT).show();
             finish();
+        } else {
+        
+            int originalClass = mConnHelper.getBluetoothDeviceClass(mBluetoothAdapter);
+            DoLog.d(TAG, "original class = 0x" + Integer.toHexString(originalClass));
+    
+            int err = mConnHelper.spoofBluetoothDeviceClass(mBluetoothAdapter, 0x002540);
+            DoLog.d(TAG, "set class ret = " + err);
+
+            int sdpRecHandle = mConnHelper.addHidDeviceSdpRecord(mBluetoothAdapter);
+            
+            DoLog.d(TAG, "SDP record handle = " + Integer.toHexString(sdpRecHandle));
         }
-        
-        /*
-        
-        int originalClass = mConnHelper.getBluetoothDeviceClass(mBluetoothAdapter);
-        DoLog.d(TAG, "original class = 0x" + Integer.toHexString(originalClass));
-        
-        int err = mConnHelper.spoofBluetoothDeviceClass(mBluetoothAdapter, 0x002540);
-        DoLog.d(TAG, "set class ret = " + err);
-        int sdpRecHandle = mConnHelper.addHidDeviceSdpRecord(mBluetoothAdapter);
-        
-        DoLog.d(TAG, "SDP record handle = " + Integer.toHexString(sdpRecHandle));
-        */
         
         
     }
@@ -136,6 +134,9 @@ public class BluetoothKeybEmuActivity extends Activity {
     @Override
     protected void onDestroy() {
         DoLog.d(TAG, "...being destroyed");
+        if (mConnHelper != null) {
+            mConnHelper.cleanup();
+        }
         super.onDestroy();
     }
 

@@ -19,19 +19,36 @@ import android.content.Context;
 
 import andraus.bluetoothkeybemu.R;
 
-public class BluetoothConnHelperGenericImpl implements BluetoothConnHelperInterface {
+public class BluetoothConnHelperGenericImpl extends BluetoothConnHelper {
     
+
     private static final String TAG = BluetoothKeybEmuActivity.TAG;
     
     private static final String CMD_SU = "su";
+
     private static final String CMD_ID = "id\n";
-    
     private static final String CMD_ID_RESP = "uid=0(root)";
     
-    private String mSetupErrorMsg;
-    private Context mContext = null;
-    private String mHidEmuPath = null;
+    private static final String CMD_READ_CLASS = " read_class\n";
+    private static final String CMD_READ_CLASS_RESP = "class";
     
+    private static final String CMD_SPOOF_CLASS = " spoof_class 0x%06X\n";
+    private static final String CMD_SPOOF_CLASS_RESP = "class spoofed.";
+    
+    private static final String CMD_ADD_HID_SDP = " add_hid\n";
+    private static final String CMD_ADD_HID_SDP_RESP = "handle";
+    
+    private static final String CMD_DEL_HID_SDP = " del_hid 0x%06X\n";
+    private static final String CMD_DEL_HID_SDP_RESP = "Removed handle";
+    
+    private String mHidEmuPath = null;
+    private int mOriginalDeviceClass = 0;
+    private int mHidSdpHandle = 0;
+    
+    BluetoothConnHelperGenericImpl(Context appContext) {
+        super(appContext);
+    }
+
     private class ShellResponse {
         static final int ERROR = -0x1;
         static final int SUCCESS = 0x0;
@@ -143,27 +160,98 @@ public class BluetoothConnHelperGenericImpl implements BluetoothConnHelperInterf
 
     @Override
     public int getBluetoothDeviceClass(BluetoothAdapter adapter) {
-        // TODO Auto-generated method stub
-       throw new IllegalStateException("not implemented");
+        ShellResponse shellResp = executeShellCmd(mHidEmuPath + CMD_READ_CLASS);
+        
+        if (shellResp.code != 0) {
+            throw new IllegalStateException("Unexpected failure");
+        }
+        
+        /*
+         * response from hid_emu read_class is like:
+         * class: 0xaabbcc
+         * 
+         * using ": 0x" as reg. exp for split, will result in
+         * token[0] = class
+         * token[1] = aabbcc
+         */
+        String[] token = shellResp.msg.split(": 0x");
+        int deviceClass = 0;
+        if (CMD_READ_CLASS_RESP.equals(token[0])) {
+            deviceClass = Integer.parseInt(token[1], 16);
+        }
+        
+        return deviceClass;
     }
 
     @Override
     public int spoofBluetoothDeviceClass(BluetoothAdapter adapter,
             int deviceClass) {
-        // TODO Auto-generated method stub
-        throw new IllegalStateException("not implemented");
+        
+        if (adapter != null) {
+            mOriginalDeviceClass = getBluetoothDeviceClass(adapter);
+            DoLog.d(TAG, String.format("original class stored: 0x%6X", mOriginalDeviceClass));
+        }
+        
+        ShellResponse shellResp = executeShellCmd(mHidEmuPath + String.format(CMD_SPOOF_CLASS, deviceClass));
+        
+        if (shellResp.code != 0) {
+            throw new IllegalStateException("Unexpected failure");
+        }
+        
+        if (CMD_SPOOF_CLASS_RESP.equals(shellResp.msg)) {
+            return 0;
+        } else {
+            return -1;
+        }
     }
 
     @Override
     public int addHidDeviceSdpRecord(BluetoothAdapter adapter) {
-        // TODO Auto-generated method stub
-        throw new IllegalStateException("not implemented");
+        
+        if (mHidSdpHandle != 0) {
+            DoLog.w(TAG, String.format("HID SDP record already present. Handle: 0x%06X",mHidSdpHandle));
+            return mHidSdpHandle;
+        }
+        
+        ShellResponse shellResp = executeShellCmd(mHidEmuPath + CMD_ADD_HID_SDP);
+        
+        if (shellResp.code != 0) {
+            throw new IllegalStateException("Unexpected failure");
+        }
+        
+        /*
+         * response from hid_emu add_hid is like:
+         * handle: 0xaabbcc
+         * 
+         * using ": 0x" as reg. exp for split, will result in
+         * token[0] = handle
+         * token[1] = aabbcc
+         */
+        String[] token = shellResp.msg.split(": 0x");
+        if (CMD_ADD_HID_SDP_RESP.equals(token[0])) {
+            mHidSdpHandle = Integer.parseInt(token[1], 16);
+        }
+        
+        return mHidSdpHandle;
     }
 
     @Override
-    public void dellHidDeviceSdpRecord(BluetoothAdapter adapter, int handle) {
-        // TODO Auto-generated method stub
-        throw new IllegalStateException("not implemented");
+    public void delHidDeviceSdpRecord(BluetoothAdapter adapter) {
+        if (mHidSdpHandle == 0) {
+            DoLog.w(TAG, "No HID SDP record handle present.");
+            return;
+        }
+        
+        ShellResponse shellResp = executeShellCmd(mHidEmuPath + String.format(CMD_DEL_HID_SDP, mHidSdpHandle));
+        
+        if (shellResp.code != 0) {
+            throw new IllegalStateException("Unexpected failure");
+        }
+        
+        /*
+         * response from hid_emu del_hid <handle> is like:
+         * Removed handle: 0xaabbcc
+         */
 
     }
 
@@ -176,9 +264,12 @@ public class BluetoothConnHelperGenericImpl implements BluetoothConnHelperInterf
 
     @Override
     public void cleanup() {
-        // TODO Auto-generated method stub
-        throw new IllegalStateException("not implemented");
-
+        if (mOriginalDeviceClass != 0) {
+            spoofBluetoothDeviceClass(null, mOriginalDeviceClass);
+        }
+        if (mHidSdpHandle != 0) {
+            delHidDeviceSdpRecord(null);
+        }
     }
 
     @Override
@@ -208,16 +299,4 @@ public class BluetoothConnHelperGenericImpl implements BluetoothConnHelperInterf
                 return false;
         }
     }
-    
-    @Override
-    public String getSetupErrorMsg() {
-        
-        return mSetupErrorMsg;
-        
-    }
-    
-    BluetoothConnHelperGenericImpl(Context appContext) {
-        mContext  = appContext;
-    }
-
 }

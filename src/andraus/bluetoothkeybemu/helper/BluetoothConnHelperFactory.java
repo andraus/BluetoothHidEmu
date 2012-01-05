@@ -4,9 +4,9 @@ import android.content.Context;
 
 public final class BluetoothConnHelperFactory {
     
-    public static BluetoothConnHelperInterface getInstance(Context appContext) {
+    public static BluetoothConnHelper getInstance(Context appContext) {
         //BluetoothConnHelperInterface connHelper = new BluetoothConnHelperMoto();
-        BluetoothConnHelperInterface connHelper = new BluetoothConnHelperGenericImpl(appContext);
+        BluetoothConnHelper connHelper = new BluetoothConnHelperGenericImpl(appContext);
         
         return connHelper;
     }
