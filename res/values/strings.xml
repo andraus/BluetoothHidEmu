@@ -7,5 +7,6 @@
     <string name="device_prompt">Select a paired device</string>
     
     <string name="msg_no_root">No root access.</string>
+    <string name="msg_generic_failure">Generic failure: %s</string>
 
 </resources>

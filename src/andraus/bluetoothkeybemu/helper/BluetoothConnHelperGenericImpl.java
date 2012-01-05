@@ -39,14 +39,16 @@ public class BluetoothConnHelperGenericImpl implements BluetoothConnHelperInterf
         
         int code = -1;
         String msg;
+        
     }
     
     private String getHidEmuPath() {
         return "/data/data/" + mContext.getPackageName() + "/hid_emu";
     }
     
-    private boolean installHidEmu() {
+    private ShellResponse installHidEmu() {
         boolean result = true;
+        ShellResponse shellResp = null;
         mHidEmuPath = getHidEmuPath();
         
         DoLog.d(TAG, "Checking existence of " + mHidEmuPath);
@@ -86,19 +88,19 @@ public class BluetoothConnHelperGenericImpl implements BluetoothConnHelperInterf
                     }
             }
             DoLog.d(TAG, "hid_emu installed. Setting permissions...");
-            ShellResponse shellResp = executeShellCmd("chmod 744 " + mHidEmuPath + "\n");
+            shellResp = executeShellCmd("chmod 744 " + mHidEmuPath + "\n");
             
             result  = (shellResp.code == 0);
         }
         
         if (result) {
-            ShellResponse shellResp = executeShellCmd(mHidEmuPath + "\n");
-            if (result = (shellResp.code == 0)) {
+            shellResp = executeShellCmd(mHidEmuPath + "\n");
+            if (shellResp.code == 0) {
                 DoLog.d(TAG, "hid_emu version: " + shellResp.msg);
             }
         }
         
-        return result;
+        return shellResp;
     }
     
     private ShellResponse executeShellCmd(String cmd) {
@@ -190,8 +192,12 @@ public class BluetoothConnHelperGenericImpl implements BluetoothConnHelperInterf
             case ShellResponse.SUCCESS:
                 if (shellResp.msg != null && shellResp.msg.contains(CMD_ID_RESP)) {
                     mSetupErrorMsg = null;
-                    //return true;
-                    return installHidEmu();
+                    shellResp = installHidEmu();
+                    if (shellResp.code != 0) {
+                        String errorMsg = shellResp.msg == null ? Integer.toString(shellResp.code) : shellResp.msg;
+                        mSetupErrorMsg = mContext.getResources().getString(R.string.msg_generic_failure, errorMsg);
+                    }
+                    return (shellResp.code == 0);
                 } else {
                     mSetupErrorMsg = mContext.getResources().getString(R.string.msg_no_root);
                     return false;
