@@ -240,7 +240,6 @@ void sdp_remove(int handle) {
 int sdp_open()
 {
 	if (!sdp_session) {
-		//sdp_session = sdp_connect(BDADDR_ANY, BDADDR_LOCAL, SDP_RETRY_IF_BUSY);
 		sdp_session = sdp_connect(BDADDR_ANY, BDADDR_LOCAL, SDP_NON_BLOCKING);
 	}
 	if (!sdp_session) {
@@ -259,12 +258,11 @@ int sdp_open()
  *
  */
 int is_hid_sdp_record_registered() {
-	uint8_t svc_uuid_int[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x11, 0x24 };
 	uuid_t svc_uuid;
 	int err;
 	sdp_list_t *response_list = NULL, *search_list, *attrid_list;
 
-	sdp_uuid128_create(&svc_uuid, &svc_uuid_int);
+	sdp_uuid16_create(&svc_uuid, HID_SVCLASS_ID);
 	search_list = sdp_list_append(NULL, &svc_uuid);
 
 	uint32_t range = 0x0000ffff;
@@ -272,11 +270,15 @@ int is_hid_sdp_record_registered() {
 
 	err = sdp_service_search_attr_req(sdp_session, search_list, SDP_ATTR_REQ_RANGE, attrid_list, &response_list);
 
+	sdp_list_free(search_list, NULL);
+	sdp_list_free(attrid_list, NULL);
+
 	if (err < 0) {
 		return err;
 	}
 
 	if (response_list != NULL) {
+		sdp_list_free(response_list, NULL);
 		return 1;
 	} else {
 		return 0;
@@ -311,7 +313,7 @@ int add_hid() {
 				return ret;
 			}
 		} else {
-			LOGE("Nothing done; already registered\n");
+			LOGD("Nothing done; already registered\n");
 			sdp_close(sdp_session);
 			return 0;
 		}
@@ -408,7 +410,9 @@ int main(int argc, char *argv[]) {
 	if (argc == ADD_HID_ARGS && (strncmp(argv[1], ADD_HID, strlen(argv[1])) == 0)) {
 		int handle = add_hid();
 		printf("handle: 0x%X\n", handle);
-		sdp_record_free(sdp_record);
+		if (sdp_record != NULL) {
+			sdp_record_free(sdp_record);
+		}
 
 	} else if (argc == DEL_HID_ARGS && (strncmp(argv[1], DEL_HID, strlen(argv[1])) == 0) && !strncasecmp(argv[2], "0x", 2)) {
 		int handle = strtol(argv[2]+2, NULL, 16);
