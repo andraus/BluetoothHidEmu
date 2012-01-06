@@ -2,6 +2,7 @@ package andraus.bluetoothkeybemu;
 
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
@@ -9,6 +10,7 @@ import andraus.bluetoothkeybemu.helper.BluetoothConnHelperFactory;
 import andraus.bluetoothkeybemu.helper.BluetoothConnHelper;
 import andraus.bluetoothkeybemu.helper.CleanupExceptionHandler;
 import andraus.bluetoothkeybemu.util.DoLog;
+import andraus.bluetoothkeybemu.view.BluetoothDeviceView;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -64,7 +66,15 @@ public class BluetoothKeybEmuActivity extends Activity {
         
         mConnHelper = BluetoothConnHelperFactory.getInstance(getApplicationContext());
         
-        mBluetoothDeviceArrayAdapter = new BluetoothDeviceArrayAdapter(this, mBluetoothAdapter.getBondedDevices());
+        Set<BluetoothDevice> deviceSet = mBluetoothAdapter.getBondedDevices();
+        Set<BluetoothDeviceView> deviceViewSet = new HashSet<BluetoothDeviceView>();
+        
+        for (BluetoothDevice device: deviceSet) {
+            BluetoothDeviceView deviceView = new BluetoothDeviceView(device);
+            deviceViewSet.add(deviceView);
+        }
+        
+        mBluetoothDeviceArrayAdapter = new BluetoothDeviceArrayAdapter(this, deviceViewSet);
         mDeviceSpinner.setAdapter(mBluetoothDeviceArrayAdapter);
 	}
 	
@@ -268,25 +278,25 @@ public class BluetoothKeybEmuActivity extends Activity {
      * Custom ArrayAdapter
      *
      */
-    private class BluetoothDeviceArrayAdapter extends ArrayAdapter<BluetoothDevice> implements SpinnerAdapter {
+    private class BluetoothDeviceArrayAdapter extends ArrayAdapter<BluetoothDeviceView> implements SpinnerAdapter {
     	
     	// array to store the "raw" string format
-    	Map<Integer, BluetoothDevice> deviceMap = null;
+    	Map<Integer, BluetoothDeviceView> deviceMap = null;
     	
     	/**
     	 * Constructor
     	 * @param context
     	 * @param strings
     	 */
-		public BluetoothDeviceArrayAdapter(Context context, Set<BluetoothDevice> bluetoothDeviceSet) {
+		public BluetoothDeviceArrayAdapter(Context context, Set<BluetoothDeviceView> bluetoothDeviceSet) {
 			super(context, R.layout.spinner_layout);
 			setDropDownViewResource(R.layout.spinner_dropdown_layout);
 			
-			deviceMap = new HashMap<Integer, BluetoothDevice>();
+			deviceMap = new HashMap<Integer, BluetoothDeviceView>();
 			int i = 0;
-			for (BluetoothDevice device:bluetoothDeviceSet ) {
-				DoLog.d(TAG, "Adding " + i + " as " + device);
-				deviceMap.put(Integer.valueOf(i++), device);
+			for (BluetoothDeviceView deviceView:bluetoothDeviceSet ) {
+				DoLog.d(TAG, "Adding " + i + " as " + deviceView);
+				deviceMap.put(Integer.valueOf(i++), deviceView);
 			}
 			
 		}
@@ -301,7 +311,7 @@ public class BluetoothKeybEmuActivity extends Activity {
 		 * Return screen-formatted value
 		 */
 		@Override
-		public BluetoothDevice getItem(int i) {
+		public BluetoothDeviceView getItem(int i) {
 			return deviceMap.get(Integer.valueOf(i));
 		}
 
@@ -314,11 +324,11 @@ public class BluetoothKeybEmuActivity extends Activity {
 		 * Returns the array position. <b>item</b> must be raw-formatted.
 		 */
 		@Override
-		public int getPosition(BluetoothDevice item) {
+		public int getPosition(BluetoothDeviceView item) {
 				
 			for (int i = 0; i < deviceMap.size(); i++) {
-				BluetoothDevice device = deviceMap.get(Integer.valueOf(i));
-				if (device.equals(item)) {
+				BluetoothDeviceView deviceView = deviceMap.get(Integer.valueOf(i));
+				if (deviceView.equals(item)) {
 					return i;
 				}
 			}

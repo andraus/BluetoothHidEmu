@@ -13,7 +13,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
 import andraus.bluetoothkeybemu.BluetoothKeybEmuActivity;
-import andraus.bluetoothkeybemu.BluetoothSocketThread;
 import andraus.bluetoothkeybemu.R;
 import andraus.bluetoothkeybemu.util.DoLog;
 import android.bluetooth.BluetoothAdapter;
