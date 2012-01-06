@@ -259,11 +259,12 @@ int sdp_open()
  *
  */
 int is_hid_sdp_record_registered() {
+	uint8_t svc_uuid_int[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x11, 0x24 };
 	uuid_t svc_uuid;
 	int err;
 	sdp_list_t *response_list = NULL, *search_list, *attrid_list;
 
-	sdp_uuid16_create(&svc_uuid, HID_SVCLASS_ID);
+	sdp_uuid128_create(&svc_uuid, &svc_uuid_int);
 	search_list = sdp_list_append(NULL, &svc_uuid);
 
 	uint32_t range = 0x0000ffff;
