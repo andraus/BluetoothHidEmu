@@ -227,7 +227,7 @@ void sdp_remove(int handle) {
 
 	if (sdp_session) {
 		sdp_record_t * rec = get_sdp_record(sdp_session, handle);
-		if (sdp_record_unregister(sdp_session, rec)) {
+		if (rec != NULL && sdp_record_unregister(sdp_session, rec)) {
 			LOGE("%s: HID Device (Keyboard) Service Record unregistration failed\n", (char*)__func__);
 		}
 	}
@@ -252,12 +252,13 @@ int sdp_open()
 
 /**
  * Lookup for HID service records. This function returns:
- * 0 (zero) if there is already a HID SDP record
- * 1 if there is no HID SDP record
+ * - SDP HID record handle, if there is already a HID SDP record
+ * 0 if there is no HID SDP record
  * <0 if any error occur. In this case, the value returned is the errno.
  *
  */
 int is_hid_sdp_record_registered() {
+	int handle;
 	uuid_t svc_uuid;
 	int err;
 	sdp_list_t *response_list = NULL, *search_list, *attrid_list;
@@ -278,8 +279,10 @@ int is_hid_sdp_record_registered() {
 	}
 
 	if (response_list != NULL) {
+		sdp_record_t *rec = (sdp_record_t *)response_list->data;
+		int handle = rec->handle;
 		sdp_list_free(response_list, NULL);
-		return 1;
+		return handle;
 	} else {
 		return 0;
 	}
@@ -302,10 +305,11 @@ int is_hid_sdp_record_registered() {
 
 int add_hid() {
 
+	int handle = 0x0;
 	int ret = sdp_open();
 
 	if (ret == 0) {
-		if (!is_hid_sdp_record_registered()) {
+		if ((handle = is_hid_sdp_record_registered()) == 0) {
 			sdp_record = sdp_register_hid();
 			if (sdp_record == NULL) {
 				LOGE("Error register sdp record: %d\n", ret);
@@ -315,7 +319,7 @@ int add_hid() {
 		} else {
 			LOGD("Nothing done; already registered\n");
 			sdp_close(sdp_session);
-			return 0;
+			return handle;
 		}
 		sdp_close(sdp_session);
 	}
