@@ -113,7 +113,7 @@ public class BluetoothKeybEmuActivity extends Activity {
         Thread.setDefaultUncaughtExceptionHandler(new CleanupExceptionHandler(mConnHelper));
 
         if (!mConnHelper.validateBluetoothAdapter(mBluetoothAdapter) || !mConnHelper.setup()) {
-            Toast.makeText(getApplicationContext(), mConnHelper.getSetupErrorMsg(), Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), mConnHelper.getSetupErrorMsg(), Toast.LENGTH_LONG).show();
             finish();
         } else {
         

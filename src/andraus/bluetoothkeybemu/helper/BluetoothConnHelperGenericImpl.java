@@ -9,15 +9,18 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 
 import andraus.bluetoothkeybemu.BluetoothKeybEmuActivity;
+import andraus.bluetoothkeybemu.BluetoothSocketThread;
+import andraus.bluetoothkeybemu.R;
 import andraus.bluetoothkeybemu.util.DoLog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
-
-import andraus.bluetoothkeybemu.R;
+import android.os.ParcelUuid;
 
 public class BluetoothConnHelperGenericImpl extends BluetoothConnHelper {
     
@@ -39,7 +42,6 @@ public class BluetoothConnHelperGenericImpl extends BluetoothConnHelper {
     private static final String CMD_ADD_HID_SDP_RESP = "handle";
     
     private static final String CMD_DEL_HID_SDP = " del_hid 0x%06X\n";
-    private static final String CMD_DEL_HID_SDP_RESP = "Removed handle";
     
     private String mHidEmuPath = null;
     private int mOriginalDeviceClass = 0;
@@ -189,7 +191,7 @@ public class BluetoothConnHelperGenericImpl extends BluetoothConnHelper {
         
         if (adapter != null) {
             mOriginalDeviceClass = getBluetoothDeviceClass(adapter);
-            DoLog.d(TAG, String.format("original class stored: 0x%6X", mOriginalDeviceClass));
+            DoLog.d(TAG, String.format("original class stored: 0x%06X", mOriginalDeviceClass));
         }
         
         ShellResponse shellResp = executeShellCmd(mHidEmuPath + String.format(CMD_SPOOF_CLASS, deviceClass));
@@ -258,8 +260,57 @@ public class BluetoothConnHelperGenericImpl extends BluetoothConnHelper {
     @Override
     public BluetoothSocket connectL2capSocket(BluetoothDevice device, int port,
             boolean auth, boolean encrypt) throws IOException {
-        // TODO Auto-generated method stub
-        throw new IllegalStateException("not implemented");
+        
+        final int TYPE_L2CAP = 3;
+        
+        BluetoothSocket socket = null;
+        Class<?>[] argsClasses = new Class[] { int.class /* type */,
+                                            int.class /* fd */,
+                                        boolean.class /* auth */,
+                                        boolean.class /* encrypt */,
+                                BluetoothDevice.class /* device */,
+                                            int.class /* port */,
+                                     ParcelUuid.class /* uuid */ };
+        
+        Object[] args = new Object[] {  Integer.valueOf(TYPE_L2CAP),
+                                        Integer.valueOf(-1),
+                                        Boolean.valueOf(auth),
+                                        Boolean.valueOf(encrypt),
+                                        device,
+                                        Integer.valueOf(port),
+                                        null };
+        
+        try {
+            Class<BluetoothSocket> bluetoothSocketClass = BluetoothSocket.class;
+            Constructor<BluetoothSocket> bluetoothSocketConstructor;
+            bluetoothSocketConstructor = bluetoothSocketClass.getDeclaredConstructor(argsClasses);
+            bluetoothSocketConstructor.setAccessible(true);
+            
+            socket = bluetoothSocketConstructor.newInstance(args);
+            
+        } catch (SecurityException e) {
+            DoLog.e(TAG, "Reflection error:", e);
+            throw new IOException("Reflection error", e);
+        } catch (NoSuchMethodException e) {
+            DoLog.e(TAG, "Reflection error:", e);
+            throw new IOException("Reflection error", e);
+        } catch (IllegalArgumentException e) {
+            DoLog.e(TAG, "Reflection error:", e);
+            throw new IOException("Reflection error", e);
+        } catch (InstantiationException e) {
+            DoLog.e(TAG, "Reflection error:", e);
+            throw new IOException("Reflection error", e);
+        } catch (IllegalAccessException e) {
+            DoLog.e(TAG, "Reflection error:", e);
+            throw new IOException("Reflection error", e);
+        } catch (InvocationTargetException e) {
+            DoLog.e(TAG, "Reflection error:", e);
+            throw new IOException("Reflection error", e);
+        }
+        
+        
+        return socket;
+        
     }
 
     @Override
