@@ -13,7 +13,7 @@ public abstract class BluetoothConnHelper {
     protected String mSetupErrorMsg;
     protected Context mContext;
     
-    BluetoothConnHelper(Context appContext) {
+    protected BluetoothConnHelper(Context appContext) {
         mContext  = appContext;
     }
 

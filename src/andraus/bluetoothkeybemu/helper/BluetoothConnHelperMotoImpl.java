@@ -2,12 +2,13 @@ package andraus.bluetoothkeybemu.helper;
 
 import java.io.IOException;
 
+import andraus.bluetoothkeybemu.helper.BluetoothConnHelper;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 
-public class BluetoothConnHelperMotoImpl extends BluetoothConnHelperMotoAbstract {
+public class BluetoothConnHelperMotoImpl extends BluetoothConnHelper {
 
     BluetoothConnHelperMotoImpl() {
         super(null);
