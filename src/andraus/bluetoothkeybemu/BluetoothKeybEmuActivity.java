@@ -15,7 +15,10 @@ import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
+import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
@@ -51,7 +54,14 @@ public class BluetoothKeybEmuActivity extends Activity {
 	
 	private final HidProtocolHelper mHidHelper = new HidProtocolHelper();
 	private BluetoothConnHelper mConnHelper = null;
-	
+
+	/**
+	 * Register intent filters for this activity
+	 */
+	private void registerIntentFilters() {
+        IntentFilter intentFilter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
+        registerReceiver(mBluetoothReceiver, intentFilter);
+	}
 	
 	/**
 	 * Initialize UI elements
@@ -69,6 +79,8 @@ public class BluetoothKeybEmuActivity extends Activity {
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         
         mConnHelper = BluetoothConnHelperFactory.getInstance(getApplicationContext());
+        
+        registerIntentFilters();
         
         SharedPreferences pref = getSharedPreferences(PREF_FILE, MODE_PRIVATE);
         String storedDeviceAddr = pref.getString(PREF_KEY_DEVICE, null);
@@ -164,11 +176,15 @@ public class BluetoothKeybEmuActivity extends Activity {
     @Override
     protected void onDestroy() {
         DoLog.d(TAG, "...being destroyed");
+        unregisterReceiver(mBluetoothReceiver);
         if (mConnHelper != null) {
             mConnHelper.cleanup();
         }
         super.onDestroy();
     }
+    
+    
+    
 
     @Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
@@ -294,11 +310,24 @@ public class BluetoothKeybEmuActivity extends Activity {
     	}
     };
     
+    private final BroadcastReceiver mBluetoothReceiver = new BroadcastReceiver() {
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            if (BluetoothAdapter.ACTION_STATE_CHANGED.equals(intent.getAction())) {
+                DoLog.d(TAG, "BluetoothAdapter off. Bailing out...");
+                finish();
+            }
+            
+        }
+        
+    };
+    
     /**
      * Custom ArrayAdapter
      *
      */
-    private class BluetoothDeviceArrayAdapter extends ArrayAdapter<BluetoothDeviceView> implements SpinnerAdapter {
+    private final class BluetoothDeviceArrayAdapter extends ArrayAdapter<BluetoothDeviceView> implements SpinnerAdapter {
     	
     	// array to store the "raw" string format
     	Map<Integer, BluetoothDeviceView> deviceMap = null;
