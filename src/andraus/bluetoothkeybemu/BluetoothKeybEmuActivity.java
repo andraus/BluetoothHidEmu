@@ -12,11 +12,13 @@ import andraus.bluetoothkeybemu.helper.CleanupExceptionHandler;
 import andraus.bluetoothkeybemu.util.DoLog;
 import andraus.bluetoothkeybemu.view.BluetoothDeviceView;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
@@ -37,9 +39,15 @@ import android.widget.ToggleButton;
 public class BluetoothKeybEmuActivity extends Activity {
 	
 	public static String TAG = "BluetoothKeyb";
-	
+
+    private static final int HANDLER_MONITOR_SOCKET = 0;
+    private static final int HANDLER_MONITOR_PAIRING = 1;
+
 	private static String PREF_FILE = "pref";
 	private static String PREF_KEY_DEVICE = "selected_device";
+	
+	private static int BLUETOOTH_REQUEST_OK = 1;
+	private static int BLUETOOTH_DISCOVERABLE_DURATION = 300;
 	
 	private ToggleButton mToggleSocketButton = null;
 	private Spinner mDeviceSpinner = null;
@@ -63,26 +71,8 @@ public class BluetoothKeybEmuActivity extends Activity {
         registerReceiver(mBluetoothReceiver, intentFilter);
 	}
 	
-	/**
-	 * Initialize UI elements
-	 */
-	private void setupApp() {
-		setContentView(R.layout.main);
-		mToggleSocketButton = (ToggleButton) findViewById(R.id.ToggleSocketButton);
-		mToggleSocketButton.setOnCheckedChangeListener(mToggleSocketButtonListener);
-		
-		mCtrlTextView = (TextView) findViewById(R.id.CtrlTextView);
-		mIntrTextView = (TextView) findViewById(R.id.IntrTextView);
-		
-		mDeviceSpinner = (Spinner) findViewById(R.id.DeviceSpinner);
-		
-        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        
-        mConnHelper = BluetoothConnHelperFactory.getInstance(getApplicationContext());
-        
-        registerIntentFilters();
-        
-        SharedPreferences pref = getSharedPreferences(PREF_FILE, MODE_PRIVATE);
+	private void populateBluetoothDeviceCombo() {
+	    SharedPreferences pref = getSharedPreferences(PREF_FILE, MODE_PRIVATE);
         String storedDeviceAddr = pref.getString(PREF_KEY_DEVICE, null);
         DoLog.d(TAG, "restored from pref :" + storedDeviceAddr);
         
@@ -103,6 +93,48 @@ public class BluetoothKeybEmuActivity extends Activity {
             mDeviceSpinner.setSelection(posStoredDevice);
         }
         mDeviceSpinner.setOnItemSelectedListener(mSelectDeviceListener);
+	}
+
+	/**
+	 * Customize bluetooth adapter
+	 */
+	private void setupBluetoothAdapter() {
+        int originalClass = mConnHelper.getBluetoothDeviceClass(mBluetoothAdapter);
+        DoLog.d(TAG, "original class = 0x" + Integer.toHexString(originalClass));
+
+        int err = mConnHelper.spoofBluetoothDeviceClass(mBluetoothAdapter, 0x002540);
+        DoLog.d(TAG, "set class ret = " + err);
+
+        int sdpRecHandle = mConnHelper.addHidDeviceSdpRecord(mBluetoothAdapter);
+        
+        DoLog.d(TAG, "SDP record handle = " + Integer.toHexString(sdpRecHandle));
+	}
+	
+	/**
+	 * Initialize UI elements
+	 */
+	private void setupApp() {
+		setContentView(R.layout.main);
+		mToggleSocketButton = (ToggleButton) findViewById(R.id.ToggleSocketButton);
+		mToggleSocketButton.setOnCheckedChangeListener(mToggleSocketButtonListener);
+		
+		mCtrlTextView = (TextView) findViewById(R.id.CtrlTextView);
+		mIntrTextView = (TextView) findViewById(R.id.IntrTextView);
+		
+		mDeviceSpinner = (Spinner) findViewById(R.id.DeviceSpinner);
+		
+        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        
+        mConnHelper = BluetoothConnHelperFactory.getInstance(getApplicationContext());
+        
+        registerIntentFilters();
+        
+        if (mBluetoothAdapter.getBondedDevices().isEmpty()) {
+            showNoBondedDevicesDialog();
+        }
+        
+        populateBluetoothDeviceCombo();
+        
 	}
 	
 	/**
@@ -158,16 +190,7 @@ public class BluetoothKeybEmuActivity extends Activity {
             Toast.makeText(getApplicationContext(), mConnHelper.getSetupErrorMsg(), Toast.LENGTH_LONG).show();
             finish();
         } else {
-        
-            int originalClass = mConnHelper.getBluetoothDeviceClass(mBluetoothAdapter);
-            DoLog.d(TAG, "original class = 0x" + Integer.toHexString(originalClass));
-    
-            int err = mConnHelper.spoofBluetoothDeviceClass(mBluetoothAdapter, 0x002540);
-            DoLog.d(TAG, "set class ret = " + err);
-
-            int sdpRecHandle = mConnHelper.addHidDeviceSdpRecord(mBluetoothAdapter);
-            
-            DoLog.d(TAG, "SDP record handle = " + Integer.toHexString(sdpRecHandle));
+            setupBluetoothAdapter();
         }
         
         
@@ -211,6 +234,46 @@ public class BluetoothKeybEmuActivity extends Activity {
     		}
     	}
 		return super.onKeyUp(keyCode, event);
+	}
+	
+	
+	
+	@Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+	    if (requestCode == BLUETOOTH_REQUEST_OK && resultCode == BLUETOOTH_DISCOVERABLE_DURATION) {
+	        
+	        mThreadMonitorHandler.sendEmptyMessage(HANDLER_MONITOR_PAIRING);
+
+	    } else if (requestCode == BLUETOOTH_REQUEST_OK && resultCode == RESULT_CANCELED) {
+	        finish();
+	    }
+	    
+        super.onActivityResult(requestCode, resultCode, data);
+    }
+
+    private void showNoBondedDevicesDialog() {
+	    DialogInterface.OnClickListener bondedDialogClickListener = new DialogInterface.OnClickListener() {
+            
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                switch (which) {
+                
+                case DialogInterface.BUTTON_NEUTRAL:
+                    Intent bluetoothIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
+                    bluetoothIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, BLUETOOTH_DISCOVERABLE_DURATION);
+                    startActivityForResult(bluetoothIntent, BLUETOOTH_REQUEST_OK);
+                    break;
+                }
+                
+            }
+        };
+        
+	    AlertDialog dialog =  new AlertDialog.Builder(this).create();
+	    dialog.setTitle(R.string.msg_dialog_no_bonded_devices_title);
+	    dialog.setMessage(getResources().getString(R.string.msg_dialog_no_bonded_devices_text));
+	    dialog.setButton(DialogInterface.BUTTON_NEUTRAL, getResources().getString(android.R.string.ok), bondedDialogClickListener);
+	    
+	    dialog.show();
 	}
 
 
@@ -262,7 +325,7 @@ public class BluetoothKeybEmuActivity extends Activity {
     	mIntrThread = new BluetoothSocketThread(intrSocket, "intr");
     	mIntrThread.start();
     	
-    	mThreadMonitorHandler.sendEmptyMessageDelayed(0, 200);
+    	mThreadMonitorHandler.sendEmptyMessageDelayed(HANDLER_MONITOR_SOCKET, 200);
     	
     	
     }
@@ -298,14 +361,27 @@ public class BluetoothKeybEmuActivity extends Activity {
     }
     
     private Handler mThreadMonitorHandler = new  Handler() {
+
     	@Override
     	public void handleMessage(Message msg) {
     		
-    		if (msg.what == 0) {
+    	    switch (msg.what) {
+    	    case HANDLER_MONITOR_SOCKET:
     			monitorThread(mCtrlThread, mCtrlTextView);
     			monitorThread(mIntrThread, mIntrTextView);
     		
-    			sendEmptyMessageDelayed(0, 200);
+    			sendEmptyMessageDelayed(msg.what, 200 /*ms */);
+    			break;
+    			
+    	    case HANDLER_MONITOR_PAIRING:
+    	        DoLog.d(TAG, "waiting for a device to show up...");
+    	        if (mBluetoothAdapter.getBondedDevices().isEmpty()) {
+    	            sendEmptyMessageDelayed(msg.what, 500 /* ms */);
+    	        } else {
+    	            populateBluetoothDeviceCombo();
+    	        }
+    	        
+    	        break;
     		}
     	}
     };
@@ -315,7 +391,7 @@ public class BluetoothKeybEmuActivity extends Activity {
         @Override
         public void onReceive(Context context, Intent intent) {
             if (BluetoothAdapter.ACTION_STATE_CHANGED.equals(intent.getAction())) {
-                DoLog.d(TAG, "BluetoothAdapter off. Bailing out...");
+                DoLog.d(TAG, "BluetoothAdapter turned off. Bailing out...");
                 finish();
             }
             
@@ -344,7 +420,6 @@ public class BluetoothKeybEmuActivity extends Activity {
 			deviceMap = new HashMap<Integer, BluetoothDeviceView>();
 			int i = 0;
 			for (BluetoothDeviceView deviceView:bluetoothDeviceSet ) {
-				DoLog.d(TAG, "Adding " + i + " as " + deviceView);
 				deviceMap.put(Integer.valueOf(i++), deviceView);
 			}
 			
