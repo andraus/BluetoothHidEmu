@@ -1,25 +1,28 @@
 package andraus.bluetoothkeybemu.view;
 
+import java.util.Comparator;
+
 import android.bluetooth.BluetoothDevice;
 
 public class BluetoothDeviceView {
     
     private BluetoothDevice mBluetoothDevice = null;
     
-    
-    
-
     public BluetoothDeviceView(BluetoothDevice mBluetoothDevice) {
         super();
         this.mBluetoothDevice = mBluetoothDevice;
     }
 
-    public BluetoothDevice getmBluetoothDevice() {
+    public BluetoothDevice getBluetoothDevice() {
         return mBluetoothDevice;
     }
 
-    public void setmBluetoothDevice(BluetoothDevice mBluetoothDevice) {
+    public void setBluetoothDevice(BluetoothDevice mBluetoothDevice) {
         this.mBluetoothDevice = mBluetoothDevice;
+    }
+    
+    public String getAddress() {
+        return this.mBluetoothDevice.getAddress();
     }
     
     
@@ -37,6 +40,15 @@ public class BluetoothDeviceView {
         } else {
             return null;
         }
+    }
+    
+    public static Comparator<BluetoothDeviceView> getComparator() {
+        Comparator<BluetoothDeviceView> comparator = new Comparator<BluetoothDeviceView>() {
+            public int compare(BluetoothDeviceView device1, BluetoothDeviceView device2) {
+                return device1.getAddress().compareTo(device2.getAddress());
+            }
+        };
+        return comparator;
     }
     
     

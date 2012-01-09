@@ -6,8 +6,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import andraus.bluetoothkeybemu.helper.BluetoothConnHelperFactory;
 import andraus.bluetoothkeybemu.helper.BluetoothConnHelper;
+import andraus.bluetoothkeybemu.helper.BluetoothConnHelperFactory;
 import andraus.bluetoothkeybemu.helper.CleanupExceptionHandler;
 import andraus.bluetoothkeybemu.util.DoLog;
 import andraus.bluetoothkeybemu.view.BluetoothDeviceView;
@@ -16,6 +16,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -33,6 +34,9 @@ import android.widget.ToggleButton;
 public class BluetoothKeybEmuActivity extends Activity {
 	
 	public static String TAG = "BluetoothKeyb";
+	
+	private static String PREF_FILE = "pref";
+	private static String PREF_KEY_DEVICE = "selected_device";
 	
 	private ToggleButton mToggleSocketButton = null;
 	private Spinner mDeviceSpinner = null;
@@ -66,16 +70,27 @@ public class BluetoothKeybEmuActivity extends Activity {
         
         mConnHelper = BluetoothConnHelperFactory.getInstance(getApplicationContext());
         
+        SharedPreferences pref = getSharedPreferences(PREF_FILE, MODE_PRIVATE);
+        String storedDeviceAddr = pref.getString(PREF_KEY_DEVICE, null);
+        DoLog.d(TAG, "restored from pref :" + storedDeviceAddr);
+        
         Set<BluetoothDevice> deviceSet = mBluetoothAdapter.getBondedDevices();
         Set<BluetoothDeviceView> deviceViewSet = new HashSet<BluetoothDeviceView>();
-        
         for (BluetoothDevice device: deviceSet) {
             BluetoothDeviceView deviceView = new BluetoothDeviceView(device);
             deviceViewSet.add(deviceView);
         }
         
         mBluetoothDeviceArrayAdapter = new BluetoothDeviceArrayAdapter(this, deviceViewSet);
+        mBluetoothDeviceArrayAdapter.sort(BluetoothDeviceView.getComparator());
+        
+        int posStoredDevice = mBluetoothDeviceArrayAdapter.getPositionByAddress(storedDeviceAddr);
+        
         mDeviceSpinner.setAdapter(mBluetoothDeviceArrayAdapter);
+        if (posStoredDevice >= 0) {
+            mDeviceSpinner.setSelection(posStoredDevice);
+        }
+        mDeviceSpinner.setOnItemSelectedListener(mSelectDeviceListener);
 	}
 	
 	/**
@@ -101,8 +116,13 @@ public class BluetoothKeybEmuActivity extends Activity {
 
 				@Override
 				public void onItemSelected(AdapterView<?> adapterView, View view, int pos, long id) {
-					// TODO Auto-generated method stub
+					SharedPreferences pref = getSharedPreferences(PREF_FILE, MODE_PRIVATE);
+					SharedPreferences.Editor editor = pref.edit();
 					
+					BluetoothDeviceView device = (BluetoothDeviceView) mDeviceSpinner.getSelectedItem();
+					
+					editor.putString(PREF_KEY_DEVICE, device.getAddress());
+					editor.apply();
 				}
 
 				@Override
@@ -186,7 +206,7 @@ public class BluetoothKeybEmuActivity extends Activity {
     		return;
     	}
     	
-    	BluetoothDevice hostDevice = (BluetoothDevice) mDeviceSpinner.getSelectedItem();
+    	BluetoothDevice hostDevice = ((BluetoothDeviceView) mDeviceSpinner.getSelectedItem()).getBluetoothDevice();
     	
     	if (hostDevice == null) {
     		DoLog.w(TAG, "no hosts not found");
@@ -336,7 +356,16 @@ public class BluetoothKeybEmuActivity extends Activity {
 			return -1;
 		}
 		
-		
+		public int getPositionByAddress(String bluetoothAddress) {
+		    for (int i = 0; i < deviceMap.size(); i++) {
+		        BluetoothDeviceView deviceView = deviceMap.get(Integer.valueOf(i));
+		        if (deviceView.getAddress().equals(bluetoothAddress)) {
+		            return i;
+		        }
+		    }
+		    
+		    return -1;
+		}
 		
     }; 
     	
