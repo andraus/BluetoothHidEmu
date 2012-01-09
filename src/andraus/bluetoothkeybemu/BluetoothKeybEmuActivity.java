@@ -40,8 +40,10 @@ public class BluetoothKeybEmuActivity extends Activity {
 	
 	public static String TAG = "BluetoothKeyb";
 
+	private static final int HANDLER_MONITOR_STOP = -1;
     private static final int HANDLER_MONITOR_SOCKET = 0;
     private static final int HANDLER_MONITOR_PAIRING = 1;
+    private static final int HANDLER_CONNECT = 2;
 
 	private static String PREF_FILE = "pref";
 	private static String PREF_KEY_DEVICE = "selected_device";
@@ -167,6 +169,8 @@ public class BluetoothKeybEmuActivity extends Activity {
 					
 					editor.putString(PREF_KEY_DEVICE, device.getAddress());
 					editor.apply();
+					
+					mThreadMonitorHandler.sendEmptyMessageDelayed(HANDLER_CONNECT, 1000 /*ms*/);
 				}
 
 				@Override
@@ -345,7 +349,7 @@ public class BluetoothKeybEmuActivity extends Activity {
 			mIntrThread.stopGracefully();
 		}
 		
-		mThreadMonitorHandler.sendEmptyMessage(1);
+		mThreadMonitorHandler.sendEmptyMessage(HANDLER_MONITOR_STOP);
     }
     
     private void monitorThread(BluetoothSocketThread thread, TextView textView) {
@@ -381,6 +385,10 @@ public class BluetoothKeybEmuActivity extends Activity {
     	            populateBluetoothDeviceCombo();
     	        }
     	        
+    	        break;
+    	        
+    	    case HANDLER_CONNECT:
+    	        startHidL2capSockets();
     	        break;
     		}
     	}
