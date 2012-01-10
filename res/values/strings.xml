@@ -11,6 +11,7 @@
     <string name="msg_bluetooth_off">Please, enable Bluetooth to proceed</string>
     
     <string name="msg_menu_quit">Quit</string>
+    <string name="msg_menu_refresh_devices">Refresh paired devices</string>
     
     <string name="msg_dialog_no_bonded_devices_title">No paired devices found.</string>
     <string name="msg_dialog_no_bonded_devices_text">No paired devices found.\nPlease, pair your host to this device.\n.</string>

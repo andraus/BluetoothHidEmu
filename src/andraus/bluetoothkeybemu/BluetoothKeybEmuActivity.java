@@ -218,9 +218,13 @@ public class BluetoothKeybEmuActivity extends Activity {
         switch (item.getItemId()) {
         case R.id.menu_quit:
             finish();
-        default:
-            return super.onOptionsItemSelected(item);
+            break;
+        case R.id.menu_refresh_devices:
+            populateBluetoothDeviceCombo();
+            break;
+            
         }
+        return super.onOptionsItemSelected(item);
     }
 
     @Override
