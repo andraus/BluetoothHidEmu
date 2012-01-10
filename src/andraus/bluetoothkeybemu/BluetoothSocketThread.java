@@ -15,21 +15,39 @@ public class BluetoothSocketThread extends Thread {
 	private static final int BUF_SIZE = 16;
 	
 	BluetoothSocket mSocket = null;
-	static int STATE_NONE = 0;
-	static int STATE_WAITING = 1;
-	static int STATE_ACCEPTED = 2;
+	static final int STATE_NONE = 0;
+	static final int STATE_WAITING = 1;
+	static final int STATE_ACCEPTED = 2;
+	static final int STATE_DROPPED = 3;
+	
+	static final int TIME_5_SEC = 5000;
+	static final int TIME_1_SEC = 1000;
 	
 	private int mState = 0;
+	private int mSuggestedRetryTimeMs = 0;
+	private boolean mReuseSocket = false;
+	
 	private InputStream mInputStream = null;
 	private OutputStream mOutputStream = null;
 	
 	
-
+	public BluetoothSocketThread(String name) {
+	    super();
+	    
+	    if (name == null) {
+	        throw new IllegalStateException("name is null");
+	    }
+	    setName(name);
+	    
+	}
 	public BluetoothSocketThread(BluetoothSocket socket, String name) {
-		super();
+        super(name);
+		
+		if (socket == null) {
+		    throw new IllegalStateException("socket is null");
+		}
 		
 		mSocket = socket;
-		setName(name);
 	}
 	
 	@Override
@@ -39,10 +57,11 @@ public class BluetoothSocketThread extends Thread {
 			mState = STATE_WAITING;
 			mSocket.connect();
 		} catch (IOException e) {
-			DoLog.e(TAG, "interrupted: ", e);
+			DoLog.e(TAG, getName(), e);
+			dropConnection(false, TIME_5_SEC);
 		}
 		
-		if (mSocket != null) {
+		if (mSocket != null && mState == STATE_WAITING) {
 			try {
 				mState = STATE_ACCEPTED;
 				mInputStream = mSocket.getInputStream();
@@ -53,22 +72,25 @@ public class BluetoothSocketThread extends Thread {
 				
 				while (mState == STATE_ACCEPTED) {
 					
-					if ((numBytes = mInputStream.read(bytes)) >= 0) {
+					if (mInputStream.available() > 0 && (numBytes = mInputStream.read(bytes)) >= 0) {
 						
 						String s = getByteString(bytes, numBytes);
 
 						DoLog.d(TAG, getName() + " - received: " + s);
+						DoLog.d(TAG, getName() + " - size: " + numBytes);
 					}
 					try {
 						Thread.sleep(500);
 					} catch (InterruptedException e) {
-						DoLog.e(TAG, "interrupted: " + e);
+						DoLog.e(TAG, getName(), e);
+						dropConnection(false, TIME_5_SEC);
 					}
 					
 				}
 	
 			} catch (IOException e) {
-				DoLog.e(TAG, "ioexception: ", e);
+				DoLog.e(TAG, getName(), e);
+				dropConnection(false, TIME_5_SEC);
 			}
 		}
 		
@@ -82,28 +104,46 @@ public class BluetoothSocketThread extends Thread {
 				mOutputStream.flush();
 				
 			} catch (IOException e) {
-				DoLog.e(TAG, "ioException: ",e);
+			    // connection dropped for some reason.
+				DoLog.e(TAG, getName(),e);
+				dropConnection(true, TIME_1_SEC);
 			}
 		}
 	}
 	
-	public void stopGracefully() {
-		DoLog.d(TAG, "stopping thread - " + mSocket);
+	private void dropConnection(boolean reuseSocket, int suggestedRetryTimeMs) {
+		DoLog.d(TAG, "dropping socket - " + mSocket);
+		mState = STATE_DROPPED;
+		mSuggestedRetryTimeMs = suggestedRetryTimeMs;
+		mReuseSocket = reuseSocket;
 		if (mSocket != null) {
 			try {
-				mInputStream.close();
-				mOutputStream.close();
+				if (mInputStream != null) mInputStream.close();
+				if (mOutputStream != null) mOutputStream.close();
 				mSocket.close();
-				mState = STATE_NONE;
 				
 			} catch (IOException e) {
-				DoLog.e(TAG, "close failed: ", e);
+				DoLog.w(TAG, getName(), e);
 			}
 		}
+		interrupt();
+	}
+	
+	public void stopGracefully() {
+        dropConnection(false, TIME_5_SEC);
+	    mState = STATE_NONE;
 	}
 	
 	public int getConnectionState() {
 		return mState;
+	}
+	
+	public int getSuggestedRetryTimeMs() {
+	    return mSuggestedRetryTimeMs;
+	}
+	
+	public boolean reuseSocket() {
+	    return mReuseSocket;
 	}
 	
 	private String getByteString(byte[] bytes, int size) {

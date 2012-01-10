@@ -309,6 +309,26 @@ public class BluetoothKeybEmuActivity extends Activity {
 	}
 
 
+    private BluetoothSocketThread initThread(BluetoothSocketThread thread, String name, BluetoothDevice hostDevice, int socketPort) {
+        if (thread == null || (thread != null && !thread.reuseSocket())) {
+            BluetoothSocket socket;
+    
+            try {
+                socket = mConnHelper.connectL2capSocket(hostDevice, socketPort, true, true);
+            } catch (IOException e) {
+                DoLog.e(TAG, String.format("Cannot acquire %sSocket", name), e);
+                throw new RuntimeException(e);
+            }
+            
+            if (socket != null) {
+                DoLog.d(TAG, String.format("%s socket successfully created: %s", name, socket));
+            }
+            return new BluetoothSocketThread(socket, "ctrl");
+        } else {
+            return thread;
+        }
+        
+    }
     private void startHidL2capSockets() {
     	Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
     	
@@ -326,35 +346,41 @@ public class BluetoothKeybEmuActivity extends Activity {
     		DoLog.d(TAG, "host selected: " + hostDevice);
     	}
 
-    	BluetoothSocket ctrlSocket;
-
-    	try {
-    		ctrlSocket = mConnHelper.connectL2capSocket(hostDevice, 0x11, true, true);
-    	} catch (IOException e) {
-    		DoLog.e(TAG, "ioexception: ", e);
-    		throw new RuntimeException(e);
+    	mCtrlThread = initThread(mCtrlThread, "ctrl", hostDevice, 0x11);
+    	mIntrThread = initThread(mIntrThread, "intr", hostDevice, 0x13);
+    	/*
+    	if (mCtrlThread == null || (mCtrlThread != null && !mCtrlThread.reuseSocket())) {
+        	BluetoothSocket ctrlSocket;
+    
+        	try {
+        		ctrlSocket = mConnHelper.connectL2capSocket(hostDevice, 0x11, true, true);
+        	} catch (IOException e) {
+        		DoLog.e(TAG, "Cannot acquire ctrlSocket", e);
+        		throw new RuntimeException(e);
+        	}
+        	
+        	if (ctrlSocket != null) {
+        		DoLog.d(TAG, "Ctrl socket successfully created: " + ctrlSocket);
+        	}
+            mCtrlThread = new BluetoothSocketThread(ctrlSocket, "ctrl");
     	}
     	
-    	if (ctrlSocket != null) {
-    		DoLog.d(TAG, "Ctrl socket successfully created: " + ctrlSocket);
+    	if (mIntrThread == null  !mIntrThread.reuseSocket()) {
+        	BluetoothSocket intrSocket;
+        	try {
+        		intrSocket = mConnHelper.connectL2capSocket(hostDevice, 0x13, true, true);
+        	} catch (IOException e) {
+        		DoLog.e(TAG, "Cannot acquire intrSocket", e);
+        		throw new RuntimeException(e);
+        	}
+        	
+        	if (intrSocket != null) {
+        		DoLog.d(TAG, "Intr socket successfully created: " + intrSocket);
+        	}
+            mIntrThread = new BluetoothSocketThread(intrSocket, "intr");
     	}
-    	
-    	BluetoothSocket intrSocket;
-    	try {
-    		intrSocket = mConnHelper.connectL2capSocket(hostDevice, 0x13, true, true);
-    	} catch (IOException e) {
-    		DoLog.e(TAG, "ioexception ", e);
-    		throw new RuntimeException(e);
-    	}
-    	
-    	if (intrSocket != null) {
-    		DoLog.d(TAG, "Intr socket successfully created: " + intrSocket);
-    	}
-    	
-    	mCtrlThread = new BluetoothSocketThread(ctrlSocket, "ctrl");
+    	*/
     	mCtrlThread.start();
-    	
-    	mIntrThread = new BluetoothSocketThread(intrSocket, "intr");
     	mIntrThread.start();
     	
     	mThreadMonitorHandler.sendEmptyMessageDelayed(HANDLER_MONITOR_SOCKET, 200);
@@ -386,12 +412,17 @@ public class BluetoothKeybEmuActivity extends Activity {
     
     private void monitorThread(BluetoothSocketThread thread, TextView textView) {
     	if (thread != null) {
-	    	if (!thread.isAlive()) {
+	    	if (thread.getConnectionState() == BluetoothSocketThread.STATE_NONE) {
 	    		textView.setText(thread.getName() + " stopped");
 	    	} else if (thread.getConnectionState() == BluetoothSocketThread.STATE_WAITING) {
 	    		textView.setText(thread.getName() + " waiting");
+	    		mThreadMonitorHandler.sendEmptyMessageDelayed(HANDLER_MONITOR_SOCKET, 200 /*ms */);
 	    	} else if (thread.getConnectionState() == BluetoothSocketThread.STATE_ACCEPTED) {
 	    		textView.setText(thread.getName() + "accepted");
+	    		mThreadMonitorHandler.sendEmptyMessageDelayed(HANDLER_MONITOR_SOCKET, 200 /*ms */);
+	    	} else if (thread.getConnectionState() == BluetoothSocketThread.STATE_DROPPED) {
+	    	    textView.setText(String.format("%s dropped. retry in %d secs.", thread.getName(), thread.getSuggestedRetryTimeMs()));
+	    	    mThreadMonitorHandler.sendEmptyMessageDelayed(HANDLER_CONNECT, thread.getSuggestedRetryTimeMs());
 	    	}
     	}
     }
@@ -403,16 +434,14 @@ public class BluetoothKeybEmuActivity extends Activity {
     		
     	    switch (msg.what) {
     	    case HANDLER_MONITOR_SOCKET:
-    			monitorThread(mCtrlThread, mCtrlTextView);
+    			//monitorThread(mCtrlThread, mCtrlTextView);
     			monitorThread(mIntrThread, mIntrTextView);
-    		
-    			sendEmptyMessageDelayed(msg.what, 200 /*ms */);
     			break;
     			
     	    case HANDLER_MONITOR_PAIRING:
     	        DoLog.d(TAG, "waiting for a device to show up...");
     	        if (mBluetoothAdapter.getBondedDevices().isEmpty()) {
-    	            sendEmptyMessageDelayed(msg.what, 500 /* ms */);
+    	            sendEmptyMessageDelayed(HANDLER_MONITOR_PAIRING, 500 /* ms */);
     	        } else {
     	            populateBluetoothDeviceCombo();
     	        }
