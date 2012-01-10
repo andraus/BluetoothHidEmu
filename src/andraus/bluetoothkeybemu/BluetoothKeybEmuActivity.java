@@ -32,12 +32,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.CompoundButton;
 import android.widget.Spinner;
 import android.widget.SpinnerAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.ToggleButton;
 
 public class BluetoothKeybEmuActivity extends Activity {
 	
@@ -54,7 +52,6 @@ public class BluetoothKeybEmuActivity extends Activity {
 	private static int BLUETOOTH_REQUEST_OK = 1;
 	private static int BLUETOOTH_DISCOVERABLE_DURATION = 300;
 	
-	private ToggleButton mToggleSocketButton = null;
 	private Spinner mDeviceSpinner = null;
 	private TextView mCtrlTextView = null;
 	private TextView mIntrTextView = null;
@@ -120,9 +117,6 @@ public class BluetoothKeybEmuActivity extends Activity {
 	 */
 	private void setupApp() {
 		setContentView(R.layout.main);
-		mToggleSocketButton = (ToggleButton) findViewById(R.id.ToggleSocketButton);
-		mToggleSocketButton.setOnCheckedChangeListener(mToggleSocketButtonListener);
-		
 		mCtrlTextView = (TextView) findViewById(R.id.CtrlTextView);
 		mIntrTextView = (TextView) findViewById(R.id.IntrTextView);
 		
@@ -141,24 +135,6 @@ public class BluetoothKeybEmuActivity extends Activity {
         populateBluetoothDeviceCombo();
         
 	}
-	
-	/**
-	 * Listener for Bluetooth HID Keyboard toggle button
-	 */
-	CompoundButton.OnCheckedChangeListener mToggleSocketButtonListener = 
-			new CompoundButton.OnCheckedChangeListener() {
-		
-		@Override
-		public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-			if (buttonView.isChecked()) {
-				//BluetoothKeybNative.setupSdp();
-				startHidL2capSockets();
-			} else {
-				stopHidL2capSockets(false);
-			}
-			
-		}
-	};
 	
 	AdapterView.OnItemSelectedListener mSelectDeviceListener = 
 			new AdapterView.OnItemSelectedListener() {
@@ -348,38 +324,7 @@ public class BluetoothKeybEmuActivity extends Activity {
 
     	mCtrlThread = initThread(mCtrlThread, "ctrl", hostDevice, 0x11);
     	mIntrThread = initThread(mIntrThread, "intr", hostDevice, 0x13);
-    	/*
-    	if (mCtrlThread == null || (mCtrlThread != null && !mCtrlThread.reuseSocket())) {
-        	BluetoothSocket ctrlSocket;
-    
-        	try {
-        		ctrlSocket = mConnHelper.connectL2capSocket(hostDevice, 0x11, true, true);
-        	} catch (IOException e) {
-        		DoLog.e(TAG, "Cannot acquire ctrlSocket", e);
-        		throw new RuntimeException(e);
-        	}
-        	
-        	if (ctrlSocket != null) {
-        		DoLog.d(TAG, "Ctrl socket successfully created: " + ctrlSocket);
-        	}
-            mCtrlThread = new BluetoothSocketThread(ctrlSocket, "ctrl");
-    	}
-    	
-    	if (mIntrThread == null  !mIntrThread.reuseSocket()) {
-        	BluetoothSocket intrSocket;
-        	try {
-        		intrSocket = mConnHelper.connectL2capSocket(hostDevice, 0x13, true, true);
-        	} catch (IOException e) {
-        		DoLog.e(TAG, "Cannot acquire intrSocket", e);
-        		throw new RuntimeException(e);
-        	}
-        	
-        	if (intrSocket != null) {
-        		DoLog.d(TAG, "Intr socket successfully created: " + intrSocket);
-        	}
-            mIntrThread = new BluetoothSocketThread(intrSocket, "intr");
-    	}
-    	*/
+
     	mCtrlThread.start();
     	mIntrThread.start();
     	
@@ -434,8 +379,8 @@ public class BluetoothKeybEmuActivity extends Activity {
     		
     	    switch (msg.what) {
     	    case HANDLER_MONITOR_SOCKET:
-    			//monitorThread(mCtrlThread, mCtrlTextView);
-    			monitorThread(mIntrThread, mIntrTextView);
+    			monitorThread(mCtrlThread, mCtrlTextView);
+    			//monitorThread(mIntrThread, mIntrTextView);
     			break;
     			
     	    case HANDLER_MONITOR_PAIRING:
