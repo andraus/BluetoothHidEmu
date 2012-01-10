@@ -154,7 +154,7 @@ public class BluetoothKeybEmuActivity extends Activity {
 				//BluetoothKeybNative.setupSdp();
 				startHidL2capSockets();
 			} else {
-				stopHidL2capSockets();
+				stopHidL2capSockets(false);
 			}
 			
 		}
@@ -173,7 +173,8 @@ public class BluetoothKeybEmuActivity extends Activity {
 					editor.putString(PREF_KEY_DEVICE, device.getAddress());
 					editor.apply();
 					
-					mThreadMonitorHandler.sendEmptyMessageDelayed(HANDLER_CONNECT, 1000 /*ms*/);
+					//mThreadMonitorHandler.sendEmptyMessageDelayed(HANDLER_CONNECT, 1000 /*ms*/);
+					stopHidL2capSockets(true);
 				}
 
 				@Override
@@ -226,6 +227,7 @@ public class BluetoothKeybEmuActivity extends Activity {
     protected void onDestroy() {
         DoLog.d(TAG, "...being destroyed");
         unregisterReceiver(mBluetoothReceiver);
+        stopHidL2capSockets(false);
         if (mConnHelper != null) {
             mConnHelper.cleanup();
         }
@@ -359,7 +361,7 @@ public class BluetoothKeybEmuActivity extends Activity {
     /**
      * Stop L2CAP "control" and "interrupt" channel threads
      */
-    private void stopHidL2capSockets() {
+    private void stopHidL2capSockets(boolean reconnect) {
 
 		DoLog.d(TAG, "stop bt server");
 		
@@ -371,7 +373,11 @@ public class BluetoothKeybEmuActivity extends Activity {
 			mIntrThread.stopGracefully();
 		}
 		
-		mThreadMonitorHandler.sendEmptyMessage(HANDLER_MONITOR_STOP);
+		if (reconnect) {
+		    mThreadMonitorHandler.sendEmptyMessageDelayed(HANDLER_CONNECT, 200 /*ms */);
+		} else {
+		    mThreadMonitorHandler.sendEmptyMessage(HANDLER_MONITOR_STOP);
+		}
     }
     
     private void monitorThread(BluetoothSocketThread thread, TextView textView) {
