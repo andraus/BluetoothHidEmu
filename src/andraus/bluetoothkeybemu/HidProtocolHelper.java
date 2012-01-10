@@ -81,6 +81,7 @@ public class HidProtocolHelper {
         
         if (hidCode == null) {
             DoLog.w(TAG, "No hid code found for keyCode = " + hidCode);
+            return null;
         }
         
         byte[] bytes = new byte[10];
