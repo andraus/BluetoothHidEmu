@@ -106,7 +106,7 @@ public class BluetoothSocketThread extends Thread {
 			} catch (IOException e) {
 			    // connection dropped for some reason.
 				DoLog.e(TAG, getName(),e);
-				dropConnection(true, TIME_1_SEC);
+				dropConnection(false, TIME_5_SEC);
 			}
 		}
 	}

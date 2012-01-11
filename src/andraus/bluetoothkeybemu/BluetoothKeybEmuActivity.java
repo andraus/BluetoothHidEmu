@@ -22,6 +22,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
@@ -30,6 +31,9 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.animation.AlphaAnimation;
+import android.view.animation.Animation;
+import android.view.animation.DecelerateInterpolator;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
@@ -52,6 +56,10 @@ public class BluetoothKeybEmuActivity extends Activity {
 	private static int BLUETOOTH_REQUEST_OK = 1;
 	private static int BLUETOOTH_DISCOVERABLE_DURATION = 300;
 	
+	private enum StatusIconStates { OFF, ON, INTERMEDIATE };
+	
+	//private ImageView mStatusImageView = null;
+	private TextView mStatusTextView = null;
 	private Spinner mDeviceSpinner = null;
 	private TextView mCtrlTextView = null;
 	private TextView mIntrTextView = null;
@@ -121,6 +129,8 @@ public class BluetoothKeybEmuActivity extends Activity {
 		mIntrTextView = (TextView) findViewById(R.id.IntrTextView);
 		
 		mDeviceSpinner = (Spinner) findViewById(R.id.DeviceSpinner);
+		//mStatusImageView = (ImageView) findViewById(R.id.ImageStatus);
+		mStatusTextView = (TextView) findViewById(R.id.StatusTextView);
 		
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         
@@ -134,6 +144,44 @@ public class BluetoothKeybEmuActivity extends Activity {
         
         populateBluetoothDeviceCombo();
         
+	}
+	
+	private void setStatusIconState(StatusIconStates state) {
+
+	    switch (state) {
+	    case ON:
+	        Animation animation = null;
+	        if ((animation = mStatusTextView.getAnimation()) != null) {
+	            animation.cancel();
+	            mStatusTextView.setAnimation(null);
+	        }
+	        mStatusTextView.setTextColor(Color.GREEN);
+	        mStatusTextView.setShadowLayer(6, 0f, 0f, Color.GREEN);
+	        mStatusTextView.setText(getResources().getString(R.string.msg_status_connected));
+	        
+	        break;
+	    case OFF:
+            mStatusTextView.getAnimation().cancel();
+            mStatusTextView.setTextColor(Color.RED);
+            mStatusTextView.setShadowLayer(6, 0f, 0f, Color.RED);
+            mStatusTextView.setText(getResources().getString(R.string.msg_status_disconnected));
+	        break;
+	    case INTERMEDIATE:
+	        
+	        mStatusTextView.setTextColor(0xffffff00);
+	        mStatusTextView.setShadowLayer(6, 0f, 0f, 0xffffff00);
+            mStatusTextView.setText(getResources().getString(R.string.msg_status_connecting));
+	        
+            AlphaAnimation alphaAnim = new AlphaAnimation(1, 0.2f);
+            alphaAnim.setDuration(250);
+            alphaAnim.setInterpolator(new DecelerateInterpolator(10f));
+            alphaAnim.setRepeatCount(Animation.INFINITE);
+            alphaAnim.setRepeatMode(Animation.REVERSE);
+            
+            mStatusTextView.startAnimation(alphaAnim);
+	        break;
+	    }
+
 	}
 	
 	AdapterView.OnItemSelectedListener mSelectDeviceListener = 
@@ -219,7 +267,6 @@ public class BluetoothKeybEmuActivity extends Activity {
 
     @Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
-		
     	if (mIntrThread != null && mIntrThread.isAlive()) {
     		byte[] payload = mHidHelper.hidPayload(keyCode);
     		
@@ -227,13 +274,11 @@ public class BluetoothKeybEmuActivity extends Activity {
     		    mIntrThread.sendBytes(payload);
     		}
     	}
-    	
 		return super.onKeyDown(keyCode, event);
 	}
 
 	@Override
 	public boolean onKeyUp(int keyCode, KeyEvent event) {
-
     	if (mIntrThread != null && mIntrThread.isAlive()) {
     		byte[] payload = mHidHelper.hidPayload(0);
     		
@@ -321,6 +366,8 @@ public class BluetoothKeybEmuActivity extends Activity {
     	} else {
     		DoLog.d(TAG, "host selected: " + hostDevice);
     	}
+    	
+    	setStatusIconState(StatusIconStates.INTERMEDIATE);
 
     	mCtrlThread = initThread(mCtrlThread, "ctrl", hostDevice, 0x11);
     	mIntrThread = initThread(mIntrThread, "intr", hostDevice, 0x13);
@@ -356,14 +403,16 @@ public class BluetoothKeybEmuActivity extends Activity {
     }
     
     private void monitorThread(BluetoothSocketThread thread, TextView textView) {
+        //DoLog.d(TAG, String.format("monitorThread(%d)", thread.getConnectionState()));
     	if (thread != null) {
 	    	if (thread.getConnectionState() == BluetoothSocketThread.STATE_NONE) {
 	    		textView.setText(thread.getName() + " stopped");
 	    	} else if (thread.getConnectionState() == BluetoothSocketThread.STATE_WAITING) {
 	    		textView.setText(thread.getName() + " waiting");
-	    		mThreadMonitorHandler.sendEmptyMessageDelayed(HANDLER_MONITOR_SOCKET, 200 /*ms */);
+	    		mThreadMonitorHandler.sendEmptyMessageDelayed(HANDLER_MONITOR_SOCKET, 1000 /*ms */);
 	    	} else if (thread.getConnectionState() == BluetoothSocketThread.STATE_ACCEPTED) {
 	    		textView.setText(thread.getName() + "accepted");
+	    		setStatusIconState(StatusIconStates.ON);
 	    		mThreadMonitorHandler.sendEmptyMessageDelayed(HANDLER_MONITOR_SOCKET, 200 /*ms */);
 	    	} else if (thread.getConnectionState() == BluetoothSocketThread.STATE_DROPPED) {
 	    	    textView.setText(String.format("%s dropped. retry in %d secs.", thread.getName(), thread.getSuggestedRetryTimeMs()));
@@ -376,11 +425,13 @@ public class BluetoothKeybEmuActivity extends Activity {
 
     	@Override
     	public void handleMessage(Message msg) {
-    		
+    	    
+    	    //DoLog.d(TAG, String.format("handleMessage(%d)", msg.what));
+    	    
     	    switch (msg.what) {
     	    case HANDLER_MONITOR_SOCKET:
-    			monitorThread(mCtrlThread, mCtrlTextView);
-    			//monitorThread(mIntrThread, mIntrTextView);
+    			//monitorThread(mCtrlThread, mCtrlTextView);
+    			monitorThread(mIntrThread, mIntrTextView);
     			break;
     			
     	    case HANDLER_MONITOR_PAIRING:
