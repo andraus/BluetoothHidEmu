@@ -58,7 +58,7 @@ public class BluetoothKeybEmuActivity extends Activity {
 	
 	private enum StatusIconStates { OFF, ON, INTERMEDIATE };
 	
-	//private ImageView mStatusImageView = null;
+	private StatusIconStates mStatusState = StatusIconStates.OFF;
 	private TextView mStatusTextView = null;
 	private Spinner mDeviceSpinner = null;
 	private TextView mCtrlTextView = null;
@@ -148,9 +148,13 @@ public class BluetoothKeybEmuActivity extends Activity {
 	
 	private void setStatusIconState(StatusIconStates state) {
 
+	    if (state == mStatusState) {
+	        return;
+	    }
+	    
+        Animation animation = null;
 	    switch (state) {
 	    case ON:
-	        Animation animation = null;
 	        if ((animation = mStatusTextView.getAnimation()) != null) {
 	            animation.cancel();
 	            mStatusTextView.setAnimation(null);
@@ -161,7 +165,10 @@ public class BluetoothKeybEmuActivity extends Activity {
 	        
 	        break;
 	    case OFF:
-            mStatusTextView.getAnimation().cancel();
+            if ((animation = mStatusTextView.getAnimation()) != null) {
+                animation.cancel();
+                mStatusTextView.setAnimation(null);
+            }
             mStatusTextView.setTextColor(Color.RED);
             mStatusTextView.setShadowLayer(6, 0f, 0f, Color.RED);
             mStatusTextView.setText(getResources().getString(R.string.msg_status_disconnected));
@@ -181,6 +188,7 @@ public class BluetoothKeybEmuActivity extends Activity {
             mStatusTextView.startAnimation(alphaAnim);
 	        break;
 	    }
+	    mStatusState = state;
 
 	}
 	
@@ -402,23 +410,31 @@ public class BluetoothKeybEmuActivity extends Activity {
 		}
     }
     
-    private void monitorThread(BluetoothSocketThread thread, TextView textView) {
-        //DoLog.d(TAG, String.format("monitorThread(%d)", thread.getConnectionState()));
-    	if (thread != null) {
-	    	if (thread.getConnectionState() == BluetoothSocketThread.STATE_NONE) {
-	    		textView.setText(thread.getName() + " stopped");
-	    	} else if (thread.getConnectionState() == BluetoothSocketThread.STATE_WAITING) {
-	    		textView.setText(thread.getName() + " waiting");
-	    		mThreadMonitorHandler.sendEmptyMessageDelayed(HANDLER_MONITOR_SOCKET, 1000 /*ms */);
-	    	} else if (thread.getConnectionState() == BluetoothSocketThread.STATE_ACCEPTED) {
-	    		textView.setText(thread.getName() + "accepted");
-	    		setStatusIconState(StatusIconStates.ON);
-	    		mThreadMonitorHandler.sendEmptyMessageDelayed(HANDLER_MONITOR_SOCKET, 200 /*ms */);
-	    	} else if (thread.getConnectionState() == BluetoothSocketThread.STATE_DROPPED) {
-	    	    textView.setText(String.format("%s dropped. retry in %d secs.", thread.getName(), thread.getSuggestedRetryTimeMs()));
-	    	    mThreadMonitorHandler.sendEmptyMessageDelayed(HANDLER_CONNECT, thread.getSuggestedRetryTimeMs());
-	    	}
-    	}
+    private boolean testForState(int state) {
+        return mCtrlThread.getConnectionState() == state || mIntrThread.getConnectionState() == state;
+    }
+    
+    private void monitorThreads() {
+        //DoLog.d(TAG, "monitorThreads()");
+        
+    	if (testForState(BluetoothSocketThread.STATE_NONE)) {
+    		mCtrlTextView.setText("a thread stopped");
+    	} else if (testForState(BluetoothSocketThread.STATE_WAITING)) {
+            mCtrlTextView.setText("a thread waiting");
+    		mThreadMonitorHandler.sendEmptyMessageDelayed(HANDLER_MONITOR_SOCKET, 1000 /*ms */);
+        } else if (testForState(BluetoothSocketThread.STATE_DROPPED)) {
+            mCtrlTextView.setText("a thread dropped. retrying...");
+            int retryTime = mIntrThread.getSuggestedRetryTimeMs() > mCtrlThread.getSuggestedRetryTimeMs() 
+                    ? mIntrThread.getSuggestedRetryTimeMs() 
+                            : mCtrlThread.getSuggestedRetryTimeMs();
+            
+            setStatusIconState(StatusIconStates.INTERMEDIATE);
+            mThreadMonitorHandler.sendEmptyMessageDelayed(HANDLER_CONNECT, retryTime);
+    	} else if (testForState(BluetoothSocketThread.STATE_ACCEPTED)) {
+            mCtrlTextView.setText("a thread accepted");
+    		setStatusIconState(StatusIconStates.ON);
+    		mThreadMonitorHandler.sendEmptyMessageDelayed(HANDLER_MONITOR_SOCKET, 200 /*ms */);
+    	} else DoLog.d(TAG, "nada");
     }
     
     private Handler mThreadMonitorHandler = new  Handler() {
@@ -431,7 +447,8 @@ public class BluetoothKeybEmuActivity extends Activity {
     	    switch (msg.what) {
     	    case HANDLER_MONITOR_SOCKET:
     			//monitorThread(mCtrlThread, mCtrlTextView);
-    			monitorThread(mIntrThread, mIntrTextView);
+    			//monitorThread(mIntrThread, mIntrTextView);
+    	        monitorThreads();
     			break;
     			
     	    case HANDLER_MONITOR_PAIRING:

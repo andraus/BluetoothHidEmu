@@ -106,7 +106,7 @@ public class BluetoothSocketThread extends Thread {
 			} catch (IOException e) {
 			    // connection dropped for some reason.
 				DoLog.e(TAG, getName(),e);
-				dropConnection(false, TIME_5_SEC);
+				dropConnection(false, TIME_1_SEC);
 			}
 		}
 	}
@@ -135,6 +135,7 @@ public class BluetoothSocketThread extends Thread {
 	}
 	
 	public int getConnectionState() {
+	    //DoLog.d(TAG,getName() + " - " + mState);
 		return mState;
 	}
 	
@@ -150,7 +151,7 @@ public class BluetoothSocketThread extends Thread {
 		StringBuilder s = new StringBuilder();
 		
 		for (int i = 0; i < size; i++) {
-			s.append(String.format("0x%02X ", bytes[i]));
+			s.append(String.format("0x%02x ", bytes[i]));
 		}
 		
 		return s.toString();
