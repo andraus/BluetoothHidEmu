@@ -344,7 +344,7 @@ public class BluetoothKeybEmuActivity extends Activity {
             if (socket != null) {
                 DoLog.d(TAG, String.format("%s socket successfully created: %s", name, socket));
             }
-            return new BluetoothSocketThread(socket, "ctrl");
+            return new BluetoothSocketThread(socket, name);
         } else {
             return thread;
         }
