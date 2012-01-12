@@ -96,7 +96,7 @@ public class BluetoothSocketThread extends Thread {
 		
 	}
 	
-	public void sendBytes(byte[] bytes) {
+	public synchronized void sendBytes(byte[] bytes) {
 		if (mState == STATE_ACCEPTED) {
 			try {
 				DoLog.d(TAG, "Sending bytes to " + getName() + ": " + getByteString(bytes, bytes.length));

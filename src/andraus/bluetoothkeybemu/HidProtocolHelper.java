@@ -75,7 +75,7 @@ public class HidProtocolHelper {
      * @param keyCode - Android framework keycode
      * @return
      */
-    public byte[] hidPayload(int keyCode) {
+    public byte[] payload(int keyCode) {
         
         Integer hidCode = KEY_HID_MAP.get(Integer.valueOf(keyCode));
         
@@ -98,6 +98,28 @@ public class HidProtocolHelper {
         bytes[9] = (byte)0x00;
         
         return bytes;
+    }
+    
+    /**
+     * Assemble a HID payload byte array for disconnect request.
+     * @return
+     */
+    public byte[] disconnectReq() {
+        byte[] bytes = new byte[10];
+        
+        bytes[0] = (byte)0xa1;
+        bytes[1] = (byte)0x06; // Disconnection Request
+        bytes[2] = (byte)0x00;
+        bytes[3] = (byte)0x00;
+        bytes[4] = (byte)0x00;
+        bytes[5] = (byte)0x00;
+        bytes[6] = (byte)0x00;
+        bytes[7] = (byte)0x00;
+        bytes[8] = (byte)0x00;
+        bytes[9] = (byte)0x00;
+        
+        return bytes;
+        
     }
     
 }

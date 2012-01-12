@@ -276,7 +276,7 @@ public class BluetoothKeybEmuActivity extends Activity {
     @Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
     	if (mIntrThread != null && mIntrThread.isAlive()) {
-    		byte[] payload = mHidHelper.hidPayload(keyCode);
+    		byte[] payload = mHidHelper.payload(keyCode);
     		
     		if (payload != null) {
     		    mIntrThread.sendBytes(payload);
@@ -288,7 +288,7 @@ public class BluetoothKeybEmuActivity extends Activity {
 	@Override
 	public boolean onKeyUp(int keyCode, KeyEvent event) {
     	if (mIntrThread != null && mIntrThread.isAlive()) {
-    		byte[] payload = mHidHelper.hidPayload(0);
+    		byte[] payload = mHidHelper.payload(0);
     		
     		if (payload != null) {
     		    mIntrThread.sendBytes(payload);
@@ -396,10 +396,12 @@ public class BluetoothKeybEmuActivity extends Activity {
 		DoLog.d(TAG, "stop bt server");
 		
 		if (mCtrlThread != null) {
+		    mCtrlThread.sendBytes(mHidHelper.disconnectReq());
 			mCtrlThread.stopGracefully();
 		}
 		
 		if (mIntrThread != null) {
+		    mIntrThread.sendBytes(mHidHelper.disconnectReq());
 			mIntrThread.stopGracefully();
 		}
 		
