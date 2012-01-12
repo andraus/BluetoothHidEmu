@@ -30,12 +30,14 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.DecelerateInterpolator;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.SpinnerAdapter;
 import android.widget.TextView;
@@ -59,10 +61,15 @@ public class BluetoothKeybEmuActivity extends Activity {
 	private enum StatusIconStates { OFF, ON, INTERMEDIATE };
 	
 	private StatusIconStates mStatusState = StatusIconStates.OFF;
+	
 	private TextView mStatusTextView = null;
 	private Spinner mDeviceSpinner = null;
+	
 	private TextView mCtrlTextView = null;
-	private TextView mIntrTextView = null;
+	
+	private ImageView mTouchpadImageView = null;
+	private TouchpadListener mTouchpadListener = null;
+	
 	private BluetoothDeviceArrayAdapter mBluetoothDeviceArrayAdapter = null;
 	
 	private BluetoothAdapter mBluetoothAdapter = null;
@@ -126,11 +133,11 @@ public class BluetoothKeybEmuActivity extends Activity {
 	private void setupApp() {
 		setContentView(R.layout.main);
 		mCtrlTextView = (TextView) findViewById(R.id.CtrlTextView);
-		mIntrTextView = (TextView) findViewById(R.id.IntrTextView);
 		
 		mDeviceSpinner = (Spinner) findViewById(R.id.DeviceSpinner);
-		//mStatusImageView = (ImageView) findViewById(R.id.ImageStatus);
 		mStatusTextView = (TextView) findViewById(R.id.StatusTextView);
+		
+		mTouchpadImageView = (ImageView) findViewById(R.id.TouchpadImageView);
 		
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         
@@ -163,6 +170,8 @@ public class BluetoothKeybEmuActivity extends Activity {
 	        mStatusTextView.setShadowLayer(6, 0f, 0f, Color.GREEN);
 	        mStatusTextView.setText(getResources().getString(R.string.msg_status_connected));
 	        
+	        mTouchpadImageView.setVisibility(ImageView.VISIBLE);
+	        
 	        break;
 	    case OFF:
             if ((animation = mStatusTextView.getAnimation()) != null) {
@@ -172,6 +181,8 @@ public class BluetoothKeybEmuActivity extends Activity {
             mStatusTextView.setTextColor(Color.RED);
             mStatusTextView.setShadowLayer(6, 0f, 0f, Color.RED);
             mStatusTextView.setText(getResources().getString(R.string.msg_status_disconnected));
+            
+            mTouchpadImageView.setVisibility(ImageView.GONE);
 	        break;
 	    case INTERMEDIATE:
 	        
@@ -186,6 +197,9 @@ public class BluetoothKeybEmuActivity extends Activity {
             alphaAnim.setRepeatMode(Animation.REVERSE);
             
             mStatusTextView.startAnimation(alphaAnim);
+            
+            mTouchpadImageView.setVisibility(ImageView.GONE);
+            
 	        break;
 	    }
 	    mStatusState = state;
@@ -205,7 +219,6 @@ public class BluetoothKeybEmuActivity extends Activity {
 					editor.putString(PREF_KEY_DEVICE, device.getAddress());
 					editor.apply();
 					
-					//mThreadMonitorHandler.sendEmptyMessageDelayed(HANDLER_CONNECT, 1000 /*ms*/);
 					stopHidL2capSockets(true);
 				}
 
@@ -276,7 +289,7 @@ public class BluetoothKeybEmuActivity extends Activity {
     @Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
     	if (mIntrThread != null && mIntrThread.isAlive()) {
-    		byte[] payload = mHidHelper.payload(keyCode);
+    		byte[] payload = mHidHelper.payloadKeyb(keyCode);
     		
     		if (payload != null) {
     		    mIntrThread.sendBytes(payload);
@@ -288,7 +301,7 @@ public class BluetoothKeybEmuActivity extends Activity {
 	@Override
 	public boolean onKeyUp(int keyCode, KeyEvent event) {
     	if (mIntrThread != null && mIntrThread.isAlive()) {
-    		byte[] payload = mHidHelper.payload(0);
+    		byte[] payload = mHidHelper.payloadKeyb(HidProtocolHelper.NULL);
     		
     		if (payload != null) {
     		    mIntrThread.sendBytes(payload);
@@ -297,9 +310,7 @@ public class BluetoothKeybEmuActivity extends Activity {
 		return super.onKeyUp(keyCode, event);
 	}
 	
-	
-	
-	@Override
+    @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 	    if (requestCode == BLUETOOTH_REQUEST_OK && resultCode == BLUETOOTH_DISCOVERABLE_DURATION) {
 	        
@@ -417,26 +428,39 @@ public class BluetoothKeybEmuActivity extends Activity {
     }
     
     private void monitorThreads() {
-        //DoLog.d(TAG, "monitorThreads()");
         
     	if (testForState(BluetoothSocketThread.STATE_NONE)) {
     		mCtrlTextView.setText("a thread stopped");
+    		
+            mTouchpadImageView.setOnClickListener(null);
+            mTouchpadImageView.setOnTouchListener(null);
+
     	} else if (testForState(BluetoothSocketThread.STATE_WAITING)) {
             mCtrlTextView.setText("a thread waiting");
     		mThreadMonitorHandler.sendEmptyMessageDelayed(HANDLER_MONITOR_SOCKET, 1000 /*ms */);
-        } else if (testForState(BluetoothSocketThread.STATE_DROPPED)) {
+
+    	} else if (testForState(BluetoothSocketThread.STATE_DROPPED)) {
             mCtrlTextView.setText("a thread dropped. retrying...");
             int retryTime = mIntrThread.getSuggestedRetryTimeMs() > mCtrlThread.getSuggestedRetryTimeMs() 
                     ? mIntrThread.getSuggestedRetryTimeMs() 
                             : mCtrlThread.getSuggestedRetryTimeMs();
             
+            mTouchpadImageView.setOnClickListener(null);
+            mTouchpadImageView.setOnTouchListener(null);
+
             setStatusIconState(StatusIconStates.INTERMEDIATE);
             mThreadMonitorHandler.sendEmptyMessageDelayed(HANDLER_CONNECT, retryTime);
+    	
     	} else if (testForState(BluetoothSocketThread.STATE_ACCEPTED)) {
             mCtrlTextView.setText("a thread accepted");
     		setStatusIconState(StatusIconStates.ON);
+    		
+    		TouchpadListener mTouchpadListener = new TouchpadListener(getApplicationContext(), mCtrlThread, mHidHelper);
+    	    mTouchpadImageView.setOnClickListener(mTouchpadListener);
+    	    mTouchpadImageView.setOnTouchListener(mTouchpadListener);
+    		
     		mThreadMonitorHandler.sendEmptyMessageDelayed(HANDLER_MONITOR_SOCKET, 200 /*ms */);
-    	} else DoLog.d(TAG, "nada");
+    	}
     }
     
     private Handler mThreadMonitorHandler = new  Handler() {
@@ -448,8 +472,6 @@ public class BluetoothKeybEmuActivity extends Activity {
     	    
     	    switch (msg.what) {
     	    case HANDLER_MONITOR_SOCKET:
-    			//monitorThread(mCtrlThread, mCtrlTextView);
-    			//monitorThread(mIntrThread, mIntrTextView);
     	        monitorThreads();
     			break;
     			

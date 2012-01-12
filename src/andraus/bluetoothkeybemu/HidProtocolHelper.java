@@ -12,6 +12,8 @@ public class HidProtocolHelper {
     
     private static final String TAG = BluetoothKeybEmuActivity.TAG;
     
+    public static final int NULL = 0x00;
+    
     private static final Map<Integer, Integer> KEY_HID_MAP;
     static {
         Map<Integer, Integer>keyHidMap = new HashMap<Integer, Integer>();
@@ -75,7 +77,7 @@ public class HidProtocolHelper {
      * @param keyCode - Android framework keycode
      * @return
      */
-    public byte[] payload(int keyCode) {
+    public byte[] payloadKeyb(int keyCode) {
         
         Integer hidCode = KEY_HID_MAP.get(Integer.valueOf(keyCode));
         
@@ -87,15 +89,28 @@ public class HidProtocolHelper {
         byte[] bytes = new byte[10];
         
         bytes[0] = (byte)0xa1;
-        bytes[1] = (byte)0x01; // input
-        bytes[2] = (byte)0x00; //1 -left control ,2 - left shift, 4 left alt,5- ctrl+ alt (01 + 04) 8 - left gui, 16 - right control, 32 - right sift, 64 - right alt, 128 - right gui
-        bytes[3] = (byte)0x00;
-        bytes[4] = hidCode.byteValue();
-        bytes[5] = (byte)0x00;
-        bytes[6] = (byte)0x00;
-        bytes[7] = (byte)0x00;
-        bytes[8] = (byte)0x00;
-        bytes[9] = (byte)0x00;
+        bytes[1] = (byte)0x01;          // report_id (keyboard)
+        bytes[2] = (byte)0x00;          // modifier
+        bytes[3] = (byte)0x00;          // reserved
+        bytes[4] = hidCode.byteValue(); // keycode
+        bytes[5] = (byte)0x00;          // keycode
+        bytes[6] = (byte)0x00;          // keycode
+        bytes[7] = (byte)0x00;          // keycode
+        bytes[8] = (byte)0x00;          // keycode
+        bytes[9] = (byte)0x00;          // keycode
+        
+        return bytes;
+    }
+    
+    public byte[] payloadMouse(int x, int y) {
+        byte[] bytes = new byte[6];
+        
+        bytes[0] = (byte)0xa1;
+        bytes[1] = (byte)0x02; // report_id (mouse)
+        bytes[2] = (byte)0x00; // button
+        bytes[3] = (byte)x;
+        bytes[4] = (byte)y;
+        bytes[5] = (byte)0x00; // wheel
         
         return bytes;
     }
