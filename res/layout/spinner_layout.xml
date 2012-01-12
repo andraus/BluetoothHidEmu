@@ -4,4 +4,8 @@
               android:id="@+id/spinner_layout"
               android:layout_width="match_parent"
               android:layout_height="match_parent"
-              android:gravity="center"/>
+              android:gravity="center"
+              android:typeface="monospace"
+              android:textSize="17dp"
+              android:textStyle="italic"
+              android:layout_gravity="left"/>

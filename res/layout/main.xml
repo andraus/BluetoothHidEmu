@@ -11,8 +11,10 @@
 
         <TextView
             android:id="@+id/StatusTextView"
-            android:layout_width="wrap_content"
+            android:layout_width="fill_parent"
             android:layout_height="match_parent"
+            android:layout_weight="0.65"
+            android:gravity="center"
             android:shadowColor="#ffff0000"
             android:shadowDx="0.0"
             android:shadowDy="0.0"
@@ -25,13 +27,12 @@
 
         <Spinner
             android:id="@+id/DeviceSpinner"
-            android:layout_width="match_parent"
+            android:layout_width="fill_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="2.10"
+            android:layout_weight="0.35"
             android:drawSelectorOnTop="true"
-            android:padding="5dp"
-            android:prompt="@string/device_prompt" />
-
+            android:prompt="@string/device_prompt"  />
+        
     </LinearLayout>
     
     <LinearLayout android:layout_width="match_parent"
