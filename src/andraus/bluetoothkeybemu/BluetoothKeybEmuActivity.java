@@ -46,7 +46,7 @@ import android.widget.Toast;
 public class BluetoothKeybEmuActivity extends Activity {
 	
 	public static String TAG = "BluetoothKeyb";
-
+	
 	private static final int HANDLER_MONITOR_STOP = -1;
     private static final int HANDLER_MONITOR_SOCKET = 0;
     private static final int HANDLER_MONITOR_PAIRING = 1;
@@ -219,6 +219,9 @@ public class BluetoothKeybEmuActivity extends Activity {
 					editor.putString(PREF_KEY_DEVICE, device.getAddress());
 					editor.apply();
 					
+					mThreadMonitorHandler.removeMessages(HANDLER_MONITOR_SOCKET);
+					mThreadMonitorHandler.removeMessages(HANDLER_CONNECT);
+					
 					stopHidL2capSockets(true);
 				}
 
@@ -280,6 +283,10 @@ public class BluetoothKeybEmuActivity extends Activity {
         if (mConnHelper != null) {
             mConnHelper.cleanup();
         }
+        
+        mCtrlThread = null;
+        mIntrThread = null;
+        
         super.onDestroy();
     }
     
@@ -350,26 +357,24 @@ public class BluetoothKeybEmuActivity extends Activity {
 
 
     private BluetoothSocketThread initThread(BluetoothSocketThread thread, String name, BluetoothDevice hostDevice, int socketPort) {
-        if (thread == null || (thread != null && !thread.reuseSocket())) {
-            BluetoothSocket socket;
-    
-            try {
-                socket = mConnHelper.connectL2capSocket(hostDevice, socketPort, true, true);
-            } catch (IOException e) {
-                DoLog.e(TAG, String.format("Cannot acquire %sSocket", name), e);
-                throw new RuntimeException(e);
-            }
-            
-            if (socket != null) {
-                DoLog.d(TAG, String.format("%s socket successfully created: %s", name, socket));
-            }
-            return new BluetoothSocketThread(socket, name);
-        } else {
-            return thread;
+        
+        BluetoothSocket socket;
+
+        try {
+            socket = mConnHelper.connectL2capSocket(hostDevice, socketPort, true, true);
+        } catch (IOException e) {
+            DoLog.e(TAG, String.format("Cannot acquire %sSocket", name), e);
+            throw new RuntimeException(e);
         }
         
+        if (socket != null) {
+            DoLog.d(TAG, String.format("%s socket successfully created: %s", name, socket));
+        }
+        return new BluetoothSocketThread(socket, name);
     }
+    
     private void startHidL2capSockets() {
+        
     	Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
     	
     	if (pairedDevices.isEmpty()) {
@@ -385,6 +390,9 @@ public class BluetoothKeybEmuActivity extends Activity {
     	} else {
     		DoLog.d(TAG, "host selected: " + hostDevice);
     	}
+    
+    	// discovery is a heavy process. Apps must always cancel it when connecting.
+    	mBluetoothAdapter.cancelDiscovery();
     	
     	setStatusIconState(StatusIconStates.INTERMEDIATE);
 
@@ -406,30 +414,29 @@ public class BluetoothKeybEmuActivity extends Activity {
 
 		DoLog.d(TAG, "stop bt server");
 		
-		if (mCtrlThread != null) {
-		    mCtrlThread.sendBytes(mHidHelper.disconnectReq());
+        if (mIntrThread != null) {
+            mIntrThread.sendBytes(mHidHelper.disconnectReq());
+            mIntrThread.stopGracefully();
+            mIntrThread = null;
+        }
+
+        if (mCtrlThread != null) {
 			mCtrlThread.stopGracefully();
-		}
-		
-		if (mIntrThread != null) {
-		    mIntrThread.sendBytes(mHidHelper.disconnectReq());
-			mIntrThread.stopGracefully();
+			mCtrlThread = null;
 		}
 		
 		if (reconnect) {
-		    mThreadMonitorHandler.sendEmptyMessageDelayed(HANDLER_CONNECT, 200 /*ms */);
-		} else {
-		    mThreadMonitorHandler.sendEmptyMessage(HANDLER_MONITOR_STOP);
-		}
+		    mThreadMonitorHandler.sendEmptyMessageDelayed(HANDLER_CONNECT, 1500 /*ms */);
+		} 
     }
     
     private boolean testForState(int state) {
-        return mCtrlThread.getConnectionState() == state || mIntrThread.getConnectionState() == state;
+        return mCtrlThread != null && (mCtrlThread.getConnectionState() == state || mIntrThread.getConnectionState() == state);
     }
     
     private void monitorThreads() {
         
-    	if (testForState(BluetoothSocketThread.STATE_NONE)) {
+    	if (testForState(BluetoothSocketThread.STATE_NONE) || testForState(BluetoothSocketThread.STATE_DROPPING)) {
     		mCtrlTextView.setText("a thread stopped");
     		
             mTouchpadImageView.setOnClickListener(null);

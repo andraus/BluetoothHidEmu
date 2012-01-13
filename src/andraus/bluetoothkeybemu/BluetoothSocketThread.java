@@ -10,7 +10,7 @@ import android.bluetooth.BluetoothSocket;
 
 public class BluetoothSocketThread extends Thread {
 	
-	private static final String TAG = BluetoothKeybEmuActivity.TAG;
+	private String TAG = BluetoothKeybEmuActivity.TAG;
 	
 	private static final int BUF_SIZE = 16;
 	
@@ -18,14 +18,14 @@ public class BluetoothSocketThread extends Thread {
 	static final int STATE_NONE = 0;
 	static final int STATE_WAITING = 1;
 	static final int STATE_ACCEPTED = 2;
-	static final int STATE_DROPPED = 3;
+	static final int STATE_DROPPING = 3;
+	static final int STATE_DROPPED = 4;
 	
 	static final int TIME_5_SEC = 5000;
 	static final int TIME_1_SEC = 1000;
 	
 	private int mState = 0;
 	private int mSuggestedRetryTimeMs = 0;
-	private boolean mReuseSocket = false;
 	
 	private InputStream mInputStream = null;
 	private OutputStream mOutputStream = null;
@@ -58,7 +58,7 @@ public class BluetoothSocketThread extends Thread {
 			mSocket.connect();
 		} catch (IOException e) {
 			DoLog.e(TAG, getName(), e);
-			dropConnection(false, TIME_5_SEC);
+			dropConnection(TIME_5_SEC);
 		}
 		
 		if (mSocket != null && mState == STATE_WAITING) {
@@ -83,17 +83,17 @@ public class BluetoothSocketThread extends Thread {
 						Thread.sleep(500);
 					} catch (InterruptedException e) {
 						DoLog.e(TAG, getName(), e);
-						dropConnection(false, TIME_5_SEC);
+						dropConnection(TIME_5_SEC);
 					}
 					
 				}
 	
 			} catch (IOException e) {
 				DoLog.e(TAG, getName(), e);
-				dropConnection(false, TIME_5_SEC);
+				dropConnection(TIME_5_SEC);
 			}
 		}
-		
+		mState = STATE_DROPPED;
 	}
 	
 	public synchronized void sendBytes(byte[] bytes) {
@@ -106,16 +106,16 @@ public class BluetoothSocketThread extends Thread {
 			} catch (IOException e) {
 			    // connection dropped for some reason.
 				DoLog.e(TAG, getName(),e);
-				dropConnection(false, TIME_1_SEC);
+				dropConnection(TIME_1_SEC);
 			}
 		}
 	}
 	
-	private void dropConnection(boolean reuseSocket, int suggestedRetryTimeMs) {
+	private synchronized void dropConnection(int suggestedRetryTimeMs) {
 		DoLog.d(TAG, "dropping socket - " + mSocket);
-		mState = STATE_DROPPED;
+		mState = STATE_DROPPING;
 		mSuggestedRetryTimeMs = suggestedRetryTimeMs;
-		mReuseSocket = reuseSocket;
+		
 		if (mSocket != null) {
 			try {
 				if (mInputStream != null) mInputStream.close();
@@ -126,16 +126,18 @@ public class BluetoothSocketThread extends Thread {
 				DoLog.w(TAG, getName(), e);
 			}
 		}
-		interrupt();
+		
 	}
 	
-	public void stopGracefully() {
-        dropConnection(false, TIME_5_SEC);
+	public synchronized void stopGracefully() {
+        if (mState == STATE_ACCEPTED || mState == STATE_WAITING) {
+            dropConnection(TIME_5_SEC);
+        }
 	    mState = STATE_NONE;
 	}
 	
 	public int getConnectionState() {
-	    //DoLog.d(TAG,getName() + " - " + mState);
+	    //DoLog.d(TAG,getName() + " state - " + mState);
 		return mState;
 	}
 	
@@ -143,8 +145,8 @@ public class BluetoothSocketThread extends Thread {
 	    return mSuggestedRetryTimeMs;
 	}
 	
-	public boolean reuseSocket() {
-	    return mReuseSocket;
+	public void setSocket(BluetoothSocket socket) {
+	    mSocket = socket;
 	}
 	
 	private String getByteString(byte[] bytes, int size) {
