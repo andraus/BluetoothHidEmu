@@ -1,6 +1,5 @@
 package andraus.bluetoothkeybemu;
 
-import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -9,13 +8,14 @@ import java.util.Set;
 import andraus.bluetoothkeybemu.helper.BluetoothConnHelper;
 import andraus.bluetoothkeybemu.helper.BluetoothConnHelperFactory;
 import andraus.bluetoothkeybemu.helper.CleanupExceptionHandler;
+import andraus.bluetoothkeybemu.sock.HidProtocolHelper;
+import andraus.bluetoothkeybemu.sock.SocketManager;
 import andraus.bluetoothkeybemu.util.DoLog;
 import andraus.bluetoothkeybemu.view.BluetoothDeviceView;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothSocket;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -30,7 +30,6 @@ import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
@@ -47,7 +46,6 @@ public class BluetoothKeybEmuActivity extends Activity {
 	
 	public static String TAG = "BluetoothKeyb";
 	
-	private static final int HANDLER_MONITOR_STOP = -1;
     private static final int HANDLER_MONITOR_SOCKET = 0;
     private static final int HANDLER_MONITOR_PAIRING = 1;
     private static final int HANDLER_CONNECT = 2;
@@ -68,16 +66,12 @@ public class BluetoothKeybEmuActivity extends Activity {
 	private TextView mCtrlTextView = null;
 	
 	private ImageView mTouchpadImageView = null;
-	private TouchpadListener mTouchpadListener = null;
 	
 	private BluetoothDeviceArrayAdapter mBluetoothDeviceArrayAdapter = null;
 	
 	private BluetoothAdapter mBluetoothAdapter = null;
 	
-	private BluetoothSocketThread mCtrlThread = null;
-	private BluetoothSocketThread mIntrThread = null;
-	
-	private final HidProtocolHelper mHidHelper = new HidProtocolHelper();
+	private SocketManager mSocketManager = null;
 	private BluetoothConnHelper mConnHelper = null;
 
 	/**
@@ -88,6 +82,9 @@ public class BluetoothKeybEmuActivity extends Activity {
         registerReceiver(mBluetoothReceiver, intentFilter);
 	}
 	
+	/**
+	 * 
+	 */
 	private void populateBluetoothDeviceCombo() {
 	    SharedPreferences pref = getSharedPreferences(PREF_FILE, MODE_PRIVATE);
         String storedDeviceAddr = pref.getString(PREF_KEY_DEVICE, null);
@@ -138,10 +135,14 @@ public class BluetoothKeybEmuActivity extends Activity {
 		mStatusTextView = (TextView) findViewById(R.id.StatusTextView);
 		
 		mTouchpadImageView = (ImageView) findViewById(R.id.TouchpadImageView);
+		mTouchpadImageView.setVisibility(ImageView.GONE);
 		
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        
+
         mConnHelper = BluetoothConnHelperFactory.getInstance(getApplicationContext());
+        
+        mSocketManager = new SocketManager(mConnHelper);
+        
         
         registerIntentFilters();
         
@@ -153,6 +154,10 @@ public class BluetoothKeybEmuActivity extends Activity {
         
 	}
 	
+	/**
+	 * Updates UI
+	 * @param state
+	 */
 	private void setStatusIconState(StatusIconStates state) {
 
 	    if (state == mStatusState) {
@@ -205,7 +210,10 @@ public class BluetoothKeybEmuActivity extends Activity {
 	    mStatusState = state;
 
 	}
-	
+
+	/**
+	 * Adapter view for paired devices
+	 */
 	AdapterView.OnItemSelectedListener mSelectDeviceListener = 
 			new AdapterView.OnItemSelectedListener() {
 
@@ -222,7 +230,7 @@ public class BluetoothKeybEmuActivity extends Activity {
 					mThreadMonitorHandler.removeMessages(HANDLER_MONITOR_SOCKET);
 					mThreadMonitorHandler.removeMessages(HANDLER_CONNECT);
 					
-					stopHidL2capSockets(true);
+					stopSockets(true);
 				}
 
 				@Override
@@ -233,8 +241,9 @@ public class BluetoothKeybEmuActivity extends Activity {
 		
 	};
 	
-	
-    /** Called when the activity is first created. */
+    /**
+     * 
+     */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -250,8 +259,9 @@ public class BluetoothKeybEmuActivity extends Activity {
         }
     }
     
-    
-    
+    /**
+     * 
+     */
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
@@ -259,8 +269,9 @@ public class BluetoothKeybEmuActivity extends Activity {
         return super.onCreateOptionsMenu(menu);
     }
     
-    
-
+    /**
+     * 
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
@@ -275,48 +286,49 @@ public class BluetoothKeybEmuActivity extends Activity {
         return super.onOptionsItemSelected(item);
     }
 
+    /**
+     * 
+     */
     @Override
     protected void onDestroy() {
         DoLog.d(TAG, "...being destroyed");
         unregisterReceiver(mBluetoothReceiver);
-        stopHidL2capSockets(false);
+        stopSockets(false);
         if (mConnHelper != null) {
             mConnHelper.cleanup();
         }
         
-        mCtrlThread = null;
-        mIntrThread = null;
+        mSocketManager.destroyThreads();
+        mSocketManager = null;
         
         super.onDestroy();
     }
     
-    
-    
-
+    /**
+     * key down
+     */
     @Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
-    	if (mIntrThread != null && mIntrThread.isAlive()) {
-    		byte[] payload = mHidHelper.payloadKeyb(keyCode);
-    		
-    		if (payload != null) {
-    		    mIntrThread.sendBytes(payload);
-    		}
-    	}
-		return super.onKeyDown(keyCode, event);
+        
+        mSocketManager.sendKeyCode(keyCode);
+		
+        return super.onKeyDown(keyCode, event);
 	}
 
+    /**
+     * key up
+     */
 	@Override
 	public boolean onKeyUp(int keyCode, KeyEvent event) {
-    	if (mIntrThread != null && mIntrThread.isAlive()) {
-    		byte[] payload = mHidHelper.payloadKeyb(HidProtocolHelper.NULL);
-    		
-    		if (payload != null) {
-    		    mIntrThread.sendBytes(payload);
-    		}
-    	}
-		return super.onKeyUp(keyCode, event);
+	    
+	    mSocketManager.sendKeyCode(HidProtocolHelper.NULL);
+
+	    return super.onKeyUp(keyCode, event);
 	}
 	
+	/**
+	 *
+	 */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 	    if (requestCode == BLUETOOTH_REQUEST_OK && resultCode == BLUETOOTH_DISCOVERABLE_DURATION) {
@@ -330,6 +342,9 @@ public class BluetoothKeybEmuActivity extends Activity {
         super.onActivityResult(requestCode, resultCode, data);
     }
 
+    /**
+     * 
+     */
     private void showNoBondedDevicesDialog() {
 	    DialogInterface.OnClickListener bondedDialogClickListener = new DialogInterface.OnClickListener() {
             
@@ -356,113 +371,53 @@ public class BluetoothKeybEmuActivity extends Activity {
 	}
 
 
-    private BluetoothSocketThread initThread(BluetoothSocketThread thread, String name, BluetoothDevice hostDevice, int socketPort) {
-        
-        BluetoothSocket socket;
-
-        try {
-            socket = mConnHelper.connectL2capSocket(hostDevice, socketPort, true, true);
-        } catch (IOException e) {
-            DoLog.e(TAG, String.format("Cannot acquire %sSocket", name), e);
-            throw new RuntimeException(e);
-        }
-        
-        if (socket != null) {
-            DoLog.d(TAG, String.format("%s socket successfully created: %s", name, socket));
-        }
-        return new BluetoothSocketThread(socket, name);
-    }
-    
-    private void startHidL2capSockets() {
-        
-    	Set<BluetoothDevice> pairedDevices = mBluetoothAdapter.getBondedDevices();
-    	
-    	if (pairedDevices.isEmpty()) {
-    		DoLog.w(TAG, "no paired devices found");
-    		return;
-    	}
-    	
-    	BluetoothDevice hostDevice = ((BluetoothDeviceView) mDeviceSpinner.getSelectedItem()).getBluetoothDevice();
-    	
-    	if (hostDevice == null) {
-    		DoLog.w(TAG, "no hosts not found");
-    		return;
-    	} else {
-    		DoLog.d(TAG, "host selected: " + hostDevice);
-    	}
-    
-    	// discovery is a heavy process. Apps must always cancel it when connecting.
-    	mBluetoothAdapter.cancelDiscovery();
-    	
-    	setStatusIconState(StatusIconStates.INTERMEDIATE);
-
-    	mCtrlThread = initThread(mCtrlThread, "ctrl", hostDevice, 0x11);
-    	mIntrThread = initThread(mIntrThread, "intr", hostDevice, 0x13);
-
-    	mCtrlThread.start();
-    	mIntrThread.start();
-    	
-    	mThreadMonitorHandler.sendEmptyMessageDelayed(HANDLER_MONITOR_SOCKET, 200);
-    	
-    	
-    }
-    
     /**
-     * Stop L2CAP "control" and "interrupt" channel threads
+     * Stop L2CAP HID connections
      */
-    private void stopHidL2capSockets(boolean reconnect) {
+    private void stopSockets(boolean reconnect) {
 
-		DoLog.d(TAG, "stop bt server");
-		
-        if (mIntrThread != null) {
-            mIntrThread.sendBytes(mHidHelper.disconnectReq());
-            mIntrThread.stopGracefully();
-            mIntrThread = null;
-        }
-
-        if (mCtrlThread != null) {
-			mCtrlThread.stopGracefully();
-			mCtrlThread = null;
-		}
+		mSocketManager.stopSockets();
 		
 		if (reconnect) {
 		    mThreadMonitorHandler.sendEmptyMessageDelayed(HANDLER_CONNECT, 1500 /*ms */);
 		} 
     }
     
-    private boolean testForState(int state) {
-        return mCtrlThread != null && (mCtrlThread.getConnectionState() == state || mIntrThread.getConnectionState() == state);
-    }
-    
-    private void monitorThreads() {
+    /**
+     * Check socket and connection states and update UI accordingly
+     */
+    private void monitorSocketStates() {
         
-    	if (testForState(BluetoothSocketThread.STATE_NONE) || testForState(BluetoothSocketThread.STATE_DROPPING)) {
+        if (mSocketManager == null) {
+            return;
+        }
+        SocketManager sm = mSocketManager;
+
+        if (sm.checkState(SocketManager.STATE_NONE) || sm.checkState(SocketManager.STATE_DROPPING)) {
     		mCtrlTextView.setText("a thread stopped");
     		
             mTouchpadImageView.setOnClickListener(null);
             mTouchpadImageView.setOnTouchListener(null);
 
-    	} else if (testForState(BluetoothSocketThread.STATE_WAITING)) {
+    	} else if (sm.checkState(SocketManager.STATE_WAITING)) {
             mCtrlTextView.setText("a thread waiting");
     		mThreadMonitorHandler.sendEmptyMessageDelayed(HANDLER_MONITOR_SOCKET, 1000 /*ms */);
 
-    	} else if (testForState(BluetoothSocketThread.STATE_DROPPED)) {
+    	} else if (sm.checkState(SocketManager.STATE_DROPPED)) {
             mCtrlTextView.setText("a thread dropped. retrying...");
-            int retryTime = mIntrThread.getSuggestedRetryTimeMs() > mCtrlThread.getSuggestedRetryTimeMs() 
-                    ? mIntrThread.getSuggestedRetryTimeMs() 
-                            : mCtrlThread.getSuggestedRetryTimeMs();
             
             mTouchpadImageView.setOnClickListener(null);
             mTouchpadImageView.setOnTouchListener(null);
 
             setStatusIconState(StatusIconStates.INTERMEDIATE);
-            mThreadMonitorHandler.sendEmptyMessageDelayed(HANDLER_CONNECT, retryTime);
+            
+            mThreadMonitorHandler.sendEmptyMessageDelayed(HANDLER_CONNECT, 5000 /*ms */);
     	
-    	} else if (testForState(BluetoothSocketThread.STATE_ACCEPTED)) {
+    	} else if (sm.checkState(SocketManager.STATE_ACCEPTED)) {
             mCtrlTextView.setText("a thread accepted");
     		setStatusIconState(StatusIconStates.ON);
     		
-    		TouchpadListener mTouchpadListener = new TouchpadListener(getApplicationContext(), mCtrlThread, mHidHelper);
+    		TouchpadListener mTouchpadListener = new TouchpadListener(getApplicationContext(), mSocketManager);
     	    mTouchpadImageView.setOnClickListener(mTouchpadListener);
     	    mTouchpadImageView.setOnTouchListener(mTouchpadListener);
     		
@@ -470,6 +425,9 @@ public class BluetoothKeybEmuActivity extends Activity {
     	}
     }
     
+    /**
+     * Main handler to deal with UI events
+     */
     private Handler mThreadMonitorHandler = new  Handler() {
 
     	@Override
@@ -479,7 +437,7 @@ public class BluetoothKeybEmuActivity extends Activity {
     	    
     	    switch (msg.what) {
     	    case HANDLER_MONITOR_SOCKET:
-    	        monitorThreads();
+    	        monitorSocketStates();
     			break;
     			
     	    case HANDLER_MONITOR_PAIRING:
@@ -493,12 +451,20 @@ public class BluetoothKeybEmuActivity extends Activity {
     	        break;
     	        
     	    case HANDLER_CONNECT:
-    	        startHidL2capSockets();
+    	        setStatusIconState(StatusIconStates.INTERMEDIATE);
+
+    	        mSocketManager.startSockets(mBluetoothAdapter, ((BluetoothDeviceView) mDeviceSpinner.getSelectedItem()).getBluetoothDevice());
+    	        
+    	        mThreadMonitorHandler.sendEmptyMessageDelayed(HANDLER_MONITOR_SOCKET, 200);
+
     	        break;
     		}
     	}
     };
     
+    /**
+     * Receive notification of bluetooth adapter being turned off
+     */
     private final BroadcastReceiver mBluetoothReceiver = new BroadcastReceiver() {
 
         @Override

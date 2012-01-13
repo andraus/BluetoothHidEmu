@@ -1,10 +1,11 @@
-package andraus.bluetoothkeybemu;
+package andraus.bluetoothkeybemu.sock;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 
+import andraus.bluetoothkeybemu.BluetoothKeybEmuActivity;
 import andraus.bluetoothkeybemu.util.DoLog;
 import android.view.KeyEvent;
 

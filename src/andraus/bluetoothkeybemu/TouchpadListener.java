@@ -1,5 +1,6 @@
 package andraus.bluetoothkeybemu;
 
+import andraus.bluetoothkeybemu.sock.SocketManager;
 import andraus.bluetoothkeybemu.util.DoLog;
 import android.content.Context;
 import android.view.GestureDetector;
@@ -12,9 +13,8 @@ public class TouchpadListener implements OnTouchListener, OnClickListener {
     
     private static final String TAG = BluetoothKeybEmuActivity.TAG;
 
-    private GestureDetector mGestureDetector;
-    private BluetoothSocketThread mSocketThread;
-    private HidProtocolHelper mHidHelper;
+    private GestureDetector mGestureDetector = null;
+    private SocketManager mSocketManager = null;
     
     private class LocalGestureDetector extends GestureDetector.SimpleOnGestureListener {
 
@@ -22,9 +22,9 @@ public class TouchpadListener implements OnTouchListener, OnClickListener {
         public boolean onScroll(MotionEvent e1, MotionEvent e2,
                 float distanceX, float distanceY) {
             DoLog.d(TAG, String.format("onScroll(%s,%s,%f, %f)", e1, e2, distanceX, distanceY));
-            if (mSocketThread != null) {
-                mSocketThread.sendBytes(mHidHelper.payloadMouse((int)distanceX, (int)distanceY));
-            }
+            
+            mSocketManager.sendPointerEvent((int) distanceX, (int) distanceY);
+            
             return super.onScroll(e1, e2, distanceX, distanceY);
         }
 
@@ -36,11 +36,10 @@ public class TouchpadListener implements OnTouchListener, OnClickListener {
         
     }
     
-    public TouchpadListener(Context context, BluetoothSocketThread socketThread, HidProtocolHelper hidHelper) {
+    public TouchpadListener(Context context, SocketManager socketManager) {
         super();
         mGestureDetector = new GestureDetector(context, new LocalGestureDetector());
-        mSocketThread = socketThread;
-        mHidHelper = hidHelper;
+        mSocketManager = socketManager;
     }
     
     

@@ -1,10 +1,11 @@
-package andraus.bluetoothkeybemu;
+package andraus.bluetoothkeybemu.sock;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
 
+import andraus.bluetoothkeybemu.BluetoothKeybEmuActivity;
 import andraus.bluetoothkeybemu.util.DoLog;
 import android.bluetooth.BluetoothSocket;
 
