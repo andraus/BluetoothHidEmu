@@ -5,6 +5,7 @@ import java.util.Set;
 
 import andraus.bluetoothkeybemu.BluetoothKeybEmuActivity;
 import andraus.bluetoothkeybemu.helper.BluetoothConnHelper;
+import andraus.bluetoothkeybemu.sock.HidProtocolHelper.KeybModifiers;
 import andraus.bluetoothkeybemu.util.DoLog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -50,10 +51,10 @@ public class SocketManager {
      * 
      * @param keyCode
      */
-    public void sendKeyCode(int keyCode) {
+    public void sendKeyCode(int keyCode, KeybModifiers keyModifier) {
 
         if (mIntrThread != null && mIntrThread.isAlive()) {
-            byte[] payload = mHidHelper.payloadKeyb(keyCode);
+            byte[] payload = mHidHelper.payloadKeyb(keyCode, keyModifier);
             
             if (payload != null) {
                 mIntrThread.sendBytes(payload);

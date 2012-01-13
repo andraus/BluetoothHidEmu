@@ -9,6 +9,7 @@ import andraus.bluetoothkeybemu.helper.BluetoothConnHelper;
 import andraus.bluetoothkeybemu.helper.BluetoothConnHelperFactory;
 import andraus.bluetoothkeybemu.helper.CleanupExceptionHandler;
 import andraus.bluetoothkeybemu.sock.HidProtocolHelper;
+import andraus.bluetoothkeybemu.sock.HidProtocolHelper.KeybModifiers;
 import andraus.bluetoothkeybemu.sock.SocketManager;
 import andraus.bluetoothkeybemu.util.DoLog;
 import andraus.bluetoothkeybemu.view.BluetoothDeviceView;
@@ -57,7 +58,6 @@ public class BluetoothKeybEmuActivity extends Activity {
 	private static int BLUETOOTH_DISCOVERABLE_DURATION = 300;
 	
 	private enum StatusIconStates { OFF, ON, INTERMEDIATE };
-	
 	private StatusIconStates mStatusState = StatusIconStates.OFF;
 	
 	private TextView mStatusTextView = null;
@@ -310,7 +310,11 @@ public class BluetoothKeybEmuActivity extends Activity {
     @Override
 	public boolean onKeyDown(int keyCode, KeyEvent event) {
         
-        mSocketManager.sendKeyCode(keyCode);
+        KeybModifiers keybModifier =  event.isShiftPressed() ? KeybModifiers.SHIFT : KeybModifiers.NONE;
+        
+        if (keyCode != KeyEvent.KEYCODE_SHIFT_LEFT) {
+            mSocketManager.sendKeyCode(keyCode, keybModifier);
+        }
 		
         return super.onKeyDown(keyCode, event);
 	}
@@ -321,7 +325,7 @@ public class BluetoothKeybEmuActivity extends Activity {
 	@Override
 	public boolean onKeyUp(int keyCode, KeyEvent event) {
 	    
-	    mSocketManager.sendKeyCode(HidProtocolHelper.NULL);
+	    mSocketManager.sendKeyCode(HidProtocolHelper.NULL, KeybModifiers.NONE);
 
 	    return super.onKeyUp(keyCode, event);
 	}
