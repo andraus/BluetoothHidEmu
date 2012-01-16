@@ -8,7 +8,6 @@ import java.util.Set;
 import andraus.bluetoothkeybemu.helper.BluetoothConnHelper;
 import andraus.bluetoothkeybemu.helper.BluetoothConnHelperFactory;
 import andraus.bluetoothkeybemu.helper.CleanupExceptionHandler;
-import andraus.bluetoothkeybemu.sock.HidProtocolManager;
 import andraus.bluetoothkeybemu.sock.SocketManager;
 import andraus.bluetoothkeybemu.util.DoLog;
 import andraus.bluetoothkeybemu.view.BluetoothDeviceView;
@@ -26,7 +25,7 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.view.KeyEvent;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -34,8 +33,10 @@ import android.view.View;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.DecelerateInterpolator;
+import android.view.inputmethod.EditorInfo;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.SpinnerAdapter;
@@ -64,6 +65,7 @@ public class BluetoothKeybEmuActivity extends Activity {
 	
 	private TextView mCtrlTextView = null;
 	
+	private EditText mEchoEditText = null;
 	private ImageView mTouchpadImageView = null;
 	
 	private BluetoothDeviceArrayAdapter mBluetoothDeviceArrayAdapter = null;
@@ -136,6 +138,15 @@ public class BluetoothKeybEmuActivity extends Activity {
 		mTouchpadImageView = (ImageView) findViewById(R.id.TouchpadImageView);
 		mTouchpadImageView.setVisibility(ImageView.GONE);
 		
+		mEchoEditText = (EditText) findViewById(R.id.EchoEditText);
+		mEchoEditText.setVisibility(EditText.GONE);
+		mEchoEditText.setCursorVisible(false);
+		mEchoEditText.setGravity(Gravity.CENTER);
+		
+        mEchoEditText.setKeyListener(new KeyboardKeyListener());
+		mEchoEditText.addTextChangedListener(new KeyboardTextWatcher());
+		mEchoEditText.setImeOptions(EditorInfo.IME_FLAG_NO_EXTRACT_UI);
+
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
 
         mConnHelper = BluetoothConnHelperFactory.getInstance(getApplicationContext());
@@ -176,6 +187,9 @@ public class BluetoothKeybEmuActivity extends Activity {
 	        
 	        mTouchpadImageView.setVisibility(ImageView.VISIBLE);
 	        
+	        mEchoEditText.setVisibility(EditText.VISIBLE);
+	        mEchoEditText.requestFocus();
+	        
 	        break;
 	    case OFF:
             if ((animation = mStatusTextView.getAnimation()) != null) {
@@ -187,6 +201,9 @@ public class BluetoothKeybEmuActivity extends Activity {
             mStatusTextView.setText(getResources().getString(R.string.msg_status_disconnected));
             
             mTouchpadImageView.setVisibility(ImageView.GONE);
+            
+            mEchoEditText.setVisibility(EditText.GONE);
+
 	        break;
 	    case INTERMEDIATE:
 	        
@@ -203,6 +220,8 @@ public class BluetoothKeybEmuActivity extends Activity {
             mStatusTextView.startAnimation(alphaAnim);
             
             mTouchpadImageView.setVisibility(ImageView.GONE);
+            
+            mEchoEditText.setVisibility(EditText.GONE);
             
 	        break;
 	    }
@@ -303,34 +322,6 @@ public class BluetoothKeybEmuActivity extends Activity {
         super.onDestroy();
     }
     
-    /**
-     * key down
-     */
-    @Override
-	public boolean onKeyDown(int keyCode, KeyEvent event) {
-        
-        if (keyCode == KeyEvent.KEYCODE_SHIFT_LEFT || keyCode == KeyEvent.KEYCODE_SHIFT_RIGHT) {
-            mSocketManager.toggleKeyboardShift();
-        } else {
-            mSocketManager.sendKeyCode(keyCode);
-        }
-		
-        return super.onKeyDown(keyCode, event);
-	}
-
-    /**
-     * key up
-     */
-	@Override
-	public boolean onKeyUp(int keyCode, KeyEvent event) {
-	    
-	    if (keyCode != KeyEvent.KEYCODE_SHIFT_LEFT && keyCode != KeyEvent.KEYCODE_SHIFT_RIGHT) {
-	        mSocketManager.sendKeyCode(HidProtocolManager.NULL);
-	    }
-
-	    return super.onKeyUp(keyCode, event);
-	}
-	
 	/**
 	 *
 	 */
