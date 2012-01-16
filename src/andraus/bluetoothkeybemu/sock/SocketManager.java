@@ -5,7 +5,6 @@ import java.util.Set;
 
 import andraus.bluetoothkeybemu.BluetoothKeybEmuActivity;
 import andraus.bluetoothkeybemu.helper.BluetoothConnHelper;
-import andraus.bluetoothkeybemu.sock.HidProtocolHelper.KeybModifiers;
 import andraus.bluetoothkeybemu.util.DoLog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -26,7 +25,7 @@ public class SocketManager {
     private BluetoothSocketThread mCtrlThread = null;
     private BluetoothSocketThread mIntrThread = null;
     
-    private final HidProtocolHelper mHidHelper = new HidProtocolHelper();
+    private final HidProtocolManager mHidManager = HidProtocolManager.getInstance();
 
     /**
      * 
@@ -51,21 +50,28 @@ public class SocketManager {
      * 
      * @param keyCode
      */
-    public void sendKeyCode(int keyCode, KeybModifiers keyModifier) {
+    public void sendKeyCode(int keyCode) {
 
         if (mIntrThread != null && mIntrThread.isAlive()) {
-            byte[] payload = mHidHelper.payloadKeyb(keyCode, keyModifier);
+            byte[] payload = mHidManager.payloadKeyb(keyCode);
             
             if (payload != null) {
                 mIntrThread.sendBytes(payload);
             }
         }
     }
+
+    /**
+     * 
+     */
+    public void toggleKeyboardShift() {
+        mHidManager.toggleKeyboardShift();
+    }
     
     public void sendPointerEvent(int x, int y) {
         
         if (mIntrThread != null && mIntrThread.isAlive()) {
-            byte[] payload = mHidHelper.payloadMouse(x, y);
+            byte[] payload = mHidManager.payloadMouse(x, y);
             
             if (payload != null) {
                 mIntrThread.sendBytes(payload);
@@ -140,7 +146,7 @@ public class SocketManager {
         DoLog.d(TAG, "stop bluetooth connections");
         
         if (mIntrThread != null) {
-            mIntrThread.sendBytes(mHidHelper.disconnectReq());
+            mIntrThread.sendBytes(mHidManager.disconnectReq());
             mIntrThread.stopGracefully();
             mIntrThread = null;
         }

@@ -9,24 +9,32 @@ import andraus.bluetoothkeybemu.BluetoothKeybEmuActivity;
 import andraus.bluetoothkeybemu.util.DoLog;
 import android.view.KeyEvent;
 
-public class HidProtocolHelper {
+public class HidProtocolManager {
     
-    public enum KeybModifiers { NONE, SHIFT };
+    public enum KeybShiftModifier { NONE, SHIFT_ONCE, SHIFT_ALWAYS };
+    
+    // Singleton instance
+    private static final HidProtocolManager mInstance = new HidProtocolManager();
     
     private static final String TAG = BluetoothKeybEmuActivity.TAG;
     
+    private KeybShiftModifier mShiftModifier = KeybShiftModifier.NONE;
+    
     public static final int NULL = 0x00;
     
-    private static final Map<KeybModifiers, Integer> KEY_HID_MODF_MAP;
+    // Static map for HID modifiers
+    private static final Map<KeybShiftModifier, Integer> KEY_HID_MODF_MAP;
     static {
-        Map<KeybModifiers, Integer>keyHidModifierMap = new HashMap<KeybModifiers, Integer>();
+        Map<KeybShiftModifier, Integer>keyHidModifierMap = new HashMap<KeybShiftModifier, Integer>();
         
-        keyHidModifierMap.put(KeybModifiers.NONE, NULL);
-        keyHidModifierMap.put(KeybModifiers.SHIFT, 0x02);
+        keyHidModifierMap.put(KeybShiftModifier.NONE, NULL);
+        keyHidModifierMap.put(KeybShiftModifier.SHIFT_ONCE, 0x02);
+        keyHidModifierMap.put(KeybShiftModifier.SHIFT_ALWAYS, 0x02);
         
         KEY_HID_MODF_MAP = Collections.unmodifiableMap(keyHidModifierMap);
     }
     
+    // Static map for keys
     private static final Map<Integer, Integer> KEY_HID_MAP;
     static {
         Map<Integer, Integer>keyHidMap = new HashMap<Integer, Integer>();
@@ -86,13 +94,43 @@ public class HidProtocolHelper {
     }
     
     /**
+     *
+     * @return
+     */
+    public static HidProtocolManager getInstance() {
+        return mInstance;
+    }
+
+    /**
+     * private constructor - singleton
+     */
+    private HidProtocolManager() {
+        super();
+    }
+
+    /**
+     * Toggle shift
+     */
+    public void toggleKeyboardShift() {
+        // retrieve the next enum, wrapping to begginning if it's the last one.
+        mShiftModifier = KeybShiftModifier.values()[(mShiftModifier.ordinal() + 1) % KeybShiftModifier.values().length];
+        
+        DoLog.d(TAG, "shift = " + mShiftModifier);
+    }
+    
+    /**
      * Assemble a HID payload byte array for specified character
      * @param keyCode - Android framework keycode
      * @return
      */
-    public byte[] payloadKeyb(int keyCode, KeybModifiers modifier) {
+    public byte[] payloadKeyb(int keyCode) {
         
-        Integer modCode = KEY_HID_MODF_MAP.get(modifier);
+        Integer modCode = KEY_HID_MODF_MAP.get(mShiftModifier);
+        
+        if (mShiftModifier == KeybShiftModifier.SHIFT_ONCE) {
+            mShiftModifier = KeybShiftModifier.NONE;
+        }
+        
         Integer hidCode = KEY_HID_MAP.get(Integer.valueOf(keyCode));
         
         if (hidCode == null) {
