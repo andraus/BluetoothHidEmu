@@ -10,9 +10,15 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 
+/**
+ * Singleton
+ * 
+ */
 public class SocketManager {
     
     private String TAG = BluetoothKeybEmuActivity.TAG;
+    
+    private static SocketManager mInstance = null;
     
     public static final int STATE_NONE = BluetoothSocketThread.STATE_NONE;
     public static final int STATE_WAITING = BluetoothSocketThread.STATE_WAITING;
@@ -32,8 +38,21 @@ public class SocketManager {
      * @param bluetoothAdapter
      * @param connHelper
      */
-    public SocketManager(BluetoothConnHelper connHelper) {
+    private SocketManager(BluetoothConnHelper connHelper) {
         mConnHelper = connHelper;
+    }
+
+    /**
+     * 
+     * @param connHelper
+     * @return
+     */
+    public static SocketManager getInstance(BluetoothConnHelper connHelper) {
+        if (mInstance == null) {
+            mInstance = new SocketManager(connHelper);
+        }
+        
+        return mInstance;
     }
 
 
@@ -50,10 +69,10 @@ public class SocketManager {
      * 
      * @param keyCode
      */
-    public void sendKeyCode(int keyCode) {
+    public void sendChar(char character) {
 
         if (mIntrThread != null && mIntrThread.isAlive()) {
-            byte[] payload = mHidManager.payloadKeyb(keyCode);
+            byte[] payload = mHidManager.payloadKeyb(character);
             
             if (payload != null) {
                 mIntrThread.sendBytes(payload);
@@ -63,11 +82,9 @@ public class SocketManager {
 
     /**
      * 
+     * @param x
+     * @param y
      */
-    public void toggleKeyboardShift() {
-        mHidManager.toggleKeyboardShift();
-    }
-    
     public void sendPointerEvent(int x, int y) {
         
         if (mIntrThread != null && mIntrThread.isAlive()) {

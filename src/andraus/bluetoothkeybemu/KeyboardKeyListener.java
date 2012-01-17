@@ -1,5 +1,7 @@
 package andraus.bluetoothkeybemu;
 
+import andraus.bluetoothkeybemu.sock.HidByteSet;
+import andraus.bluetoothkeybemu.sock.SocketManager;
 import andraus.bluetoothkeybemu.util.DoLog;
 import android.text.Editable;
 import android.text.InputType;
@@ -8,18 +10,23 @@ import android.text.method.TextKeyListener;
 import android.text.method.TextKeyListener.Capitalize;
 import android.view.KeyEvent;
 import android.view.View;
-import android.widget.EditText;
 
+/**
+ * KeyListener to monitor keypresses
+ */
 public class KeyboardKeyListener implements KeyListener {
     
     private static final String TAG = BluetoothKeybEmuActivity.TAG;
     
+    private SocketManager mSocketManager = null;
+    
     private TextKeyListener mTextKeyListener = null;
     
-    public KeyboardKeyListener() {
+    public KeyboardKeyListener(SocketManager socketManager) {
         super();
         
         mTextKeyListener = new TextKeyListener(Capitalize.NONE, false);
+        mSocketManager = socketManager;
         
     }
 
@@ -41,7 +48,10 @@ public class KeyboardKeyListener implements KeyListener {
         
         case KeyEvent.KEYCODE_ENTER:
             TextKeyListener.clear(content);
-            return false;
+            mSocketManager.sendChar(HidByteSet.ENTER);
+            return true;
+        case KeyEvent.KEYCODE_DEL:
+            mSocketManager.sendChar(HidByteSet.DEL);
         default:
             return mTextKeyListener.onKeyDown(view, content, keyCode, event);
         }
@@ -56,6 +66,10 @@ public class KeyboardKeyListener implements KeyListener {
     @Override
     public boolean onKeyUp(View view, Editable content, int keyCode, KeyEvent event) {
         DoLog.d(TAG, "onkeyUp()");
+        
+        if (keyCode == KeyEvent.KEYCODE_ENTER || keyCode == KeyEvent.KEYCODE_DEL) {
+            mSocketManager.sendChar(Character.MIN_VALUE);
+        }
         return mTextKeyListener.onKeyUp(view, content, keyCode, event);
     }
 

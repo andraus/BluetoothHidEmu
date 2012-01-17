@@ -49,17 +49,19 @@
         android:typeface="monospace"
         android:textAppearance="?android:attr/textAppearanceLarge" />
 
-    <EditText
+    <andraus.bluetoothkeybemu.EchoEditText
         android:id="@+id/EchoEditText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:layout_gravity="center"
         android:textStyle="bold"
+        android:maxLines="1"
+        android:scrollHorizontally="true"
         android:textAppearance="?android:attr/textAppearanceLarge">
 
         <requestFocus />
-    </EditText>
+    </andraus.bluetoothkeybemu.EchoEditText>
     
     </LinearLayout>
     

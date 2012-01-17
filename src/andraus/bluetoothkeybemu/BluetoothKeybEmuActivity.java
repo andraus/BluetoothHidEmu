@@ -65,7 +65,7 @@ public class BluetoothKeybEmuActivity extends Activity {
 	
 	private TextView mCtrlTextView = null;
 	
-	private EditText mEchoEditText = null;
+	private EchoEditText mEchoEditText = null;
 	private ImageView mTouchpadImageView = null;
 	
 	private BluetoothDeviceArrayAdapter mBluetoothDeviceArrayAdapter = null;
@@ -130,7 +130,12 @@ public class BluetoothKeybEmuActivity extends Activity {
 	 */
 	private void setupApp() {
 		setContentView(R.layout.main);
-		mCtrlTextView = (TextView) findViewById(R.id.CtrlTextView);
+
+        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        mConnHelper = BluetoothConnHelperFactory.getInstance(getApplicationContext());
+        mSocketManager = SocketManager.getInstance(mConnHelper);
+
+        mCtrlTextView = (TextView) findViewById(R.id.CtrlTextView);
 		
 		mDeviceSpinner = (Spinner) findViewById(R.id.DeviceSpinner);
 		mStatusTextView = (TextView) findViewById(R.id.StatusTextView);
@@ -138,20 +143,23 @@ public class BluetoothKeybEmuActivity extends Activity {
 		mTouchpadImageView = (ImageView) findViewById(R.id.TouchpadImageView);
 		mTouchpadImageView.setVisibility(ImageView.GONE);
 		
-		mEchoEditText = (EditText) findViewById(R.id.EchoEditText);
+		mEchoEditText = (EchoEditText) findViewById(R.id.EchoEditText);
 		mEchoEditText.setVisibility(EditText.GONE);
-		mEchoEditText.setCursorVisible(false);
 		mEchoEditText.setGravity(Gravity.CENTER);
+        mEchoEditText.setImeOptions(EditorInfo.IME_FLAG_NO_EXTRACT_UI);
 		
-        mEchoEditText.setKeyListener(new KeyboardKeyListener());
-		mEchoEditText.addTextChangedListener(new KeyboardTextWatcher());
-		mEchoEditText.setImeOptions(EditorInfo.IME_FLAG_NO_EXTRACT_UI);
+        /*
+         * EchoEditText needs both listeners below:
+         * KeyboardKeyListener is used to intercept special key events - enter, backspace, etc.
+         * KeyboardTextWatcher is used to intercept regular text keys.
+         * 
+         * I would love to only use one of them, but unfortunately, it's not reliable.
+         * 
+         */
+        mEchoEditText.setKeyListener(new KeyboardKeyListener(mSocketManager));
+        mEchoEditText.addTextChangedListener(new KeyboardTextWatcher(mSocketManager));
+		
 
-        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-
-        mConnHelper = BluetoothConnHelperFactory.getInstance(getApplicationContext());
-        
-        mSocketManager = new SocketManager(mConnHelper);
         
         
         registerIntentFilters();
