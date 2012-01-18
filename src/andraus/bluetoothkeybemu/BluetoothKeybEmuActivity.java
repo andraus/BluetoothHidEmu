@@ -63,8 +63,6 @@ public class BluetoothKeybEmuActivity extends Activity {
 	private TextView mStatusTextView = null;
 	private Spinner mDeviceSpinner = null;
 	
-	private TextView mCtrlTextView = null;
-	
 	private EchoEditText mEchoEditText = null;
 	private ImageView mTouchpadImageView = null;
 	
@@ -135,8 +133,6 @@ public class BluetoothKeybEmuActivity extends Activity {
         mConnHelper = BluetoothConnHelperFactory.getInstance(getApplicationContext());
         mSocketManager = SocketManager.getInstance(mConnHelper);
 
-        mCtrlTextView = (TextView) findViewById(R.id.CtrlTextView);
-		
 		mDeviceSpinner = (Spinner) findViewById(R.id.DeviceSpinner);
 		mStatusTextView = (TextView) findViewById(R.id.StatusTextView);
 		
@@ -398,16 +394,14 @@ public class BluetoothKeybEmuActivity extends Activity {
         SocketManager sm = mSocketManager;
 
         if (sm.checkState(SocketManager.STATE_NONE) || sm.checkState(SocketManager.STATE_DROPPING)) {
-    		mCtrlTextView.setText("a thread stopped");
     		
             mTouchpadImageView.setOnTouchListener(null);
 
     	} else if (sm.checkState(SocketManager.STATE_WAITING)) {
-            mCtrlTextView.setText("a thread waiting");
-    		mThreadMonitorHandler.sendEmptyMessageDelayed(HANDLER_MONITOR_SOCKET, 1000 /*ms */);
+
+    	    mThreadMonitorHandler.sendEmptyMessageDelayed(HANDLER_MONITOR_SOCKET, 1000 /*ms */);
 
     	} else if (sm.checkState(SocketManager.STATE_DROPPED)) {
-            mCtrlTextView.setText("a thread dropped. retrying...");
             
             mTouchpadImageView.setOnTouchListener(null);
 
@@ -416,8 +410,8 @@ public class BluetoothKeybEmuActivity extends Activity {
             mThreadMonitorHandler.sendEmptyMessageDelayed(HANDLER_CONNECT, 5000 /*ms */);
     	
     	} else if (sm.checkState(SocketManager.STATE_ACCEPTED)) {
-            mCtrlTextView.setText("a thread accepted");
-    		setStatusIconState(StatusIconStates.ON);
+
+    	    setStatusIconState(StatusIconStates.ON);
     		
     		TouchpadListener mTouchpadListener = new TouchpadListener(getApplicationContext(), mSocketManager);
     	    mTouchpadImageView.setOnTouchListener(mTouchpadListener);

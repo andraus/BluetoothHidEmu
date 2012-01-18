@@ -41,14 +41,6 @@
                   android:paddingLeft="10dp"
                   android:paddingRight="10dp" >
 
-    <TextView
-        android:id="@+id/CtrlTextView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:textStyle="bold"
-        android:typeface="monospace"
-        android:textAppearance="?android:attr/textAppearanceLarge" />
-
     <andraus.bluetoothkeybemu.EchoEditText
         android:id="@+id/EchoEditText"
         android:layout_width="match_parent"
@@ -58,7 +50,7 @@
         android:textStyle="bold"
         android:maxLines="1"
         android:scrollHorizontally="true"
-        android:textAppearance="?android:attr/textAppearanceLarge">
+        style="@android:style/TextAppearance.Medium.Inverse">
 
         <requestFocus />
     </andraus.bluetoothkeybemu.EchoEditText>
