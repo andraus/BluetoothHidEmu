@@ -400,7 +400,6 @@ public class BluetoothKeybEmuActivity extends Activity {
         if (sm.checkState(SocketManager.STATE_NONE) || sm.checkState(SocketManager.STATE_DROPPING)) {
     		mCtrlTextView.setText("a thread stopped");
     		
-            mTouchpadImageView.setOnClickListener(null);
             mTouchpadImageView.setOnTouchListener(null);
 
     	} else if (sm.checkState(SocketManager.STATE_WAITING)) {
@@ -410,7 +409,6 @@ public class BluetoothKeybEmuActivity extends Activity {
     	} else if (sm.checkState(SocketManager.STATE_DROPPED)) {
             mCtrlTextView.setText("a thread dropped. retrying...");
             
-            mTouchpadImageView.setOnClickListener(null);
             mTouchpadImageView.setOnTouchListener(null);
 
             setStatusIconState(StatusIconStates.INTERMEDIATE);
@@ -422,7 +420,6 @@ public class BluetoothKeybEmuActivity extends Activity {
     		setStatusIconState(StatusIconStates.ON);
     		
     		TouchpadListener mTouchpadListener = new TouchpadListener(getApplicationContext(), mSocketManager);
-    	    mTouchpadImageView.setOnClickListener(mTouchpadListener);
     	    mTouchpadImageView.setOnTouchListener(mTouchpadListener);
     		
     		mThreadMonitorHandler.sendEmptyMessageDelayed(HANDLER_MONITOR_SOCKET, 200 /*ms */);

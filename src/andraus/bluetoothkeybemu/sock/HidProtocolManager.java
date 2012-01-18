@@ -9,15 +9,18 @@ import andraus.bluetoothkeybemu.util.DoLog;
 
 public class HidProtocolManager {
     
-    public enum KeybShiftModifier { NONE, SHIFT };
-    
     // Singleton instance
     private static final HidProtocolManager mInstance = new HidProtocolManager();
     
     private static final String TAG = BluetoothKeybEmuActivity.TAG;
     
+    private static final int PROTO_KEYBOARD = 0x01;
+    private static final int PROTO_MOUSE = 0x02;
+    
     private static final int MODF_NULL = 0x00;
     private static final int MODF_SHIFT = 0x02;
+    
+    public static final int MAX_POINTER_MOVE = 0x7f;
 
     // Static map for keys
     private static final Map<Character, HidByteSet> KEY_HID_MAP;
@@ -156,7 +159,7 @@ public class HidProtocolManager {
         byte[] bytes = new byte[10];
         
         bytes[0] = (byte)0xa1;
-        bytes[1] = (byte)0x01;                  // report_id (keyboard)
+        bytes[1] = (byte)PROTO_KEYBOARD;        // report_id (keyboard)
         bytes[2] = (byte)hidByteSet.getMod();   // modifier
         bytes[3] = (byte)0x00;                  // reserved
         bytes[4] = (byte)hidByteSet.getCode();  // keycode
@@ -170,14 +173,17 @@ public class HidProtocolManager {
     }
     
     public byte[] payloadMouse(int x, int y) {
-        byte[] bytes = new byte[6];
         
+        //A1 02 00 1B 5A 00 29 D2 08 06
+        
+        byte[] bytes = new byte[6];
+
         bytes[0] = (byte)0xa1;
-        bytes[1] = (byte)0x02; // report_id (mouse)
-        bytes[2] = (byte)0x00; // button
+        bytes[1] = (byte)PROTO_MOUSE; // report_id (mouse)
+        bytes[2] = (byte)0x00;        // button
         bytes[3] = (byte)x;
         bytes[4] = (byte)y;
-        bytes[5] = (byte)0x00; // wheel
+        bytes[5] = (byte)0x00;        // wheel
         
         return bytes;
     }
