@@ -6,6 +6,6 @@
               android:layout_height="match_parent"
               android:gravity="center"
               android:typeface="monospace"
-              android:textSize="17dp"
+              android:textSize="13dp"
               android:textStyle="italic"
               android:layout_gravity="left"/>

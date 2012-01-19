@@ -20,7 +20,7 @@
             android:shadowDy="0.0"
             android:shadowRadius="6"
             android:text="@string/msg_status_disconnected"
-            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textAppearance="?android:attr/textAppearanceSmall"
             android:textColor="#ffff0000"
             android:textStyle="bold"
             android:typeface="monospace" />
@@ -28,7 +28,7 @@
         <Spinner
             android:id="@+id/DeviceSpinner"
             android:layout_width="fill_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="35dp"
             android:layout_weight="0.35"
             android:drawSelectorOnTop="true"
             android:prompt="@string/device_prompt"  />
@@ -44,13 +44,13 @@
     <andraus.bluetoothkeybemu.EchoEditText
         android:id="@+id/EchoEditText"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="35dp"
         android:layout_weight="1"
         android:layout_gravity="center"
-        android:textStyle="bold"
+        android:textStyle="normal"
         android:maxLines="1"
         android:scrollHorizontally="true"
-        style="@android:style/TextAppearance.Medium.Inverse">
+        android:textAppearance="?android:attr/textAppearanceSmall">
 
         <requestFocus />
     </andraus.bluetoothkeybemu.EchoEditText>
