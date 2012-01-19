@@ -21,6 +21,10 @@ public class HidProtocolManager {
     private static final int MODF_SHIFT = 0x02;
     
     public static final int MAX_POINTER_MOVE = 0x7f;
+    
+    public static final int MOUSE_BUTTON_NONE = 0x00;
+    public static final int MOUSE_BUTTON_1 = 0x01;
+    public static final int MOUSE_BUTTON_2 = 0x02;
 
     // Static map for keys
     private static final Map<Character, HidByteSet> KEY_HID_MAP;
@@ -172,7 +176,7 @@ public class HidProtocolManager {
         return bytes;
     }
     
-    public byte[] payloadMouse(int x, int y) {
+    public byte[] payloadMouse(int button, int x, int y) {
         
         //A1 02 00 1B 5A 00 29 D2 08 06
         
@@ -180,7 +184,7 @@ public class HidProtocolManager {
 
         bytes[0] = (byte)0xa1;
         bytes[1] = (byte)PROTO_MOUSE; // report_id (mouse)
-        bytes[2] = (byte)0x00;        // button
+        bytes[2] = (byte)button;
         bytes[3] = (byte)x;
         bytes[4] = (byte)y;
         bytes[5] = (byte)0x00;        // wheel

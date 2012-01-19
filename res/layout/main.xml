@@ -57,16 +57,53 @@
     
     </LinearLayout>
     
-    <LinearLayout android:layout_width="match_parent"
-                  android:layout_height="match_parent"
-                  android:padding="15dp">
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="fill_parent"
+        android:weightSum="4"
+        android:orientation="vertical" >
 
         <ImageView
             android:id="@+id/TouchpadImageView"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:paddingLeft="10dp"
+            android:paddingRight="10dp"
             android:src="@drawable/touchpad_shape" />
         
+        <LinearLayout android:id="@+id/linearLayout1"
+                      android:layout_width="match_parent"
+                      android:layout_height="match_parent"
+                      android:paddingLeft="10dp"
+                      android:paddingRight="10dp"
+                      android:paddingBottom="10dp"
+                      android:layout_alignParentBottom="true" >
+        
+                    <ImageView android:id="@+id/LeftButtonImageView"
+                               android:layout_width="fill_parent"
+                               android:layout_height="80dp"
+                               android:layout_weight="1.25"
+                               android:paddingTop="8dp"
+                               android:paddingLeft="8dp"
+                               android:paddingRight="8dp"
+                               android:paddingBottom="18dp"
+                               android:src="@drawable/mouse_button_shape" />
+                    
+                    <ImageView android:id="@+id/RightButtonImageView"
+                               android:layout_width="fill_parent"
+                               android:layout_height="80dp"
+                               android:layout_weight="1.25"
+                               android:paddingTop="8dp"
+                               android:paddingLeft="8dp"
+                               android:paddingRight="8dp"
+                               android:paddingBottom="18dp"
+                               android:src="@drawable/mouse_button_shape" />
+                    
+            
+        </LinearLayout>
+        
     </LinearLayout>
+
     
 </LinearLayout>

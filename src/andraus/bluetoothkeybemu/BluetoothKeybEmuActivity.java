@@ -65,6 +65,8 @@ public class BluetoothKeybEmuActivity extends Activity {
 	
 	private EchoEditText mEchoEditText = null;
 	private ImageView mTouchpadImageView = null;
+	private ImageView mLeftButtonImageView = null;
+	private ImageView mRightButtonImageView = null;
 	
 	private BluetoothDeviceArrayAdapter mBluetoothDeviceArrayAdapter = null;
 	
@@ -138,6 +140,10 @@ public class BluetoothKeybEmuActivity extends Activity {
 		
 		mTouchpadImageView = (ImageView) findViewById(R.id.TouchpadImageView);
 		mTouchpadImageView.setVisibility(ImageView.GONE);
+		mLeftButtonImageView = (ImageView) findViewById(R.id.LeftButtonImageView);
+		mLeftButtonImageView.setVisibility(ImageView.GONE);
+		mRightButtonImageView = (ImageView) findViewById(R.id.RightButtonImageView);
+		mRightButtonImageView.setVisibility(ImageView.GONE);
 		
 		mEchoEditText = (EchoEditText) findViewById(R.id.EchoEditText);
 		mEchoEditText.setVisibility(EditText.GONE);
@@ -190,6 +196,8 @@ public class BluetoothKeybEmuActivity extends Activity {
 	        mStatusTextView.setText(getResources().getString(R.string.msg_status_connected));
 	        
 	        mTouchpadImageView.setVisibility(ImageView.VISIBLE);
+	        mLeftButtonImageView.setVisibility(ImageView.VISIBLE);
+	        mRightButtonImageView.setVisibility(ImageView.VISIBLE);
 	        
 	        mEchoEditText.setVisibility(EditText.VISIBLE);
 	        mEchoEditText.requestFocus();
@@ -205,6 +213,8 @@ public class BluetoothKeybEmuActivity extends Activity {
             mStatusTextView.setText(getResources().getString(R.string.msg_status_disconnected));
             
             mTouchpadImageView.setVisibility(ImageView.GONE);
+            mLeftButtonImageView.setVisibility(ImageView.GONE);
+            mRightButtonImageView.setVisibility(ImageView.GONE);
             
             mEchoEditText.setVisibility(EditText.GONE);
 
@@ -224,6 +234,8 @@ public class BluetoothKeybEmuActivity extends Activity {
             mStatusTextView.startAnimation(alphaAnim);
             
             mTouchpadImageView.setVisibility(ImageView.GONE);
+            mLeftButtonImageView.setVisibility(ImageView.GONE);
+            mRightButtonImageView.setVisibility(ImageView.GONE);
             
             mEchoEditText.setVisibility(EditText.GONE);
             
@@ -396,6 +408,8 @@ public class BluetoothKeybEmuActivity extends Activity {
         if (sm.checkState(SocketManager.STATE_NONE) || sm.checkState(SocketManager.STATE_DROPPING)) {
     		
             mTouchpadImageView.setOnTouchListener(null);
+            mLeftButtonImageView.setOnTouchListener(null);
+            mRightButtonImageView.setOnTouchListener(null);
 
     	} else if (sm.checkState(SocketManager.STATE_WAITING)) {
 
@@ -404,6 +418,8 @@ public class BluetoothKeybEmuActivity extends Activity {
     	} else if (sm.checkState(SocketManager.STATE_DROPPED)) {
             
             mTouchpadImageView.setOnTouchListener(null);
+            mLeftButtonImageView.setOnTouchListener(null);
+            mRightButtonImageView.setOnTouchListener(null);
 
             setStatusIconState(StatusIconStates.INTERMEDIATE);
             
@@ -413,8 +429,9 @@ public class BluetoothKeybEmuActivity extends Activity {
 
     	    setStatusIconState(StatusIconStates.ON);
     		
-    		TouchpadListener mTouchpadListener = new TouchpadListener(getApplicationContext(), mSocketManager);
-    	    mTouchpadImageView.setOnTouchListener(mTouchpadListener);
+    	    mTouchpadImageView.setOnTouchListener(new TouchpadListener(getApplicationContext(), mSocketManager, TouchpadListener.Mode.TOUCHPAD));
+            mLeftButtonImageView.setOnTouchListener(new TouchpadListener(getApplicationContext(), mSocketManager, TouchpadListener.Mode.BUTTON_LEFT));
+            mRightButtonImageView.setOnTouchListener(new TouchpadListener(getApplicationContext(), mSocketManager, TouchpadListener.Mode.BUTTON_RIGHT));
     		
     		mThreadMonitorHandler.sendEmptyMessageDelayed(HANDLER_MONITOR_SOCKET, 200 /*ms */);
     	}
