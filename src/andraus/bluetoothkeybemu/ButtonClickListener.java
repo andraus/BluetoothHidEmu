@@ -3,18 +3,21 @@ package andraus.bluetoothkeybemu;
 import andraus.bluetoothkeybemu.sock.HidProtocolManager;
 import andraus.bluetoothkeybemu.sock.SocketManager;
 import android.content.Context;
+import android.graphics.PorterDuff.Mode;
 import android.os.Vibrator;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.View.OnLongClickListener;
 import android.view.animation.Animation;
 import android.view.animation.AnimationSet;
 import android.view.animation.DecelerateInterpolator;
 import android.view.animation.ScaleAnimation;
+import android.widget.ImageView;
 
 /**
  * 
  */
-public class ButtonClickListener implements OnClickListener {
+public class ButtonClickListener implements OnClickListener, OnLongClickListener {
     
     private static final String TAG = BluetoothKeybEmuActivity.TAG;
     
@@ -23,6 +26,8 @@ public class ButtonClickListener implements OnClickListener {
     
     private AnimationSet mClickAnimation = null;
     private Vibrator mVibrator;
+    
+    private boolean mIsButtonLocked = false;
    
     /**
      * 
@@ -48,13 +53,35 @@ public class ButtonClickListener implements OnClickListener {
     @Override
     public void onClick(View view) {
         
+        ((ImageView) view).clearColorFilter();
+        
         view.startAnimation(mClickAnimation);
         if (mVibrator != null) {
             mVibrator.vibrate(Constants.CLICK_VIBRATE_MS);
         }
-        mSocketManager.sendPointerEvent(mButton, 0, 0);
-        mSocketManager.sendPointerEvent(HidProtocolManager.MOUSE_BUTTON_NONE, 0, 0);
+        
+        if (!mIsButtonLocked) {
+            mSocketManager.sendPointerButton(mButton);
+        } else {
+            mIsButtonLocked = false;
+        }
+        mSocketManager.sendPointerButton(HidProtocolManager.MOUSE_BUTTON_NONE);
 
+    }
+
+
+    @Override
+    public boolean onLongClick(View view) {
+        
+        if (mIsButtonLocked) {
+            onClick(view);
+        } else {
+            ((ImageView) view).setColorFilter(0xff0000ff, Mode.MULTIPLY);
+            mIsButtonLocked = true;
+            mSocketManager.sendPointerButton(mButton);
+        }
+        
+        return true;
     }
 
 }

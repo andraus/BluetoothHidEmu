@@ -410,7 +410,9 @@ public class BluetoothKeybEmuActivity extends Activity {
     		
             mTouchpadImageView.setOnTouchListener(null);
             mLeftButtonImageView.setOnClickListener(null);
+            mLeftButtonImageView.setOnLongClickListener(null);
             mRightButtonImageView.setOnClickListener(null);
+            mRightButtonImageView.setOnLongClickListener(null);
 
     	} else if (sm.checkState(SocketManager.STATE_WAITING)) {
 
@@ -420,7 +422,9 @@ public class BluetoothKeybEmuActivity extends Activity {
             
             mTouchpadImageView.setOnTouchListener(null);
             mLeftButtonImageView.setOnClickListener(null);
+            mLeftButtonImageView.setOnLongClickListener(null);
             mRightButtonImageView.setOnClickListener(null);
+            mRightButtonImageView.setOnLongClickListener(null);
 
             setStatusIconState(StatusIconStates.INTERMEDIATE);
             
@@ -430,9 +434,14 @@ public class BluetoothKeybEmuActivity extends Activity {
 
     	    setStatusIconState(StatusIconStates.ON);
     		
-    	    mTouchpadImageView.setOnTouchListener(new TouchpadListener(getApplicationContext(), mSocketManager));
-            mLeftButtonImageView.setOnClickListener(new ButtonClickListener(getApplicationContext(), mSocketManager, HidProtocolManager.MOUSE_BUTTON_1));
-            mRightButtonImageView.setOnClickListener(new ButtonClickListener(getApplicationContext(), mSocketManager, HidProtocolManager.MOUSE_BUTTON_2));
+    	    mTouchpadImageView.setOnTouchListener(new TouchpadListener(getApplicationContext(), mSocketManager, mLeftButtonImageView));
+    	    
+    	    ButtonClickListener leftClickListener = new ButtonClickListener(getApplicationContext(), mSocketManager, HidProtocolManager.MOUSE_BUTTON_1);
+            mLeftButtonImageView.setOnClickListener(leftClickListener);
+            mLeftButtonImageView.setOnLongClickListener(leftClickListener);
+            ButtonClickListener rightClickListener = new ButtonClickListener(getApplicationContext(), mSocketManager, HidProtocolManager.MOUSE_BUTTON_2);
+            mRightButtonImageView.setOnClickListener(rightClickListener);
+            mRightButtonImageView.setOnLongClickListener(rightClickListener);
     		
     		mThreadMonitorHandler.sendEmptyMessageDelayed(HANDLER_MONITOR_SOCKET, 200 /*ms */);
     	}

@@ -25,6 +25,8 @@ public class HidProtocolManager {
     public static final int MOUSE_BUTTON_NONE = 0x00;
     public static final int MOUSE_BUTTON_1 = 0x01;
     public static final int MOUSE_BUTTON_2 = 0x02;
+    
+    private int mMouseButtonState = 0x00;
 
     // Static map for keys
     private static final Map<Character, HidByteSet> KEY_HID_MAP;
@@ -176,22 +178,36 @@ public class HidProtocolManager {
         return bytes;
     }
     
-    public byte[] payloadMouse(int button, int x, int y) {
-        
-        //A1 02 00 1B 5A 00 29 D2 08 06
+    public byte[] payloadMouseMove(int x, int y) {
         
         byte[] bytes = new byte[6];
 
         bytes[0] = (byte)0xa1;
-        bytes[1] = (byte)PROTO_MOUSE; // report_id (mouse)
-        bytes[2] = (byte)button;
+        bytes[1] = (byte)PROTO_MOUSE;       // report_id (mouse)
+        bytes[2] = (byte)mMouseButtonState; // button
         bytes[3] = (byte)x;
         bytes[4] = (byte)y;
-        bytes[5] = (byte)0x00;        // wheel
+        bytes[5] = (byte)0x00;              // wheel
         
         return bytes;
     }
     
+    public byte[] payloadMouseButton(int button) {
+        
+        mMouseButtonState = button;
+        
+        byte[] bytes = new byte[6];
+
+        bytes[0] = (byte)0xa1;
+        bytes[1] = (byte)PROTO_MOUSE;       // report_id (mouse)
+        bytes[2] = (byte)mMouseButtonState; // button
+        bytes[3] = (byte)0;                 // x
+        bytes[4] = (byte)0;                 // y
+        bytes[5] = (byte)0x00;              // wheel
+        
+        return bytes;
+    }
+
     /**
      * Assemble a HID payload byte array for disconnect request.
      * @return

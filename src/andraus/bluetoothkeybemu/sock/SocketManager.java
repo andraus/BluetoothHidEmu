@@ -85,10 +85,25 @@ public class SocketManager {
      * @param x
      * @param y
      */
-    public void sendPointerEvent(int button, int x, int y) {
+    public void sendPointerMove(int x, int y) {
         
         if (mIntrThread != null && mIntrThread.isAlive()) {
-            byte[] payload = mHidManager.payloadMouse(button, x, y);
+            byte[] payload = mHidManager.payloadMouseMove(x, y);
+            
+            if (payload != null) {
+                mIntrThread.sendBytes(payload);
+            }
+        }
+    }
+
+    /**
+     * 
+     * @param button
+     */
+    public void sendPointerButton(int button) {
+        
+        if (mIntrThread != null && mIntrThread.isAlive()) {
+            byte[] payload = mHidManager.payloadMouseButton(button);
             
             if (payload != null) {
                 mIntrThread.sendBytes(payload);
