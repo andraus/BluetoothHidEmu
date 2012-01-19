@@ -8,6 +8,7 @@ import java.util.Set;
 import andraus.bluetoothkeybemu.helper.BluetoothConnHelper;
 import andraus.bluetoothkeybemu.helper.BluetoothConnHelperFactory;
 import andraus.bluetoothkeybemu.helper.CleanupExceptionHandler;
+import andraus.bluetoothkeybemu.sock.HidProtocolManager;
 import andraus.bluetoothkeybemu.sock.SocketManager;
 import andraus.bluetoothkeybemu.util.DoLog;
 import andraus.bluetoothkeybemu.view.BluetoothDeviceView;
@@ -408,8 +409,8 @@ public class BluetoothKeybEmuActivity extends Activity {
         if (sm.checkState(SocketManager.STATE_NONE) || sm.checkState(SocketManager.STATE_DROPPING)) {
     		
             mTouchpadImageView.setOnTouchListener(null);
-            mLeftButtonImageView.setOnTouchListener(null);
-            mRightButtonImageView.setOnTouchListener(null);
+            mLeftButtonImageView.setOnClickListener(null);
+            mRightButtonImageView.setOnClickListener(null);
 
     	} else if (sm.checkState(SocketManager.STATE_WAITING)) {
 
@@ -418,8 +419,8 @@ public class BluetoothKeybEmuActivity extends Activity {
     	} else if (sm.checkState(SocketManager.STATE_DROPPED)) {
             
             mTouchpadImageView.setOnTouchListener(null);
-            mLeftButtonImageView.setOnTouchListener(null);
-            mRightButtonImageView.setOnTouchListener(null);
+            mLeftButtonImageView.setOnClickListener(null);
+            mRightButtonImageView.setOnClickListener(null);
 
             setStatusIconState(StatusIconStates.INTERMEDIATE);
             
@@ -429,9 +430,9 @@ public class BluetoothKeybEmuActivity extends Activity {
 
     	    setStatusIconState(StatusIconStates.ON);
     		
-    	    mTouchpadImageView.setOnTouchListener(new TouchpadListener(getApplicationContext(), mSocketManager, TouchpadListener.Mode.TOUCHPAD));
-            mLeftButtonImageView.setOnTouchListener(new TouchpadListener(getApplicationContext(), mSocketManager, TouchpadListener.Mode.BUTTON_LEFT));
-            mRightButtonImageView.setOnTouchListener(new TouchpadListener(getApplicationContext(), mSocketManager, TouchpadListener.Mode.BUTTON_RIGHT));
+    	    mTouchpadImageView.setOnTouchListener(new TouchpadListener(getApplicationContext(), mSocketManager));
+            mLeftButtonImageView.setOnClickListener(new ButtonClickListener(getApplicationContext(), mSocketManager, HidProtocolManager.MOUSE_BUTTON_1));
+            mRightButtonImageView.setOnClickListener(new ButtonClickListener(getApplicationContext(), mSocketManager, HidProtocolManager.MOUSE_BUTTON_2));
     		
     		mThreadMonitorHandler.sendEmptyMessageDelayed(HANDLER_MONITOR_SOCKET, 200 /*ms */);
     	}

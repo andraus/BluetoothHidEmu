@@ -4,6 +4,7 @@ import andraus.bluetoothkeybemu.sock.HidProtocolManager;
 import andraus.bluetoothkeybemu.sock.SocketManager;
 import andraus.bluetoothkeybemu.util.DoLog;
 import android.content.Context;
+import android.os.Vibrator;
 import android.view.GestureDetector;
 import android.view.MotionEvent;
 import android.view.View;
@@ -14,16 +15,14 @@ import android.view.View.OnTouchListener;
  */
 public class TouchpadListener implements OnTouchListener {
     
-    public static enum Mode { BUTTON_LEFT, BUTTON_RIGHT, TOUCHPAD };
-    
     private static final String TAG = BluetoothKeybEmuActivity.TAG;
     
     private float mPointerMultiplier = 1.5f;
     
     private GestureDetector mGestureDetector = null;
     private SocketManager mSocketManager = null;
-    private Mode mMode = null;
-    
+    private Vibrator mVibrator = null;
+
     /**
      * 
      */
@@ -39,10 +38,6 @@ public class TouchpadListener implements OnTouchListener {
         @Override
         public boolean onScroll(MotionEvent e1, MotionEvent e2,
                 float distanceX, float distanceY) {
-            
-            if (mMode != Mode.TOUCHPAD) {
-                return false;
-            }
             
             if (e2.getX() != -distanceX || e2.getY() != -distanceY) {
                 distanceX = -1 * mPointerMultiplier * distanceX;
@@ -67,19 +62,11 @@ public class TouchpadListener implements OnTouchListener {
         @Override
         public boolean onSingleTapConfirmed(MotionEvent e) {
             
-            final int button;
-            switch (mMode) {
-            case BUTTON_RIGHT:
-                button = HidProtocolManager.MOUSE_BUTTON_2;
-                break;
-            case TOUCHPAD:
-            case BUTTON_LEFT:
-            default:
-                button = HidProtocolManager.MOUSE_BUTTON_1;
-                break;
+            if (mVibrator != null) {
+                mVibrator.vibrate(Constants.CLICK_VIBRATE_MS);
             }
             
-            mSocketManager.sendPointerEvent(button, 0, 0);
+            mSocketManager.sendPointerEvent(HidProtocolManager.MOUSE_BUTTON_1, 0, 0);
             mSocketManager.sendPointerEvent(HidProtocolManager.MOUSE_BUTTON_NONE, 0, 0);
             
             return super.onSingleTapConfirmed(e);
@@ -94,11 +81,11 @@ public class TouchpadListener implements OnTouchListener {
      * @param context
      * @param socketManager
      */
-    public TouchpadListener(Context context, SocketManager socketManager, Mode mode) {
+    public TouchpadListener(Context context, SocketManager socketManager) {
         super();
         mGestureDetector = new GestureDetector(context, new LocalGestureDetector());
         mSocketManager = socketManager;
-        mMode = mode;
+        mVibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
     }
     
     /**
