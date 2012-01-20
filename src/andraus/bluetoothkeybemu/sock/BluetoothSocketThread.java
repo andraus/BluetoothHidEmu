@@ -11,7 +11,7 @@ import android.bluetooth.BluetoothSocket;
 
 public class BluetoothSocketThread extends Thread {
 	
-	private String TAG = BluetoothKeybEmuActivity.TAG;
+	private String TAG = BluetoothKeybEmuActivity.TAG + "Comm";
 	
 	private static final int BUF_SIZE = 16;
 	

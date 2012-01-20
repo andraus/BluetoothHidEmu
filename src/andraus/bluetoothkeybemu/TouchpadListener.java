@@ -48,7 +48,7 @@ public class TouchpadListener implements OnTouchListener {
                 if (Math.abs(distanceY) > HidProtocolManager.MAX_POINTER_MOVE) {
                     distanceY = distanceY > 0 ? HidProtocolManager.MAX_POINTER_MOVE : -HidProtocolManager.MAX_POINTER_MOVE;
                 }
-                DoLog.d(TAG, String.format("moving(%d, %d)", (int)distanceX, (int)distanceY));
+                //DoLog.d(TAG, String.format("moving(%d, %d)", (int)distanceX, (int)distanceY));
                 mSocketManager.sendPointerMove((int)distanceX, (int)distanceY);
                 
             } else {
@@ -61,8 +61,14 @@ public class TouchpadListener implements OnTouchListener {
         @Override
         public boolean onSingleTapConfirmed(MotionEvent e) {
             
-            mButtonView.performClick();
             return super.onSingleTapConfirmed(e);
+        }
+
+        @Override
+        public boolean onSingleTapUp(MotionEvent e) {
+            
+            mButtonView.performClick();
+            return super.onSingleTapUp(e);
         }
 
     }

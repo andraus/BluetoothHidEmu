@@ -2,8 +2,11 @@ package andraus.bluetoothkeybemu;
 
 import andraus.bluetoothkeybemu.sock.HidProtocolManager;
 import andraus.bluetoothkeybemu.sock.SocketManager;
+import andraus.bluetoothkeybemu.util.DoLog;
 import android.content.Context;
+import android.graphics.LightingColorFilter;
 import android.graphics.PorterDuff.Mode;
+import android.graphics.PorterDuffColorFilter;
 import android.os.Vibrator;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -28,19 +31,28 @@ public class ButtonClickListener implements OnClickListener, OnLongClickListener
     private Vibrator mVibrator;
     
     private boolean mIsButtonLocked = false;
-   
+    private boolean mIsLockable = false;
+
     /**
      * 
+     * @param context
      * @param socketManager
+     * @param button
+     * @param isLockable
      */
-    public ButtonClickListener(Context context, SocketManager socketManager, int button) {
+    public ButtonClickListener(Context context, SocketManager socketManager, int button, boolean isLockable) {
+        super();
+
         mSocketManager = socketManager;
         mButton = button;
+        mIsLockable = isLockable;
         
         mClickAnimation = new AnimationSet(true);
         mClickAnimation.addAnimation(new ScaleAnimation(1f, 0.9f, 1f, 0.9f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f));
         mClickAnimation.setInterpolator(new DecelerateInterpolator(10f));
         mClickAnimation.setDuration(Constants.CLICK_VIBRATE_MS);
+        mClickAnimation.setRepeatCount(1);
+        mClickAnimation.setRepeatMode(Animation.REVERSE);
         
         mVibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
         
@@ -53,7 +65,7 @@ public class ButtonClickListener implements OnClickListener, OnLongClickListener
     @Override
     public void onClick(View view) {
         
-        ((ImageView) view).clearColorFilter();
+        drawButton(view,  false);
         
         view.startAnimation(mClickAnimation);
         if (mVibrator != null) {
@@ -73,15 +85,35 @@ public class ButtonClickListener implements OnClickListener, OnLongClickListener
     @Override
     public boolean onLongClick(View view) {
         
-        if (mIsButtonLocked) {
-            onClick(view);
+        if (mIsLockable) {
+            if (mIsButtonLocked) {
+                onClick(view);
+            } else {
+                drawButton(view, true);
+                
+                mIsButtonLocked = true;
+                DoLog.d(TAG, "set button locked to " + mIsButtonLocked);
+                mSocketManager.sendPointerButton(mButton);
+            }
         } else {
-            ((ImageView) view).setColorFilter(0xff0000ff, Mode.MULTIPLY);
-            mIsButtonLocked = true;
-            mSocketManager.sendPointerButton(mButton);
+            onClick(view);
         }
         
         return true;
+    }
+
+    /**
+     * Set properties for the button to be drawn as normal or "on hold".
+     * @param view
+     * @param isHold
+     */
+    private void drawButton(View view, boolean isHold) {
+        ImageView imgView = (ImageView) view;
+        if (isHold) {
+            imgView.setColorFilter(new LightingColorFilter(0xfcc0000, 0xff555555));
+        } else {
+            imgView.clearColorFilter();
+        }
     }
 
 }
