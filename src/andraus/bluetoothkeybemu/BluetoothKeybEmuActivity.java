@@ -37,7 +37,6 @@ import android.view.animation.DecelerateInterpolator;
 import android.view.inputmethod.EditorInfo;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.SpinnerAdapter;
@@ -64,6 +63,7 @@ public class BluetoothKeybEmuActivity extends Activity {
 	private TextView mStatusTextView = null;
 	private Spinner mDeviceSpinner = null;
 	
+	private View mControlsLayout = null;
 	private EchoEditText mEchoEditText = null;
 	private ImageView mTouchpadImageView = null;
 	private ImageView mLeftButtonImageView = null;
@@ -139,15 +139,13 @@ public class BluetoothKeybEmuActivity extends Activity {
 		mDeviceSpinner = (Spinner) findViewById(R.id.DeviceSpinner);
 		mStatusTextView = (TextView) findViewById(R.id.StatusTextView);
 		
+		mControlsLayout = (View) findViewById(R.id.ControlsLayout);
+		mControlsLayout.setVisibility(View.INVISIBLE);
 		mTouchpadImageView = (ImageView) findViewById(R.id.TouchpadImageView);
-		mTouchpadImageView.setVisibility(ImageView.GONE);
 		mLeftButtonImageView = (ImageView) findViewById(R.id.LeftButtonImageView);
-		mLeftButtonImageView.setVisibility(ImageView.GONE);
 		mRightButtonImageView = (ImageView) findViewById(R.id.RightButtonImageView);
-		mRightButtonImageView.setVisibility(ImageView.GONE);
 		
 		mEchoEditText = (EchoEditText) findViewById(R.id.EchoEditText);
-		mEchoEditText.setVisibility(EditText.GONE);
 		mEchoEditText.setGravity(Gravity.CENTER);
         mEchoEditText.setImeOptions(EditorInfo.IME_FLAG_NO_EXTRACT_UI);
 		
@@ -188,6 +186,7 @@ public class BluetoothKeybEmuActivity extends Activity {
         Animation animation = null;
 	    switch (state) {
 	    case ON:
+	        DoLog.d(TAG, "ON!");
 	        if ((animation = mStatusTextView.getAnimation()) != null) {
 	            animation.cancel();
 	            mStatusTextView.setAnimation(null);
@@ -196,11 +195,7 @@ public class BluetoothKeybEmuActivity extends Activity {
 	        mStatusTextView.setShadowLayer(6, 0f, 0f, Color.GREEN);
 	        mStatusTextView.setText(getResources().getString(R.string.msg_status_connected));
 	        
-	        mTouchpadImageView.setVisibility(ImageView.VISIBLE);
-	        mLeftButtonImageView.setVisibility(ImageView.VISIBLE);
-	        mRightButtonImageView.setVisibility(ImageView.VISIBLE);
-	        
-	        mEchoEditText.setVisibility(EditText.VISIBLE);
+	        toggleScreenElements(View.VISIBLE);
 	        mEchoEditText.requestFocus();
 	        
 	        break;
@@ -213,11 +208,7 @@ public class BluetoothKeybEmuActivity extends Activity {
             mStatusTextView.setShadowLayer(6, 0f, 0f, Color.RED);
             mStatusTextView.setText(getResources().getString(R.string.msg_status_disconnected));
             
-            mTouchpadImageView.setVisibility(ImageView.GONE);
-            mLeftButtonImageView.setVisibility(ImageView.GONE);
-            mRightButtonImageView.setVisibility(ImageView.GONE);
-            
-            mEchoEditText.setVisibility(EditText.GONE);
+            toggleScreenElements(View.INVISIBLE);
 
 	        break;
 	    case INTERMEDIATE:
@@ -234,16 +225,55 @@ public class BluetoothKeybEmuActivity extends Activity {
             
             mStatusTextView.startAnimation(alphaAnim);
             
-            mTouchpadImageView.setVisibility(ImageView.GONE);
-            mLeftButtonImageView.setVisibility(ImageView.GONE);
-            mRightButtonImageView.setVisibility(ImageView.GONE);
-            
-            mEchoEditText.setVisibility(EditText.GONE);
+            toggleScreenElements(View.INVISIBLE);
             
 	        break;
 	    }
 	    mStatusState = state;
 
+	}
+	
+	private void toggleScreenElements(int visibility) {
+	    
+	    final int duration = 300;
+	    
+	    if (mControlsLayout.getVisibility() == visibility) {
+	        return;
+	    }
+	    mControlsLayout.clearAnimation();
+	    if (visibility == View.VISIBLE) {
+	        Animation animation = new AlphaAnimation(0f, 1f);
+//	        Animation animation = new TranslateAnimation(Animation.RELATIVE_TO_SELF, 
+//	                                                    1f, 
+//	                                                    Animation.RELATIVE_TO_SELF, 
+//	                                                    1f, 
+//	                                                    Animation.RELATIVE_TO_PARENT, 
+//	                                                    0f, 
+//	                                                    Animation.RELATIVE_TO_PARENT, 
+//	                                                    1f);
+	        animation.setDuration(duration);
+	        animation.setInterpolator(new DecelerateInterpolator(1f));
+	        
+	        mControlsLayout.setVisibility(visibility);
+	        mControlsLayout.startAnimation(animation);
+	        
+	    } else {
+	        Animation animation = new AlphaAnimation(1f, 0f);
+//            Animation animation = new TranslateAnimation(Animation.RELATIVE_TO_SELF, 
+//                   1f, 
+//                   Animation.RELATIVE_TO_SELF, 
+//                   1f, 
+//                   Animation.RELATIVE_TO_PARENT, 
+//                   1f, 
+//                   Animation.RELATIVE_TO_PARENT, 
+//                   0f);
+
+	        animation.setDuration(duration);
+            animation.setInterpolator(new DecelerateInterpolator(1f));
+	        
+	        mControlsLayout.startAnimation(animation);
+	        mControlsLayout.setVisibility(visibility);
+	    }
 	}
 
 	/**
