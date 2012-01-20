@@ -31,9 +31,11 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.animation.AccelerateInterpolator;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.DecelerateInterpolator;
+import android.view.animation.TranslateAnimation;
 import android.view.inputmethod.EditorInfo;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -235,41 +237,41 @@ public class BluetoothKeybEmuActivity extends Activity {
 	
 	private void toggleScreenElements(int visibility) {
 	    
-	    final int duration = 300;
+	    final int duration = 250;
 	    
 	    if (mControlsLayout.getVisibility() == visibility) {
 	        return;
 	    }
 	    mControlsLayout.clearAnimation();
 	    if (visibility == View.VISIBLE) {
-	        Animation animation = new AlphaAnimation(0f, 1f);
-//	        Animation animation = new TranslateAnimation(Animation.RELATIVE_TO_SELF, 
-//	                                                    1f, 
-//	                                                    Animation.RELATIVE_TO_SELF, 
-//	                                                    1f, 
-//	                                                    Animation.RELATIVE_TO_PARENT, 
-//	                                                    0f, 
-//	                                                    Animation.RELATIVE_TO_PARENT, 
-//	                                                    1f);
+	        mControlsLayout.setVisibility(visibility);
+	        //Animation animation = new AlphaAnimation(0f, 1f);
+	        Animation animation = new TranslateAnimation(Animation.RELATIVE_TO_SELF,
+	                                                    0f, 
+	                                                    Animation.RELATIVE_TO_SELF,
+	                                                    0f,
+	                                                    Animation.RELATIVE_TO_PARENT,
+	                                                    -1f,
+	                                                    Animation.RELATIVE_TO_PARENT,
+	                                                    0f);
 	        animation.setDuration(duration);
 	        animation.setInterpolator(new DecelerateInterpolator(1f));
 	        
-	        mControlsLayout.setVisibility(visibility);
 	        mControlsLayout.startAnimation(animation);
 	        
 	    } else {
-	        Animation animation = new AlphaAnimation(1f, 0f);
-//            Animation animation = new TranslateAnimation(Animation.RELATIVE_TO_SELF, 
-//                   1f, 
-//                   Animation.RELATIVE_TO_SELF, 
-//                   1f, 
-//                   Animation.RELATIVE_TO_PARENT, 
-//                   1f, 
-//                   Animation.RELATIVE_TO_PARENT, 
-//                   0f);
+	        //Animation animation = new AlphaAnimation(1f, 0f);
+            Animation animation = new TranslateAnimation(Animation.RELATIVE_TO_SELF,
+									0f,
+									Animation.RELATIVE_TO_SELF,
+									0f,
+									Animation.RELATIVE_TO_PARENT,
+									0f,
+									Animation.RELATIVE_TO_PARENT,
+									-1f);
 
 	        animation.setDuration(duration);
-            animation.setInterpolator(new DecelerateInterpolator(1f));
+            animation.setInterpolator(new AccelerateInterpolator(1f));
 	        
 	        mControlsLayout.startAnimation(animation);
 	        mControlsLayout.setVisibility(visibility);
