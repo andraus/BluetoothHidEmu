@@ -251,7 +251,7 @@ public class BluetoothKeybEmuActivity extends Activity {
 	                                                    Animation.RELATIVE_TO_SELF,
 	                                                    0f,
 	                                                    Animation.RELATIVE_TO_PARENT,
-	                                                    -1f,
+	                                                    1f,
 	                                                    Animation.RELATIVE_TO_PARENT,
 	                                                    0f);
 	        animation.setDuration(duration);
@@ -268,7 +268,7 @@ public class BluetoothKeybEmuActivity extends Activity {
 									Animation.RELATIVE_TO_PARENT,
 									0f,
 									Animation.RELATIVE_TO_PARENT,
-									-1f);
+									1f);
 
 	        animation.setDuration(duration);
             animation.setInterpolator(new AccelerateInterpolator(1f));
