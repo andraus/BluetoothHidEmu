@@ -207,6 +207,18 @@ public class HidProtocolManager {
         
         return bytes;
     }
+    
+    /**
+     * TODO: support for PS3 controler
+     * 
+     * reference: http://wiki.ps2dev.org/ps3:hardware:sixaxis
+     * 
+     * @param button
+     * @return
+     */
+    public byte[] ps3Button(int button) {
+    	return null;
+    }
 
     /**
      * Assemble a HID payload byte array for disconnect request.
