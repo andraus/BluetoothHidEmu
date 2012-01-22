@@ -40,10 +40,12 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
+import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.SpinnerAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ViewFlipper;
 
 public class BluetoothKeybEmuActivity extends Activity {
 	
@@ -64,6 +66,9 @@ public class BluetoothKeybEmuActivity extends Activity {
 	
 	private TextView mStatusTextView = null;
 	private Spinner mDeviceSpinner = null;
+	
+	private RadioGroup mNavRadioGroup = null;
+	private ViewFlipper mMainViewFlipper = null;
 	
 	private View mControlsLayout = null;
 	private EchoEditText mEchoEditText = null;
@@ -129,6 +134,32 @@ public class BluetoothKeybEmuActivity extends Activity {
 	}
 	
 	/**
+	 * Setup top RadioButtons and ViewFlipper
+	 */
+	private void setupNavigationButtons() {
+		mNavRadioGroup = (RadioGroup) findViewById(R.id.NavRadioGroup);
+		mMainViewFlipper = (ViewFlipper) findViewById(R.id.MainViewFlipper);
+		
+		mNavRadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+			
+			@Override
+			public void onCheckedChanged(RadioGroup group, int checkedId) {
+				
+				switch (checkedId) {
+				case R.id.TouchpadRadioButton:
+					mMainViewFlipper.showNext();
+					break;
+				case R.id.MultimediaRadioButton:
+					mMainViewFlipper.showPrevious();
+					break;
+				}
+				
+			}
+		});
+		
+	}
+	
+	/**
 	 * Initialize UI elements
 	 */
 	private void setupApp() {
@@ -141,7 +172,9 @@ public class BluetoothKeybEmuActivity extends Activity {
 		mDeviceSpinner = (Spinner) findViewById(R.id.DeviceSpinner);
 		mStatusTextView = (TextView) findViewById(R.id.StatusTextView);
 		
-		mControlsLayout = (View) findViewById(R.id.ControlsLayout);
+		setupNavigationButtons();
+		
+		mControlsLayout = (View) findViewById(R.id.TouchpadControlsLayout);
 		mControlsLayout.setVisibility(View.INVISIBLE);
 		mTouchpadImageView = (ImageView) findViewById(R.id.TouchpadImageView);
 		mLeftButtonImageView = (ImageView) findViewById(R.id.LeftButtonImageView);

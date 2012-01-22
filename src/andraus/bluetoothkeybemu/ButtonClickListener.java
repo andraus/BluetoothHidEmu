@@ -5,8 +5,6 @@ import andraus.bluetoothkeybemu.sock.SocketManager;
 import andraus.bluetoothkeybemu.util.DoLog;
 import android.content.Context;
 import android.graphics.LightingColorFilter;
-import android.graphics.PorterDuff.Mode;
-import android.graphics.PorterDuffColorFilter;
 import android.os.Vibrator;
 import android.view.View;
 import android.view.View.OnClickListener;

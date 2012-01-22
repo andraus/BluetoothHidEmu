@@ -30,89 +30,41 @@
             android:layout_width="fill_parent"
             android:layout_height="35dp"
             android:layout_weight="0.35"
-            android:drawSelectorOnTop="true"
+            android:drawSelectorOnTop="false"
             android:prompt="@string/device_prompt"  />
         
     </LinearLayout>
     
-<RelativeLayout android:id="@+id/ControlsLayout"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent">
+    <RadioGroup
+        android:id="@+id/NavRadioGroup"
+        android:layout_width="fill_parent"
+        android:layout_height="35dp"
+        android:gravity="center"
+        android:orientation="horizontal" >
+
+        <RadioButton
+            android:id="@+id/TouchpadRadioButton"
+            android:layout_gravity="left|center"
+            android:layout_weight="1"
+            android:checked="true"
+            android:text="@string/msg_button_touchpad" />
+
+        <RadioButton
+            android:id="@+id/MultimediaRadioButton"
+            android:layout_gravity="right|center"
+            android:text="@string/msg_button_multimedia" />
+        
+    </RadioGroup>
     
-	    <LinearLayout android:id="@+id/EchoLayout"
-	                  android:layout_width="match_parent"
-	                  android:layout_height="wrap_content"
-	                  android:orientation="vertical"
-	                  android:paddingLeft="10dp"
-	                  android:paddingRight="10dp"
-	                  android:layout_alignParentTop="true" >
-	
-	    <andraus.bluetoothkeybemu.EchoEditText
-	        android:id="@+id/EchoEditText"
-	        android:layout_width="match_parent"
-	        android:layout_height="35dp"
-	        android:layout_weight="1"
-	        android:layout_gravity="center"
-	        android:textStyle="normal"
-	        android:maxLines="1"
-	        android:scrollHorizontally="true"
-	        android:textAppearance="?android:attr/textAppearanceSmall">
-	
-	        <requestFocus />
-	    </andraus.bluetoothkeybemu.EchoEditText>
-	    
-	    </LinearLayout>
-	    
-	    <LinearLayout
-	        android:layout_width="match_parent"
-	        android:layout_height="fill_parent"
-	        android:layout_below="@+id/EchoLayout"
-	        android:orientation="vertical"
-	        android:weightSum="4" >
-	
-	        <ImageView
-	            android:id="@+id/TouchpadImageView"
-	            android:layout_width="match_parent"
-	            android:layout_height="match_parent"
-	            android:layout_weight="1"
-	            android:paddingLeft="10dp"
-	            android:paddingRight="10dp"
-	            android:src="@drawable/touchpad_shape" />
-	        
-	        <LinearLayout android:id="@+id/linearLayout1"
-	                      android:layout_width="match_parent"
-	                      android:layout_height="match_parent"
-	                      android:paddingLeft="10dp"
-	                      android:paddingRight="10dp"
-	                      android:paddingBottom="10dp"
-	                      android:layout_alignParentBottom="true" >
-	        
-	                    <ImageView android:id="@+id/LeftButtonImageView"
-	                               android:layout_width="fill_parent"
-	                               android:layout_height="80dp"
-	                               android:layout_weight="1.25"
-	                               android:paddingTop="8dp"
-	                               android:paddingLeft="8dp"
-	                               android:paddingRight="8dp"
-	                               android:paddingBottom="18dp"
-	                               android:src="@drawable/mouse_button_shape" />
-	                    
-	                    <ImageView android:id="@+id/RightButtonImageView"
-	                               android:layout_width="fill_parent"
-	                               android:layout_height="80dp"
-	                               android:layout_weight="1.25"
-	                               android:paddingTop="8dp"
-	                               android:paddingLeft="8dp"
-	                               android:paddingRight="8dp"
-	                               android:paddingBottom="18dp"
-	                               android:src="@drawable/mouse_button_shape" />
-	                    
-	            
-	        </LinearLayout>
-	        
-	    </LinearLayout>
-	    
-</RelativeLayout>        
+    <ViewFlipper android:id="@+id/MainViewFlipper"
+                 android:layout_width="fill_parent"
+                 android:layout_height="fill_parent">
+        
+        <include android:id="@+id/TouchpadControlsLayout"  layout="@layout/touchpad_controls" />
+        <include android:id="@+id/MultimediaLayout" layout="@layout/multimedia_controls" />
+            
+    </ViewFlipper>
+            
         
     
 </LinearLayout>
