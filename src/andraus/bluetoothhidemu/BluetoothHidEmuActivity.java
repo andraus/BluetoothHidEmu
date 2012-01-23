@@ -393,6 +393,7 @@ public class BluetoothHidEmuActivity extends Activity {
     protected void onDestroy() {
         DoLog.d(TAG, "...being destroyed");
         unregisterReceiver(mBluetoothReceiver);
+        mThreadMonitorHandler.removeCallbacksAndMessages(null);
         stopSockets(false);
         if (mConnHelper != null) {
             mConnHelper.cleanup();
