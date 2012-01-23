@@ -1,4 +1,4 @@
-package andraus.bluetoothhidemu.sock;
+package andraus.bluetoothhidemu.sock.payload;
 
 /**
  * 
@@ -15,16 +15,16 @@ public class HidByteSet {
     private int code;
     private int mod;
     
-    HidByteSet(int code, int mod) {
+    public HidByteSet(int code, int mod) {
         this.code = code;
         this.mod = mod;
     }
     
-    int getCode() {
+    public int getCode() {
         return code;
     }
     
-    int getMod() {
+    public int getMod() {
         return mod;
     }
 }

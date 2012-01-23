@@ -1,7 +1,7 @@
 package andraus.bluetoothhidemu;
 
-import andraus.bluetoothhidemu.sock.HidByteSet;
 import andraus.bluetoothhidemu.sock.SocketManager;
+import andraus.bluetoothhidemu.sock.payload.HidByteSet;
 import andraus.bluetoothhidemu.util.DoLog;
 import android.text.Editable;
 import android.text.InputType;

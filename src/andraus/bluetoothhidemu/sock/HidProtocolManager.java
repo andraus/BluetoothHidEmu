@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import andraus.bluetoothhidemu.BluetoothHidEmuActivity;
+import andraus.bluetoothhidemu.sock.payload.HidByteSet;
 import andraus.bluetoothhidemu.util.DoLog;
 
 public class HidProtocolManager {
