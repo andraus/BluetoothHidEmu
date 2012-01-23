@@ -1,4 +1,4 @@
-package andraus.bluetoothkeybemu.helper;
+package andraus.bluetoothhidemu.helper;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -12,9 +12,9 @@ import java.io.OutputStreamWriter;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
-import andraus.bluetoothkeybemu.BluetoothKeybEmuActivity;
-import andraus.bluetoothkeybemu.R;
-import andraus.bluetoothkeybemu.util.DoLog;
+import andraus.bluetoothhidemu.BluetoothKeybEmuActivity;
+import andraus.bluetoothhidemu.R;
+import andraus.bluetoothhidemu.util.DoLog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;

@@ -1,4 +1,4 @@
-package andraus.bluetoothkeybemu.helper;
+package andraus.bluetoothhidemu.helper;
 
 public class CleanupExceptionHandler implements Thread.UncaughtExceptionHandler {
     

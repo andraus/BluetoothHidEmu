@@ -1,4 +1,4 @@
-package andraus.bluetoothkeybemu.util;
+package andraus.bluetoothhidemu.util;
 
 import java.util.HashMap;
 import java.util.Map;

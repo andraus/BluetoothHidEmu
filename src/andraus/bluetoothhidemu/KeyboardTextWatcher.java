@@ -1,7 +1,7 @@
-package andraus.bluetoothkeybemu;
+package andraus.bluetoothhidemu;
 
-import andraus.bluetoothkeybemu.sock.SocketManager;
-import andraus.bluetoothkeybemu.util.DoLog;
+import andraus.bluetoothhidemu.sock.SocketManager;
+import andraus.bluetoothhidemu.util.DoLog;
 import android.os.Handler;
 import android.os.Message;
 import android.text.Editable;

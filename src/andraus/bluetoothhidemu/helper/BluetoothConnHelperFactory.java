@@ -1,4 +1,4 @@
-package andraus.bluetoothkeybemu.helper;
+package andraus.bluetoothhidemu.helper;
 
 import android.content.Context;
 

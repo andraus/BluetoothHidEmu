@@ -12,7 +12,7 @@
                       android:paddingRight="10dp"
                       android:layout_alignParentTop="true" >
     
-        <andraus.bluetoothkeybemu.EchoEditText
+        <andraus.bluetoothhidemu.EchoEditText
             android:id="@+id/EchoEditText"
             android:layout_width="match_parent"
             android:layout_height="35dp"
@@ -24,7 +24,7 @@
             android:textAppearance="?android:attr/textAppearanceSmall">
     
             <requestFocus />
-        </andraus.bluetoothkeybemu.EchoEditText>
+        </andraus.bluetoothhidemu.EchoEditText>
         
         </LinearLayout>
         

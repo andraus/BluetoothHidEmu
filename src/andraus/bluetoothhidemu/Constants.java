@@ -1,4 +1,4 @@
-package andraus.bluetoothkeybemu;
+package andraus.bluetoothhidemu;
 
 /**
  * Global constants. 

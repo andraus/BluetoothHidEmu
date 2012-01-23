@@ -1,11 +1,11 @@
-package andraus.bluetoothkeybemu.sock;
+package andraus.bluetoothhidemu.sock;
 
 import java.io.IOException;
 import java.util.Set;
 
-import andraus.bluetoothkeybemu.BluetoothKeybEmuActivity;
-import andraus.bluetoothkeybemu.helper.BluetoothConnHelper;
-import andraus.bluetoothkeybemu.util.DoLog;
+import andraus.bluetoothhidemu.BluetoothKeybEmuActivity;
+import andraus.bluetoothhidemu.helper.BluetoothConnHelper;
+import andraus.bluetoothhidemu.util.DoLog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;

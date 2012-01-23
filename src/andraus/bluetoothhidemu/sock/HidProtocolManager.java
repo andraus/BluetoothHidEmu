@@ -1,11 +1,11 @@
-package andraus.bluetoothkeybemu.sock;
+package andraus.bluetoothhidemu.sock;
 
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import andraus.bluetoothkeybemu.BluetoothKeybEmuActivity;
-import andraus.bluetoothkeybemu.util.DoLog;
+import andraus.bluetoothhidemu.BluetoothKeybEmuActivity;
+import andraus.bluetoothhidemu.util.DoLog;
 
 public class HidProtocolManager {
     

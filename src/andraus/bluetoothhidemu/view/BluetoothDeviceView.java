@@ -1,4 +1,4 @@
-package andraus.bluetoothkeybemu.view;
+package andraus.bluetoothhidemu.view;
 
 import java.util.Comparator;
 

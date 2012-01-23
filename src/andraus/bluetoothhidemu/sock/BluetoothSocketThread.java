@@ -1,12 +1,12 @@
-package andraus.bluetoothkeybemu.sock;
+package andraus.bluetoothhidemu.sock;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
 
-import andraus.bluetoothkeybemu.BluetoothKeybEmuActivity;
-import andraus.bluetoothkeybemu.util.DoLog;
+import andraus.bluetoothhidemu.BluetoothKeybEmuActivity;
+import andraus.bluetoothhidemu.util.DoLog;
 import android.bluetooth.BluetoothSocket;
 
 public class BluetoothSocketThread extends Thread {

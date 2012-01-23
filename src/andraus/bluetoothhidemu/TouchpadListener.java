@@ -1,8 +1,8 @@
-package andraus.bluetoothkeybemu;
+package andraus.bluetoothhidemu;
 
-import andraus.bluetoothkeybemu.sock.HidProtocolManager;
-import andraus.bluetoothkeybemu.sock.SocketManager;
-import andraus.bluetoothkeybemu.util.DoLog;
+import andraus.bluetoothhidemu.sock.HidProtocolManager;
+import andraus.bluetoothhidemu.sock.SocketManager;
+import andraus.bluetoothhidemu.util.DoLog;
 import android.content.Context;
 import android.view.GestureDetector;
 import android.view.MotionEvent;

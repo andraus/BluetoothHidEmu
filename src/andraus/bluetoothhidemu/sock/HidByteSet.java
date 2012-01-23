@@ -1,4 +1,4 @@
-package andraus.bluetoothkeybemu.sock;
+package andraus.bluetoothhidemu.sock;
 
 /**
  * 

@@ -1,17 +1,17 @@
-package andraus.bluetoothkeybemu;
+package andraus.bluetoothhidemu;
 
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import andraus.bluetoothkeybemu.helper.BluetoothConnHelper;
-import andraus.bluetoothkeybemu.helper.BluetoothConnHelperFactory;
-import andraus.bluetoothkeybemu.helper.CleanupExceptionHandler;
-import andraus.bluetoothkeybemu.sock.HidProtocolManager;
-import andraus.bluetoothkeybemu.sock.SocketManager;
-import andraus.bluetoothkeybemu.util.DoLog;
-import andraus.bluetoothkeybemu.view.BluetoothDeviceView;
+import andraus.bluetoothhidemu.helper.BluetoothConnHelper;
+import andraus.bluetoothhidemu.helper.BluetoothConnHelperFactory;
+import andraus.bluetoothhidemu.helper.CleanupExceptionHandler;
+import andraus.bluetoothhidemu.sock.HidProtocolManager;
+import andraus.bluetoothhidemu.sock.SocketManager;
+import andraus.bluetoothhidemu.util.DoLog;
+import andraus.bluetoothhidemu.view.BluetoothDeviceView;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
