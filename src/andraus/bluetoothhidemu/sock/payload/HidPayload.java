@@ -1,11 +1,15 @@
 package andraus.bluetoothhidemu.sock.payload;
 
+import andraus.bluetoothhidemu.BluetoothHidEmuActivity;
+
 /**
  * Generic payload implementation.
  */
 public abstract class HidPayload {
+	
+    protected static final String TAG = BluetoothHidEmuActivity.TAG;
     
-    protected byte[] mPayload = null;
+    protected static byte[] mPayload = null;
     
     /**
      * 

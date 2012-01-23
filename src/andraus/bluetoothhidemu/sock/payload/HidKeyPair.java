@@ -1,9 +1,9 @@
 package andraus.bluetoothhidemu.sock.payload;
 
 /**
- * 
+ * Class to represent a "hid key" in terms of a (modifier, hid_code) pair.
  */
-public class HidByteSet {
+public class HidKeyPair {
     
     public static final char ENTER = '\n';
     public static final char DEL = '\b';
@@ -15,7 +15,7 @@ public class HidByteSet {
     private int code;
     private int mod;
     
-    public HidByteSet(int code, int mod) {
+    public HidKeyPair(int code, int mod) {
         this.code = code;
         this.mod = mod;
     }
