@@ -3,7 +3,7 @@ package andraus.bluetoothhidemu.sock;
 import java.io.IOException;
 import java.util.Set;
 
-import andraus.bluetoothhidemu.BluetoothKeybEmuActivity;
+import andraus.bluetoothhidemu.BluetoothHidEmuActivity;
 import andraus.bluetoothhidemu.helper.BluetoothConnHelper;
 import andraus.bluetoothhidemu.util.DoLog;
 import android.bluetooth.BluetoothAdapter;
@@ -16,7 +16,7 @@ import android.bluetooth.BluetoothSocket;
  */
 public class SocketManager {
     
-    private String TAG = BluetoothKeybEmuActivity.TAG;
+    private String TAG = BluetoothHidEmuActivity.TAG;
     
     private static SocketManager mInstance = null;
     

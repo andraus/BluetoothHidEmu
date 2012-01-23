@@ -20,7 +20,7 @@ import android.widget.ImageView;
  */
 public class ButtonClickListener implements OnClickListener, OnLongClickListener {
     
-    private static final String TAG = BluetoothKeybEmuActivity.TAG;
+    private static final String TAG = BluetoothHidEmuActivity.TAG;
     
     private SocketManager mSocketManager = null;
     private int mButton = HidProtocolManager.MOUSE_BUTTON_NONE;

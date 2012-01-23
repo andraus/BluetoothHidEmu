@@ -12,7 +12,7 @@ import java.io.OutputStreamWriter;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
-import andraus.bluetoothhidemu.BluetoothKeybEmuActivity;
+import andraus.bluetoothhidemu.BluetoothHidEmuActivity;
 import andraus.bluetoothhidemu.R;
 import andraus.bluetoothhidemu.util.DoLog;
 import android.bluetooth.BluetoothAdapter;
@@ -24,7 +24,7 @@ import android.os.ParcelUuid;
 public class BluetoothConnHelperGenericImpl extends BluetoothConnHelper {
     
 
-    private static final String TAG = BluetoothKeybEmuActivity.TAG;
+    private static final String TAG = BluetoothHidEmuActivity.TAG;
     
     private static final String CMD_SU = "su";
 

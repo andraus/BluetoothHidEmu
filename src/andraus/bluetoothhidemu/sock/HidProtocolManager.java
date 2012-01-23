@@ -4,7 +4,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import andraus.bluetoothhidemu.BluetoothKeybEmuActivity;
+import andraus.bluetoothhidemu.BluetoothHidEmuActivity;
 import andraus.bluetoothhidemu.util.DoLog;
 
 public class HidProtocolManager {
@@ -12,7 +12,7 @@ public class HidProtocolManager {
     // Singleton instance
     private static final HidProtocolManager mInstance = new HidProtocolManager();
     
-    private static final String TAG = BluetoothKeybEmuActivity.TAG;
+    private static final String TAG = BluetoothHidEmuActivity.TAG;
     
     private static final int PROTO_KEYBOARD = 0x01;
     private static final int PROTO_MOUSE = 0x02;

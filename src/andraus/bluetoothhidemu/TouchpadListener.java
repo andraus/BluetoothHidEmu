@@ -14,7 +14,7 @@ import android.view.View.OnTouchListener;
  */
 public class TouchpadListener implements OnTouchListener {
     
-    private static final String TAG = BluetoothKeybEmuActivity.TAG;
+    private static final String TAG = BluetoothHidEmuActivity.TAG;
     
     private float mPointerMultiplier = 1.5f;
     

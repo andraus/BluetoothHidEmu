@@ -5,13 +5,13 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 
-import andraus.bluetoothhidemu.BluetoothKeybEmuActivity;
+import andraus.bluetoothhidemu.BluetoothHidEmuActivity;
 import andraus.bluetoothhidemu.util.DoLog;
 import android.bluetooth.BluetoothSocket;
 
 public class BluetoothSocketThread extends Thread {
 	
-	private String TAG = BluetoothKeybEmuActivity.TAG + "Comm";
+	private String TAG = BluetoothHidEmuActivity.TAG + "Comm";
 	
 	private static final int BUF_SIZE = 16;
 	

@@ -19,7 +19,7 @@
         android:label="@string/app_name">
         <activity
             android:label="@string/app_name"
-            android:name="andraus.bluetoothhidemu.BluetoothKeybEmuActivity"
+            android:name=".BluetoothHidEmuActivity"
             android:configChanges="orientation">
             <intent-filter >
                 <action android:name="android.intent.action.MAIN" />

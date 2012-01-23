@@ -3,7 +3,7 @@
 
     <string name="button_start">Start</string>
     <string name="button_stop">Stop</string>
-    <string name="app_name">BluetoothKeybEmu</string>
+    <string name="app_name">Bluetooth Input Emulator</string>
     <string name="device_prompt">Select a paired device</string>
     
     <string name="msg_no_root">No root access.</string>

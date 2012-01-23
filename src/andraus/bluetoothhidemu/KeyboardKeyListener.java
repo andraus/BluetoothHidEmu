@@ -16,7 +16,7 @@ import android.view.View;
  */
 public class KeyboardKeyListener implements KeyListener {
     
-    private static final String TAG = BluetoothKeybEmuActivity.TAG;
+    private static final String TAG = BluetoothHidEmuActivity.TAG;
     
     private SocketManager mSocketManager = null;
     

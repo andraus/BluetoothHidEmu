@@ -47,9 +47,9 @@ import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ViewFlipper;
 
-public class BluetoothKeybEmuActivity extends Activity {
+public class BluetoothHidEmuActivity extends Activity {
 	
-	public static String TAG = "BluetoothKeyb";
+	public static String TAG = "BluetoothHidEmu";
 	
     private static final int HANDLER_MONITOR_SOCKET = 0;
     private static final int HANDLER_MONITOR_PAIRING = 1;

@@ -12,7 +12,7 @@ import android.text.TextWatcher;
  */
 public class KeyboardTextWatcher implements TextWatcher {
     
-    private static final String TAG = BluetoothKeybEmuActivity.TAG;
+    private static final String TAG = BluetoothHidEmuActivity.TAG;
     
     private static final int MSG_START_COUNT = 0;
     
