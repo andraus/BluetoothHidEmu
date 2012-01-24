@@ -140,7 +140,7 @@ public class HidKeyboardPayload extends HidPayload {
      * @param value
      */
     public void setModifier(int value) {
-        setByte(0x02, value);
+        setByte(2, value);
     }
     
     /**
@@ -148,7 +148,7 @@ public class HidKeyboardPayload extends HidPayload {
      * @param value
      */
     public void setKeycode(int value) {
-        setByte(0x04, value);
+        setByte(4, value);
     }
     
     /**

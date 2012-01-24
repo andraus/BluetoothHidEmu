@@ -23,15 +23,16 @@ public class ButtonClickListener implements OnClickListener, OnLongClickListener
     private static final String TAG = BluetoothHidEmuActivity.TAG;
     
     private SocketManager mSocketManager = null;
-    private int mButton = HidPointerPayload.MOUSE_BUTTON_NONE;
     
     private HidPointerPayload mHidPayload = null;
     
     private AnimationSet mClickAnimation = null;
     private Vibrator mVibrator;
     
+    private int mButton = HidPointerPayload.MOUSE_BUTTON_NONE;
+    private boolean mIsLockable = true;
+    
     private boolean mIsButtonLocked = false;
-    private boolean mIsLockable = false;
 
     /**
      * 
@@ -44,9 +45,9 @@ public class ButtonClickListener implements OnClickListener, OnLongClickListener
         super();
 
         mSocketManager = socketManager;
+        mHidPayload = hidPayload;
         mButton = button;
         mIsLockable = isLockable;
-        mHidPayload = hidPayload;
         
         mClickAnimation = new AnimationSet(true);
         mClickAnimation.addAnimation(new ScaleAnimation(1f, 0.9f, 1f, 0.9f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f));
@@ -65,9 +66,7 @@ public class ButtonClickListener implements OnClickListener, OnLongClickListener
      */
     @Override
     public void onClick(View view) {
-        
         drawButton(view,  false);
-        mHidPayload.resetBytes();
         
         view.startAnimation(mClickAnimation);
         if (mVibrator != null) {
@@ -75,17 +74,21 @@ public class ButtonClickListener implements OnClickListener, OnLongClickListener
         }
         
         if (!mIsButtonLocked) {
-            mHidPayload.setButton(mButton);
+            mHidPayload.movePointer(0, 0);
+            mHidPayload.clickButton(mButton);
             mSocketManager.sendPayload(mHidPayload);
         } else {
             mIsButtonLocked = false;
         }
-        mHidPayload.setButton(HidPointerPayload.MOUSE_BUTTON_NONE);
+        mHidPayload.movePointer(0, 0);
+        mHidPayload.releaseButton(mButton);
         mSocketManager.sendPayload(mHidPayload);
 
     }
 
-
+    /**
+     * 
+     */
     @Override
     public boolean onLongClick(View view) {
         
@@ -94,10 +97,10 @@ public class ButtonClickListener implements OnClickListener, OnLongClickListener
                 onClick(view);
             } else {
                 drawButton(view, true);
-                mHidPayload.resetBytes();
-                
                 mIsButtonLocked = true;
                 DoLog.d(TAG, "set button locked to " + mIsButtonLocked);
+                mHidPayload.movePointer(0, 0);
+                mHidPayload.clickButton(mButton);
                 mSocketManager.sendPayload(mHidPayload);
             }
         } else {

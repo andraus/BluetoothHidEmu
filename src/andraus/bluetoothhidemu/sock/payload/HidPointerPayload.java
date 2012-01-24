@@ -13,10 +13,9 @@ public class HidPointerPayload extends HidPayload {
     public static final int MAX_POINTER_MOVE = 0x7f;
     
     public static final int MOUSE_BUTTON_NONE = 0x00;
-    public static final int MOUSE_BUTTON_1 = 0x01;
-    public static final int MOUSE_BUTTON_2 = 0x02;
-	
-
+    public static final int MOUSE_BUTTON_1 = 0x01; // bit 0
+    public static final int MOUSE_BUTTON_2 = 0x02; // bit 1
+    
 	/**
 	 * 
 	 */
@@ -33,28 +32,36 @@ public class HidPointerPayload extends HidPayload {
 	
 	/**
 	 * 
-	 * @param button
-	 */
-	public void setButton(int button) {
-		setByte(0x02, button);
-	}
-	
-	/**
-	 * 
 	 * @param x
 	 * @param y
 	 */
-	public void setCoords(int x, int y) {
-		setByte(0x03, x);
-		setByte(0x04, y);
+	public void movePointer(int x, int y) {
+		setByte(3, x);
+		setByte(4, y);
 	}
 	
 	/**
 	 * 
 	 */
 	public void resetBytes() {
-		setButton(0x00);
-		setCoords(0x00, 0x00);
+		setByte(2, MOUSE_BUTTON_NONE);
+		movePointer(0x00, 0x00);
+	}
+	
+	/**
+	 * 
+	 */
+	public void clickButton(int button) {
+	    // enable bit
+	    setByte(2, mPayload[2] | button);
+	}
+	
+	/**
+	 * 
+	 */
+	public void releaseButton(int button) {
+	    // disable bit
+	    setByte(2, mPayload[2] ^ button);
 	}
 
 }

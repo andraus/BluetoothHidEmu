@@ -49,7 +49,7 @@ public class TouchpadListener implements OnTouchListener {
                     distanceY = distanceY > 0 ? HidPointerPayload.MAX_POINTER_MOVE : -HidPointerPayload.MAX_POINTER_MOVE;
                 }
                 //DoLog.d(TAG, String.format("moving(%d, %d)", (int)distanceX, (int)distanceY));
-                mHidPayload.setCoords((int)distanceX, (int)distanceY);
+                mHidPayload.movePointer((int)distanceX, (int)distanceY);
                 mSocketManager.sendPayload(mHidPayload);
                 
             } else {
