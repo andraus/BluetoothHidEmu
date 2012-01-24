@@ -9,7 +9,7 @@ public abstract class HidPayload {
 	
     protected static final String TAG = BluetoothHidEmuActivity.TAG;
     
-    protected static byte[] mPayload = null;
+    protected byte[] mPayload = null;
     
     /**
      * 
@@ -33,7 +33,7 @@ public abstract class HidPayload {
      * @param value
      * @return
      */
-    public boolean setByte(int index, int value) {
+    protected boolean setByte(int index, int value) {
         if (index < mPayload.length) {
             mPayload[index] = (byte) value;
         } else {
@@ -42,6 +42,34 @@ public abstract class HidPayload {
         
         return true;
     }
+    
+    /**
+     * 
+     */
+    public abstract void resetBytes();
+    
+    /**
+     * Assemble a HID payload byte array for disconnect request.
+     * @return
+     */
+    public static byte[] disconnectReq() {
+        byte[] bytes = new byte[10];
+        
+        bytes[0] = (byte)0xa1;
+        bytes[1] = (byte)0x06; // Disconnection Request
+        bytes[2] = (byte)0x00;
+        bytes[3] = (byte)0x00;
+        bytes[4] = (byte)0x00;
+        bytes[5] = (byte)0x00;
+        bytes[6] = (byte)0x00;
+        bytes[7] = (byte)0x00;
+        bytes[8] = (byte)0x00;
+        bytes[9] = (byte)0x00;
+        
+        return bytes;
+        
+    }
+
     
 
 }

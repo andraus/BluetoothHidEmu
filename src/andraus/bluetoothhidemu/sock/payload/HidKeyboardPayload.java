@@ -4,7 +4,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import andraus.bluetoothhidemu.BluetoothHidEmuActivity;
 import andraus.bluetoothhidemu.util.DoLog;
 
 /**

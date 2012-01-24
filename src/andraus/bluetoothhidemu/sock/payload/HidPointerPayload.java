@@ -9,6 +9,13 @@ public class HidPointerPayload extends HidPayload {
 	
 	private static final int SIZE = 6;
 	private static final int REPORT_ID_POINTER = 0x02;
+	
+    public static final int MAX_POINTER_MOVE = 0x7f;
+    
+    public static final int MOUSE_BUTTON_NONE = 0x00;
+    public static final int MOUSE_BUTTON_1 = 0x01;
+    public static final int MOUSE_BUTTON_2 = 0x02;
+	
 
 	/**
 	 * 

@@ -32,8 +32,6 @@ public class SocketManager {
     private BluetoothSocketThread mCtrlThread = null;
     private BluetoothSocketThread mIntrThread = null;
     
-    private final HidProtocolManager mHidManager = HidProtocolManager.getInstance();
-
     /**
      * 
      * @param bluetoothAdapter
@@ -144,7 +142,7 @@ public class SocketManager {
         DoLog.d(TAG, "stop bluetooth connections");
         
         if (mIntrThread != null) {
-            mIntrThread.sendBytes(mHidManager.disconnectReq());
+            mIntrThread.sendBytes(HidPayload.disconnectReq());
             mIntrThread.stopGracefully();
             mIntrThread = null;
         }

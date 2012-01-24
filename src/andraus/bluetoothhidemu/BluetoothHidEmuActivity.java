@@ -8,8 +8,8 @@ import java.util.Set;
 import andraus.bluetoothhidemu.helper.BluetoothConnHelper;
 import andraus.bluetoothhidemu.helper.BluetoothConnHelperFactory;
 import andraus.bluetoothhidemu.helper.CleanupExceptionHandler;
-import andraus.bluetoothhidemu.sock.HidProtocolManager;
 import andraus.bluetoothhidemu.sock.SocketManager;
+import andraus.bluetoothhidemu.sock.payload.HidPointerPayload;
 import andraus.bluetoothhidemu.util.DoLog;
 import andraus.bluetoothhidemu.view.BluetoothDeviceView;
 import android.app.Activity;
@@ -502,13 +502,15 @@ public class BluetoothHidEmuActivity extends Activity {
 
     	    if (mStatusState != StatusIconStates.ON) { 
     	        setStatusIconState(StatusIconStates.ON);
+    	        
+    	        HidPointerPayload hidPayload = new HidPointerPayload();
     		
-    	        mTouchpadImageView.setOnTouchListener(new TouchpadListener(getApplicationContext(), mSocketManager, mLeftButtonImageView));
+    	        mTouchpadImageView.setOnTouchListener(new TouchpadListener(getApplicationContext(), mSocketManager, mLeftButtonImageView, hidPayload));
     	    
-    	        ButtonClickListener leftClickListener = new ButtonClickListener(getApplicationContext(), mSocketManager, HidProtocolManager.MOUSE_BUTTON_1, true);
+    	        ButtonClickListener leftClickListener = new ButtonClickListener(getApplicationContext(), mSocketManager, HidPointerPayload.MOUSE_BUTTON_1, true, hidPayload);
     	        mLeftButtonImageView.setOnClickListener(leftClickListener);
     	        mLeftButtonImageView.setOnLongClickListener(leftClickListener);
-    	        ButtonClickListener rightClickListener = new ButtonClickListener(getApplicationContext(), mSocketManager, HidProtocolManager.MOUSE_BUTTON_2, false);
+    	        ButtonClickListener rightClickListener = new ButtonClickListener(getApplicationContext(), mSocketManager, HidPointerPayload.MOUSE_BUTTON_2, false, hidPayload);
     	        mRightButtonImageView.setOnClickListener(rightClickListener);
     	        mRightButtonImageView.setOnLongClickListener(rightClickListener);
     	    }
