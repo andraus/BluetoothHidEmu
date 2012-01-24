@@ -1,6 +1,7 @@
 package andraus.bluetoothhidemu;
 
 import andraus.bluetoothhidemu.sock.SocketManager;
+import andraus.bluetoothhidemu.sock.payload.HidKeyboardPayload;
 import andraus.bluetoothhidemu.util.DoLog;
 import android.os.Handler;
 import android.os.Message;
@@ -17,6 +18,8 @@ public class KeyboardTextWatcher implements TextWatcher {
     private static final int MSG_START_COUNT = 0;
     
     private SocketManager mSocketManager = null;
+    
+    private HidKeyboardPayload mHidPayload = new HidKeyboardPayload();
 
     /**
      * 
@@ -56,8 +59,10 @@ public class KeyboardTextWatcher implements TextWatcher {
         if (count > 0) {
             // character added
             char character = charSeq.charAt(start);
-            mSocketManager.sendChar(character);
-            mSocketManager.sendChar(Character.MIN_VALUE);
+            mHidPayload.assemblePayload(character);
+            mSocketManager.sendPayload(mHidPayload);
+            mHidPayload.assemblePayload(Character.MIN_VALUE);
+            mSocketManager.sendPayload(mHidPayload);
         }
 
     }

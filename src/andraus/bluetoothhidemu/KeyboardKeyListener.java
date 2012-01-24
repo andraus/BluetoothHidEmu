@@ -2,6 +2,7 @@ package andraus.bluetoothhidemu;
 
 import andraus.bluetoothhidemu.sock.SocketManager;
 import andraus.bluetoothhidemu.sock.payload.HidKeyPair;
+import andraus.bluetoothhidemu.sock.payload.HidKeyboardPayload;
 import andraus.bluetoothhidemu.util.DoLog;
 import android.text.Editable;
 import android.text.InputType;
@@ -21,6 +22,8 @@ public class KeyboardKeyListener implements KeyListener {
     private SocketManager mSocketManager = null;
     
     private TextKeyListener mTextKeyListener = null;
+    
+    private HidKeyboardPayload mHidPayload = new HidKeyboardPayload();
     
     public KeyboardKeyListener(SocketManager socketManager) {
         super();
@@ -48,10 +51,12 @@ public class KeyboardKeyListener implements KeyListener {
         
         case KeyEvent.KEYCODE_ENTER:
             TextKeyListener.clear(content);
-            mSocketManager.sendChar(HidKeyPair.ENTER);
+            mHidPayload.assemblePayload(HidKeyPair.ENTER);
+            mSocketManager.sendPayload(mHidPayload);
             return true;
         case KeyEvent.KEYCODE_DEL:
-            mSocketManager.sendChar(HidKeyPair.DEL);
+        	mHidPayload.assemblePayload(HidKeyPair.DEL);
+            mSocketManager.sendPayload(mHidPayload);
         default:
             return mTextKeyListener.onKeyDown(view, content, keyCode, event);
         }
@@ -68,7 +73,8 @@ public class KeyboardKeyListener implements KeyListener {
         DoLog.d(TAG, "onkeyUp()");
         
         if (keyCode == KeyEvent.KEYCODE_ENTER || keyCode == KeyEvent.KEYCODE_DEL) {
-            mSocketManager.sendChar(Character.MIN_VALUE);
+        	mHidPayload.assemblePayload(Character.MIN_VALUE);
+            mSocketManager.sendPayload(mHidPayload);
         }
         return mTextKeyListener.onKeyUp(view, content, keyCode, event);
     }

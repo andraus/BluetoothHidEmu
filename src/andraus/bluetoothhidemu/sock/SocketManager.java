@@ -5,6 +5,7 @@ import java.util.Set;
 
 import andraus.bluetoothhidemu.BluetoothHidEmuActivity;
 import andraus.bluetoothhidemu.helper.BluetoothConnHelper;
+import andraus.bluetoothhidemu.sock.payload.HidPayload;
 import andraus.bluetoothhidemu.util.DoLog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -67,47 +68,12 @@ public class SocketManager {
     
     /**
      * 
-     * @param keyCode
+     * @param hidPayload
      */
-    public void sendChar(char character) {
+    public void sendPayload(HidPayload hidPayload) {
 
-        if (mIntrThread != null && mIntrThread.isAlive()) {
-            byte[] payload = mHidManager.payloadKeyb(character);
-            
-            if (payload != null) {
-                mIntrThread.sendBytes(payload);
-            }
-        }
-    }
-
-    /**
-     * 
-     * @param x
-     * @param y
-     */
-    public void sendPointerMove(int x, int y) {
-        
-        if (mIntrThread != null && mIntrThread.isAlive()) {
-            byte[] payload = mHidManager.payloadMouseMove(x, y);
-            
-            if (payload != null) {
-                mIntrThread.sendBytes(payload);
-            }
-        }
-    }
-
-    /**
-     * 
-     * @param button
-     */
-    public void sendPointerButton(int button) {
-        
-        if (mIntrThread != null && mIntrThread.isAlive()) {
-            byte[] payload = mHidManager.payloadMouseButton(button);
-            
-            if (payload != null) {
-                mIntrThread.sendBytes(payload);
-            }
+    	if (mIntrThread != null && mIntrThread.isAlive()) {
+            mIntrThread.sendBytes(hidPayload.getPayload());
         }
     }
 

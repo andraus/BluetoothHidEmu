@@ -165,9 +165,9 @@ public class HidKeyboardPayload extends HidPayload {
      * @param keyCode - Android framework keycode
      * 
      */
-    public byte[] assemblePayload(char character) {
+    public void assemblePayload(char character) {
         
-        
+        resetBytes();
         // logic to handle uppercase letters. this avoids duplicating entries in KEY_HID_MAP for uppercase letters.
         int overrideModifier = -1;
         if (Character.isUpperCase(character)) {
@@ -181,13 +181,11 @@ public class HidKeyboardPayload extends HidPayload {
         
         if (hidByteSet == null) {
             DoLog.w(TAG, "No hid code found for character = " + character);
-            return null;
+        } else {
+        	setModifier(hidByteSet.getMod());
+        	setKeycode(hidByteSet.getCode());
         }
-        
-        setModifier(hidByteSet.getMod());
-        setKeycode(hidByteSet.getCode());
-        
-        return mPayload;
+
     }
 
 
