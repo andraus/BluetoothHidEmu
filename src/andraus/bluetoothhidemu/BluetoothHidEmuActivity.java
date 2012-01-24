@@ -39,6 +39,7 @@ import android.view.animation.TranslateAnimation;
 import android.view.inputmethod.EditorInfo;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.RadioGroup;
 import android.widget.Spinner;
@@ -75,6 +76,8 @@ public class BluetoothHidEmuActivity extends Activity {
 	private ImageView mTouchpadImageView = null;
 	private ImageView mLeftButtonImageView = null;
 	private ImageView mRightButtonImageView = null;
+	
+	private Button mEscButton = null;
 	
 	private BluetoothDeviceArrayAdapter mBluetoothDeviceArrayAdapter = null;
 	
@@ -194,6 +197,9 @@ public class BluetoothHidEmuActivity extends Activity {
          */
         mEchoEditText.setKeyListener(new KeyboardKeyListener(mSocketManager));
         mEchoEditText.addTextChangedListener(new KeyboardTextWatcher(mSocketManager));
+        
+        // TODO: complete this code
+        mEscButton.setOnClickListener(new SpecialKeyListener(mSocketManager));
 		
 
         
