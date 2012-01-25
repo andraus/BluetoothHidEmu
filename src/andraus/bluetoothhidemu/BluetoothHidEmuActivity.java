@@ -209,9 +209,9 @@ public class BluetoothHidEmuActivity extends Activity {
 	}
 	
 	private void registerListenerForSpecialKeys() {
-	    SpecialKeyListener specialKeyListener = new SpecialKeyListener(mSocketManager);
+	    SpecialKeyListener specialKeyListener = new SpecialKeyListener(getApplicationContext(), mSocketManager);
 	    Button button = (Button) findViewById(R.id.UpButton);
-	    button.setOnClickListener(specialKeyListener);
+	    button.setOnTouchListener(specialKeyListener);
 	    
 	}
 	
