@@ -6,7 +6,7 @@ package andraus.bluetoothhidemu.sock.payload;
  */
 public class HidSixaxisPayload extends HidPayload {
     
-    private static final int SIZE = 10;
+    private static final int SIZE = 50;
     private static final int REPORT_ID_KEYBOARD = 0x01;
     
     /**
@@ -98,6 +98,7 @@ public class HidSixaxisPayload extends HidPayload {
      */
     public void pressCircle() {
         mPayload[4] = (byte)0x20;
+        mPayload[24] = (byte)0xff;
     }
     
     /**
@@ -105,6 +106,7 @@ public class HidSixaxisPayload extends HidPayload {
      */
     public void releaseCircle() {
         mPayload[4] = (byte)0x00;
+        mPayload[24] = (byte) 0x00;
     }
 
 }

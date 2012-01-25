@@ -198,7 +198,7 @@ public class BluetoothHidEmuActivity extends Activity {
         mEchoEditText.setKeyListener(new KeyboardKeyListener(mSocketManager));
         mEchoEditText.addTextChangedListener(new KeyboardTextWatcher(mSocketManager));
         
-        // TODO: complete this code
+        mEscButton = (Button) findViewById(R.id.EscButton);
         mEscButton.setOnClickListener(new SpecialKeyListener(mSocketManager));
 		
 
