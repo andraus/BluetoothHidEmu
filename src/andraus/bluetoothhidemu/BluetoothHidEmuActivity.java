@@ -77,8 +77,6 @@ public class BluetoothHidEmuActivity extends Activity {
 	private ImageView mLeftButtonImageView = null;
 	private ImageView mRightButtonImageView = null;
 	
-	private Button mEscButton = null;
-	
 	private BluetoothDeviceArrayAdapter mBluetoothDeviceArrayAdapter = null;
 	
 	private BluetoothAdapter mBluetoothAdapter = null;
@@ -189,7 +187,7 @@ public class BluetoothHidEmuActivity extends Activity {
 		
         /*
          * EchoEditText needs both listeners below:
-         * KeyboardKeyListener is used to intercept special key events - enter, backspace, etc.
+         * KeyboardKeyListener is used to intercept a couple of key events - enter and backspace.
          * KeyboardTextWatcher is used to intercept regular text keys.
          * 
          * I would love to only use one of them, but unfortunately, it's not reliable.
@@ -198,11 +196,7 @@ public class BluetoothHidEmuActivity extends Activity {
         mEchoEditText.setKeyListener(new KeyboardKeyListener(mSocketManager));
         mEchoEditText.addTextChangedListener(new KeyboardTextWatcher(mSocketManager));
         
-        mEscButton = (Button) findViewById(R.id.EscButton);
-        mEscButton.setOnClickListener(new SpecialKeyListener(mSocketManager));
-		
-
-        
+        registerListenerForSpecialKeys();        
         
         registerIntentFilters();
         
@@ -212,6 +206,13 @@ public class BluetoothHidEmuActivity extends Activity {
         
         populateBluetoothDeviceCombo();
         
+	}
+	
+	private void registerListenerForSpecialKeys() {
+	    SpecialKeyListener specialKeyListener = new SpecialKeyListener(mSocketManager);
+	    Button button = (Button) findViewById(R.id.UpButton);
+	    button.setOnClickListener(specialKeyListener);
+	    
 	}
 	
 	/**
