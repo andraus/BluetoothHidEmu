@@ -11,6 +11,7 @@ import andraus.bluetoothhidemu.helper.CleanupExceptionHandler;
 import andraus.bluetoothhidemu.sock.SocketManager;
 import andraus.bluetoothhidemu.sock.payload.HidPointerPayload;
 import andraus.bluetoothhidemu.util.DoLog;
+import andraus.bluetoothhidemu.view.ArrowButton;
 import andraus.bluetoothhidemu.view.BluetoothDeviceView;
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -39,7 +40,6 @@ import android.view.animation.TranslateAnimation;
 import android.view.inputmethod.EditorInfo;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.RadioGroup;
 import android.widget.Spinner;
@@ -196,7 +196,7 @@ public class BluetoothHidEmuActivity extends Activity {
         mEchoEditText.setKeyListener(new KeyboardKeyListener(mSocketManager));
         mEchoEditText.addTextChangedListener(new KeyboardTextWatcher(mSocketManager));
         
-        registerListenerForSpecialKeys();        
+        setupSpecialKeys();        
         
         registerIntentFilters();
         
@@ -208,10 +208,16 @@ public class BluetoothHidEmuActivity extends Activity {
         
 	}
 	
-	private void registerListenerForSpecialKeys() {
+	private void setupSpecialKeys() {
 	    SpecialKeyListener specialKeyListener = new SpecialKeyListener(getApplicationContext(), mSocketManager);
-	    Button button = (Button) findViewById(R.id.UpButton);
+	    ArrowButton button = (ArrowButton) findViewById(R.id.UpButton);
 	    button.setOnTouchListener(specialKeyListener);
+	    button = (ArrowButton) findViewById(R.id.DownButton);
+        button.setOnTouchListener(specialKeyListener);
+        button = (ArrowButton) findViewById(R.id.LeftButton);
+        button.setOnTouchListener(specialKeyListener);
+        button = (ArrowButton) findViewById(R.id.RightButton);
+        button.setOnTouchListener(specialKeyListener);
 	    
 	}
 	
