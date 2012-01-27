@@ -3,6 +3,7 @@ package andraus.bluetoothhidemu;
 import andraus.bluetoothhidemu.sock.SocketManager;
 import andraus.bluetoothhidemu.sock.payload.HidKeyboardPayload;
 import andraus.bluetoothhidemu.view.ArrowButton;
+import andraus.bluetoothhidemu.view.ViewUtils;
 import android.content.Context;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -31,14 +32,15 @@ public class SpecialKeyListener implements OnTouchListener {
 	 * 
 	 */
 	@Override
-	public boolean onTouch(View v, MotionEvent event) {
+	public boolean onTouch(View view, MotionEvent event) {
 		
-		ArrowButton button = (ArrowButton) v;
+		ArrowButton button = (ArrowButton) view;
 		
 		switch (event.getAction()) {
 		case MotionEvent.ACTION_DOWN:
+		    view.startAnimation(ViewUtils.getClickAnimation());
 			button.setPressed(true);
-			mHidPayload.assemblePayload(getKeyCode(v.getId()));
+			mHidPayload.assemblePayload(getKeyCode(view.getId()));
 			mSocketManager.sendPayload(mHidPayload);
 			return true;
 		case MotionEvent.ACTION_UP:

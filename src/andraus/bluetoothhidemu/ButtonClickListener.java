@@ -3,6 +3,7 @@ package andraus.bluetoothhidemu;
 import andraus.bluetoothhidemu.sock.SocketManager;
 import andraus.bluetoothhidemu.sock.payload.HidPointerPayload;
 import andraus.bluetoothhidemu.util.DoLog;
+import andraus.bluetoothhidemu.view.ViewUtils;
 import android.content.Context;
 import android.graphics.LightingColorFilter;
 import android.os.Vibrator;
@@ -26,7 +27,6 @@ public class ButtonClickListener implements OnClickListener, OnLongClickListener
     
     private HidPointerPayload mHidPayload = null;
     
-    private AnimationSet mClickAnimation = null;
     private Vibrator mVibrator;
     
     private int mButton = HidPointerPayload.MOUSE_BUTTON_NONE;
@@ -49,13 +49,6 @@ public class ButtonClickListener implements OnClickListener, OnLongClickListener
         mButton = button;
         mIsLockable = isLockable;
         
-        mClickAnimation = new AnimationSet(true);
-        mClickAnimation.addAnimation(new ScaleAnimation(1f, 0.9f, 1f, 0.9f, Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f));
-        mClickAnimation.setInterpolator(new DecelerateInterpolator(10f));
-        mClickAnimation.setDuration(Constants.CLICK_VIBRATE_MS);
-        mClickAnimation.setRepeatCount(1);
-        mClickAnimation.setRepeatMode(Animation.REVERSE);
-        
         mVibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
         
     }
@@ -68,7 +61,7 @@ public class ButtonClickListener implements OnClickListener, OnLongClickListener
     public void onClick(View view) {
         drawButton(view,  false);
         
-        view.startAnimation(mClickAnimation);
+        view.startAnimation(ViewUtils.getClickAnimation());
         if (mVibrator != null) {
             mVibrator.vibrate(Constants.CLICK_VIBRATE_MS);
         }
@@ -118,7 +111,7 @@ public class ButtonClickListener implements OnClickListener, OnLongClickListener
     private void drawButton(View view, boolean isHold) {
         ImageView imgView = (ImageView) view;
         if (isHold) {
-            imgView.setColorFilter(new LightingColorFilter(0xfcc0000, 0xff555555));
+            imgView.setColorFilter(new LightingColorFilter(0xff4a6c9b, 0xff000055));
         } else {
             imgView.clearColorFilter();
         }

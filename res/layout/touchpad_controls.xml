@@ -12,20 +12,6 @@
                       android:paddingRight="10dp"
                       android:layout_alignParentTop="true" >
     
-        <andraus.bluetoothhidemu.EchoEditText
-            android:id="@+id/EchoEditText"
-            android:layout_width="match_parent"
-            android:layout_height="35dp"
-            android:layout_weight="1"
-            android:layout_gravity="center"
-            android:textStyle="normal"
-            android:maxLines="1"
-            android:scrollHorizontally="true"
-            android:textAppearance="?android:attr/textAppearanceSmall">
-    
-            <requestFocus />
-        </andraus.bluetoothhidemu.EchoEditText>
-        
         </LinearLayout>
         
         <LinearLayout
@@ -59,7 +45,7 @@
                                    android:paddingLeft="8dp"
                                    android:paddingRight="8dp"
                                    android:paddingBottom="18dp"
-                                   android:src="@drawable/mouse_button_shape" />
+                                   android:src="@drawable/key_shape" />
                         
                         <ImageView android:id="@+id/RightButtonImageView"
                                    android:layout_width="fill_parent"
@@ -69,7 +55,7 @@
                                    android:paddingLeft="8dp"
                                    android:paddingRight="8dp"
                                    android:paddingBottom="18dp"
-                                   android:src="@drawable/mouse_button_shape" />
+                                   android:src="@drawable/key_shape" />
                         
                 
             </LinearLayout>

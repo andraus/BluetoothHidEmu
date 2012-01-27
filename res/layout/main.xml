@@ -15,10 +15,6 @@
             android:layout_height="match_parent"
             android:layout_weight="0.65"
             android:gravity="center"
-            android:shadowColor="#ffff0000"
-            android:shadowDx="0.0"
-            android:shadowDy="0.0"
-            android:shadowRadius="6"
             android:text="@string/msg_status_disconnected"
             android:textAppearance="?android:attr/textAppearanceSmall"
             android:textColor="#ffff0000"
@@ -32,39 +28,57 @@
             android:layout_weight="0.35"
             android:drawSelectorOnTop="false"
             android:prompt="@string/device_prompt"  />
-        
+
     </LinearLayout>
     
-    <RadioGroup
-        android:id="@+id/NavRadioGroup"
-        android:layout_width="fill_parent"
-        android:layout_height="35dp"
-        android:gravity="center"
-        android:orientation="horizontal" >
-
-        <RadioButton
-            android:id="@+id/TouchpadRadioButton"
-            android:layout_gravity="left|center"
-            android:layout_weight="1"
-            android:checked="true"
-            android:text="@string/msg_button_touchpad" />
-
-        <RadioButton
-            android:id="@+id/MultimediaRadioButton"
-            android:layout_gravity="right|center"
-            android:text="@string/msg_button_multimedia" />
+    <LinearLayout android:id="@+id/ControlsLayout"
+                  android:layout_width="match_parent"
+                  android:layout_height="match_parent"
+                  android:orientation="vertical">
         
-    </RadioGroup>
-    
-    <ViewFlipper android:id="@+id/MainViewFlipper"
-                 android:layout_width="fill_parent"
-                 android:layout_height="fill_parent">
-        
-        <include android:id="@+id/TouchpadControlsLayout"  layout="@layout/touchpad_controls" />
-        <include android:id="@+id/MultimediaLayout" layout="@layout/multimedia_controls" />
-            
-    </ViewFlipper>
-            
-        
+	    <RadioGroup
+	        android:id="@+id/NavRadioGroup"
+	        android:layout_width="fill_parent"
+	        android:layout_height="35dp"
+	        android:gravity="center"
+	        android:orientation="horizontal" >
+	
+	        <RadioButton
+	            android:id="@+id/TouchpadRadioButton"
+	            android:layout_gravity="left|center"
+	            android:layout_weight="1"
+	            android:checked="true"
+	            android:text="@string/msg_button_touchpad" />
+	
+	        <RadioButton
+	            android:id="@+id/SpecialKeysRadioButton"
+	            android:layout_gravity="right|center"
+	            android:text="@string/msg_button_multimedia" />
+	        
+	    </RadioGroup>
+	    
+	    <andraus.bluetoothhidemu.view.EchoEditText
+	        android:id="@+id/EchoEditText"
+	        android:layout_width="fill_parent"
+	        android:layout_height="35dp"
+	        android:layout_gravity="center"
+	        android:textStyle="normal"
+	        android:maxLines="1"
+	        android:scrollHorizontally="true"
+	        android:textAppearance="?android:attr/textAppearanceSmall">
+	    
+	            <requestFocus />
+	        </andraus.bluetoothhidemu.view.EchoEditText>
+	        
+	    <ViewFlipper android:id="@+id/MainViewFlipper"
+	            android:layout_width="fill_parent"
+	            android:layout_height="fill_parent">
+	        
+	        <include android:id="@+id/TouchpadLayout"  layout="@layout/touchpad_controls" />
+	        <include android:id="@+id/SpecialKeysLayout" layout="@layout/special_controls" />
+	            
+	    </ViewFlipper>
+	    
+    </LinearLayout>
     
 </LinearLayout>

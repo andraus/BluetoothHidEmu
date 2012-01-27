@@ -1,4 +1,4 @@
-package andraus.bluetoothhidemu;
+package andraus.bluetoothhidemu.view;
 
 import android.content.Context;
 import android.util.AttributeSet;

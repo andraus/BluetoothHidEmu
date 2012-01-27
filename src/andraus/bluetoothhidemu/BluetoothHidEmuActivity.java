@@ -13,6 +13,7 @@ import andraus.bluetoothhidemu.sock.payload.HidPointerPayload;
 import andraus.bluetoothhidemu.util.DoLog;
 import andraus.bluetoothhidemu.view.ArrowButton;
 import andraus.bluetoothhidemu.view.BluetoothDeviceView;
+import andraus.bluetoothhidemu.view.EchoEditText;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
@@ -150,7 +151,7 @@ public class BluetoothHidEmuActivity extends Activity {
 				case R.id.TouchpadRadioButton:
 					mMainViewFlipper.showNext();
 					break;
-				case R.id.MultimediaRadioButton:
+				case R.id.SpecialKeysRadioButton:
 					mMainViewFlipper.showPrevious();
 					break;
 				}
@@ -172,10 +173,11 @@ public class BluetoothHidEmuActivity extends Activity {
 
 		mDeviceSpinner = (Spinner) findViewById(R.id.DeviceSpinner);
 		mStatusTextView = (TextView) findViewById(R.id.StatusTextView);
+		mStatusTextView.setShadowLayer(6, 0f, 0f, Color.BLACK);
 		
 		setupNavigationButtons();
 		
-		mControlsLayout = (View) findViewById(R.id.TouchpadControlsLayout);
+		mControlsLayout = (View) findViewById(R.id.ControlsLayout);
 		mControlsLayout.setVisibility(View.INVISIBLE);
 		mTouchpadImageView = (ImageView) findViewById(R.id.TouchpadImageView);
 		mLeftButtonImageView = (ImageView) findViewById(R.id.LeftButtonImageView);
@@ -234,13 +236,12 @@ public class BluetoothHidEmuActivity extends Activity {
         Animation animation = null;
 	    switch (state) {
 	    case ON:
-	        DoLog.d(TAG, "ON!");
 	        if ((animation = mStatusTextView.getAnimation()) != null) {
 	            animation.cancel();
 	            mStatusTextView.setAnimation(null);
 	        }
 	        mStatusTextView.setTextColor(Color.GREEN);
-	        mStatusTextView.setShadowLayer(6, 0f, 0f, Color.GREEN);
+	        mStatusTextView.setShadowLayer(6, 0f, 0f, Color.BLACK);
 	        mStatusTextView.setText(getResources().getString(R.string.msg_status_connected));
 	        
 	        toggleScreenElements(View.VISIBLE);
@@ -253,7 +254,7 @@ public class BluetoothHidEmuActivity extends Activity {
                 mStatusTextView.setAnimation(null);
             }
             mStatusTextView.setTextColor(Color.RED);
-            mStatusTextView.setShadowLayer(6, 0f, 0f, Color.RED);
+            mStatusTextView.setShadowLayer(6, 0f, 0f, Color.BLACK);
             mStatusTextView.setText(getResources().getString(R.string.msg_status_disconnected));
             
             toggleScreenElements(View.INVISIBLE);
@@ -262,7 +263,7 @@ public class BluetoothHidEmuActivity extends Activity {
 	    case INTERMEDIATE:
 	        
 	        mStatusTextView.setTextColor(0xffffff00);
-	        mStatusTextView.setShadowLayer(6, 0f, 0f, 0xffffff00);
+	        mStatusTextView.setShadowLayer(6, 0f, 0f, Color.BLACK);
             mStatusTextView.setText(getResources().getString(R.string.msg_status_connecting));
 	        
             AlphaAnimation alphaAnim = new AlphaAnimation(1, 0.2f);
