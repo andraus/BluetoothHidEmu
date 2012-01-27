@@ -127,7 +127,7 @@ public class BluetoothSocketThread extends Thread {
 				DoLog.w(TAG, getName(), e);
 			}
 		}
-		
+		mState = STATE_DROPPED;
 	}
 	
 	public synchronized void stopGracefully() {
