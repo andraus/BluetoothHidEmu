@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
     android:background="@drawable/background_shape"
     android:gravity="right"
     android:orientation="vertical" >
@@ -11,7 +11,7 @@
 
         <TextView
             android:id="@+id/StatusTextView"
-            android:layout_width="fill_parent"
+            android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_weight="0.65"
             android:gravity="center"
@@ -23,7 +23,7 @@
 
         <Spinner
             android:id="@+id/DeviceSpinner"
-            android:layout_width="fill_parent"
+            android:layout_width="match_parent"
             android:layout_height="35dp"
             android:layout_weight="0.35"
             android:drawSelectorOnTop="false"
@@ -38,28 +38,36 @@
         
 	    <RadioGroup
 	        android:id="@+id/NavRadioGroup"
-	        android:layout_width="fill_parent"
-	        android:layout_height="35dp"
-	        android:gravity="center"
+	        android:layout_width="match_parent"
+	        android:layout_height="45dp"
 	        android:orientation="horizontal" >
 	
 	        <RadioButton
 	            android:id="@+id/TouchpadRadioButton"
-	            android:layout_gravity="left|center"
+	            android:layout_width="0dip"
+	            android:layout_height="match_parent"
 	            android:layout_weight="1"
 	            android:checked="true"
+	            android:button="@android:drawable/ic_input_get"
+	            android:background="@drawable/button_radio_tab"
+	            android:gravity="center"
 	            android:text="@string/msg_button_touchpad" />
 	
 	        <RadioButton
 	            android:id="@+id/SpecialKeysRadioButton"
-	            android:layout_gravity="right|center"
-	            android:text="@string/msg_button_multimedia" />
+	            android:layout_width="0dip"
+	            android:layout_height="match_parent"
+	            android:layout_weight="1"
+	            android:gravity="center"
+	            android:button="@android:drawable/ic_dialog_dialer"
+	            android:background="@drawable/button_radio_tab"
+	            android:text="@string/msg_button_special" />
 	        
 	    </RadioGroup>
 	    
 	    <andraus.bluetoothhidemu.view.EchoEditText
 	        android:id="@+id/EchoEditText"
-	        android:layout_width="fill_parent"
+	        android:layout_width="match_parent"
 	        android:layout_height="35dp"
 	        android:layout_gravity="center"
 	        android:textStyle="normal"
@@ -71,8 +79,8 @@
 	        </andraus.bluetoothhidemu.view.EchoEditText>
 	        
 	    <ViewFlipper android:id="@+id/MainViewFlipper"
-	            android:layout_width="fill_parent"
-	            android:layout_height="fill_parent">
+	            android:layout_width="match_parent"
+	            android:layout_height="match_parent">
 	        
 	        <include android:id="@+id/TouchpadLayout"  layout="@layout/touchpad_controls" />
 	        <include android:id="@+id/SpecialKeysLayout" layout="@layout/special_controls" />
