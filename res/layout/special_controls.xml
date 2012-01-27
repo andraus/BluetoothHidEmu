@@ -1,57 +1,62 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:orientation="vertical" >
+	    android:layout_width="match_parent"
+	    android:layout_height="match_parent"
+	    android:gravity="center_vertical"
+	    android:orientation="vertical" >
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center"
+        android:gravity="left"
         android:orientation="horizontal" >
 
+        <LinearLayout
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:padding="25dp"
+             />
+        
         <andraus.bluetoothhidemu.view.ArrowButton
             android:id="@+id/UpButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:padding="25dp"
             android:background="@drawable/key_shape"
             android:src="@android:drawable/ic_media_play" />
+
     </LinearLayout>
     
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:gravity="center"
+        android:gravity="left"
         android:orientation="horizontal" >
 
         <andraus.bluetoothhidemu.view.ArrowButton
             android:id="@+id/LeftButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:padding="25dp"
             android:background="@drawable/key_shape"
             android:src="@android:drawable/ic_media_play" />
+        
+        <andraus.bluetoothhidemu.view.ArrowButton
+            android:id="@+id/DownButton"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:padding="25dp"
+            android:background="@drawable/key_shape"
+            android:src="@android:drawable/ic_media_play" />
+        
         <andraus.bluetoothhidemu.view.ArrowButton
             android:id="@+id/RightButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="60dp"
+            android:layout_height="60dp"
+            android:padding="25dp"
             android:background="@drawable/key_shape"
             android:src="@android:drawable/ic_media_play" />
         
     </LinearLayout>
     
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:orientation="horizontal" >
-
-        <andraus.bluetoothhidemu.view.ArrowButton
-            android:id="@+id/DownButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@drawable/key_shape"
-            android:src="@android:drawable/ic_media_play" />
-
-    </LinearLayout>
-
 </LinearLayout>
