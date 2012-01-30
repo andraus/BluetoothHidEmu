@@ -24,6 +24,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
@@ -42,6 +43,7 @@ import android.view.inputmethod.EditorInfo;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.SpinnerAdapter;
@@ -419,7 +421,31 @@ public class BluetoothHidEmuActivity extends Activity {
         super.onDestroy();
     }
     
-	/**
+    
+    /**
+     * 
+     */
+	@Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        
+	    LinearLayout connectionLayout = (LinearLayout) findViewById(R.id.ConnectionLayout);
+	    
+	    switch (newConfig.orientation) {
+	    
+	    case Configuration.ORIENTATION_LANDSCAPE:
+	        connectionLayout.setVisibility(View.GONE);
+	        break;
+        case Configuration.ORIENTATION_PORTRAIT:
+        default:
+            connectionLayout.setVisibility(View.VISIBLE);
+            break;
+	        
+	    }
+	    
+        super.onConfigurationChanged(newConfig);
+    }
+
+    /**
 	 *
 	 */
     @Override

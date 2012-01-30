@@ -6,7 +6,8 @@
     android:gravity="right"
     android:orientation="vertical" >
 
-    <LinearLayout android:layout_width="match_parent"
+    <LinearLayout android:id="@+id/ConnectionLayout"
+                  android:layout_width="match_parent"
                   android:layout_height="wrap_content" >
 
         <TextView
