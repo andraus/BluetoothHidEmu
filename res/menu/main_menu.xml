@@ -6,7 +6,7 @@
           android:title="@string/msg_menu_quit" />
     
     <item android:id="@+id/menu_refresh_devices"
-          android:icon="@android:drawable/ic_menu_rotate"
+          android:icon="@drawable/ic_menu_refresh"
           android:title="@string/msg_menu_refresh_devices" />
-    
+          
 </menu>
