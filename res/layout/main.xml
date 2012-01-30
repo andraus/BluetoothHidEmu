@@ -48,7 +48,7 @@
 	            android:layout_height="match_parent"
 	            android:layout_weight="1"
 	            android:checked="true"
-	            android:button="@android:drawable/ic_input_get"
+	            android:button="@drawable/ic_menu_touchpad"
 	            android:background="@drawable/button_radio_tab"
 	            android:gravity="center"
 	            android:text="@string/msg_button_touchpad" />

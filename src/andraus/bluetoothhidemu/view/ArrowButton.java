@@ -2,7 +2,6 @@ package andraus.bluetoothhidemu.view;
 
 import andraus.bluetoothhidemu.BluetoothHidEmuActivity;
 import andraus.bluetoothhidemu.R;
-import andraus.bluetoothhidemu.util.DoLog;
 import android.content.Context;
 import android.graphics.Canvas;
 import android.util.AttributeSet;
@@ -28,29 +27,26 @@ public class ArrowButton extends ImageButton {
     @Override
     protected void onDraw(Canvas canvas) {
         int degrees = 0;
+        float transX = 0;
+        float transY = 0;
         
         switch (getId()) {
         
         case R.id.UpButton:
-            DoLog.d(TAG, "up");
-            degrees = 270;
+            degrees = 90;
             break;
-        case R.id.LeftButton:
-            DoLog.d(TAG, "left");
+        case R.id.RightButton:
             degrees = 180;
             break;
         case R.id.DownButton:
-            DoLog.d(TAG, "down");
-            degrees = 90;
+            degrees = 270;
+            transX = -getHeight()/8;
             break;
-        default:
-            DoLog.d(TAG, "no rotation");
-            break;
-        
         }
         
         if (degrees != 0) {
             canvas.rotate(degrees, getWidth()/2, getHeight()/2);
+            canvas.translate(transX, transY);
             super.onDraw(canvas);
         } else {
             super.onDraw(canvas);

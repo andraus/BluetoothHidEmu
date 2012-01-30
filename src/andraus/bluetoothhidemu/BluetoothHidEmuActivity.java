@@ -75,8 +75,8 @@ public class BluetoothHidEmuActivity extends Activity {
 	private View mControlsLayout = null;
 	private EchoEditText mEchoEditText = null;
 	private ImageView mTouchpadImageView = null;
-	private ImageView mLeftButtonImageView = null;
-	private ImageView mRightButtonImageView = null;
+	private ImageView mLeftClickImageView = null;
+	private ImageView mRightClickImageView = null;
 	
 	private BluetoothDeviceArrayAdapter mBluetoothDeviceArrayAdapter = null;
 	
@@ -180,8 +180,8 @@ public class BluetoothHidEmuActivity extends Activity {
 		mControlsLayout = (View) findViewById(R.id.ControlsLayout);
 		mControlsLayout.setVisibility(View.INVISIBLE);
 		mTouchpadImageView = (ImageView) findViewById(R.id.TouchpadImageView);
-		mLeftButtonImageView = (ImageView) findViewById(R.id.LeftButtonImageView);
-		mRightButtonImageView = (ImageView) findViewById(R.id.RightButtonImageView);
+		mLeftClickImageView = (ImageView) findViewById(R.id.LeftButtonImageView);
+		mRightClickImageView = (ImageView) findViewById(R.id.RightButtonImageView);
 		
 		mEchoEditText = (EchoEditText) findViewById(R.id.EchoEditText);
 		mEchoEditText.setGravity(Gravity.CENTER);
@@ -489,10 +489,10 @@ public class BluetoothHidEmuActivity extends Activity {
         if (sm.checkState(SocketManager.STATE_NONE) || sm.checkState(SocketManager.STATE_DROPPING)) {
     		
             mTouchpadImageView.setOnTouchListener(null);
-            mLeftButtonImageView.setOnClickListener(null);
-            mLeftButtonImageView.setOnLongClickListener(null);
-            mRightButtonImageView.setOnClickListener(null);
-            mRightButtonImageView.setOnLongClickListener(null);
+            mLeftClickImageView.setOnClickListener(null);
+            mLeftClickImageView.setOnLongClickListener(null);
+            mRightClickImageView.setOnClickListener(null);
+            mRightClickImageView.setOnLongClickListener(null);
 
     	} else if (sm.checkState(SocketManager.STATE_WAITING)) {
 
@@ -501,10 +501,10 @@ public class BluetoothHidEmuActivity extends Activity {
     	} else if (sm.checkState(SocketManager.STATE_DROPPED)) {
             
             mTouchpadImageView.setOnTouchListener(null);
-            mLeftButtonImageView.setOnClickListener(null);
-            mLeftButtonImageView.setOnLongClickListener(null);
-            mRightButtonImageView.setOnClickListener(null);
-            mRightButtonImageView.setOnLongClickListener(null);
+            mLeftClickImageView.setOnClickListener(null);
+            mLeftClickImageView.setOnLongClickListener(null);
+            mRightClickImageView.setOnClickListener(null);
+            mRightClickImageView.setOnLongClickListener(null);
 
             if (mStatusState != StatusIconStates.INTERMEDIATE) {
                 setStatusIconState(StatusIconStates.INTERMEDIATE);
@@ -519,14 +519,14 @@ public class BluetoothHidEmuActivity extends Activity {
     	        
     	        HidPointerPayload hidPayload = new HidPointerPayload();
     		
-    	        mTouchpadImageView.setOnTouchListener(new TouchpadListener(getApplicationContext(), mSocketManager, mLeftButtonImageView, hidPayload));
+    	        mTouchpadImageView.setOnTouchListener(new TouchpadListener(getApplicationContext(), mSocketManager, mLeftClickImageView, hidPayload));
     	    
     	        ButtonClickListener leftClickListener = new ButtonClickListener(getApplicationContext(), mSocketManager, HidPointerPayload.MOUSE_BUTTON_1, true, hidPayload);
-    	        mLeftButtonImageView.setOnClickListener(leftClickListener);
-    	        mLeftButtonImageView.setOnLongClickListener(leftClickListener);
+    	        mLeftClickImageView.setOnClickListener(leftClickListener);
+    	        mLeftClickImageView.setOnLongClickListener(leftClickListener);
     	        ButtonClickListener rightClickListener = new ButtonClickListener(getApplicationContext(), mSocketManager, HidPointerPayload.MOUSE_BUTTON_2, false, hidPayload);
-    	        mRightButtonImageView.setOnClickListener(rightClickListener);
-    	        mRightButtonImageView.setOnLongClickListener(rightClickListener);
+    	        mRightClickImageView.setOnClickListener(rightClickListener);
+    	        mRightClickImageView.setOnLongClickListener(rightClickListener);
     	    }
     		
     		mThreadMonitorHandler.sendEmptyMessageDelayed(HANDLER_MONITOR_SOCKET, 200 /*ms */);
