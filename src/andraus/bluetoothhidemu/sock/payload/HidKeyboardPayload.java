@@ -118,6 +118,9 @@ public class HidKeyboardPayload extends HidPayload {
         keyCodeHidMap.put(Integer.valueOf(KeyEvent.KEYCODE_DPAD_UP), new HidKeyPair(0x52, MODF_NULL));
         keyCodeHidMap.put(Integer.valueOf(KeyEvent.KEYCODE_DPAD_DOWN), new HidKeyPair(0x51, MODF_NULL));
         
+        keyCodeHidMap.put(Integer.valueOf(KeyEvent.KEYCODE_ENTER), new HidKeyPair(0x28, MODF_NULL));
+        keyCodeHidMap.put(Integer.valueOf(KeyEvent.KEYCODE_BACK), new HidKeyPair(0x29, MODF_NULL));
+        
         KEYCODE_HID_MAP = Collections.unmodifiableMap(keyCodeHidMap);
     }
 

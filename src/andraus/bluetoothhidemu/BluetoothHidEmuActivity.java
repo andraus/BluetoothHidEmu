@@ -11,7 +11,6 @@ import andraus.bluetoothhidemu.helper.CleanupExceptionHandler;
 import andraus.bluetoothhidemu.sock.SocketManager;
 import andraus.bluetoothhidemu.sock.payload.HidPointerPayload;
 import andraus.bluetoothhidemu.util.DoLog;
-import andraus.bluetoothhidemu.view.ArrowButton;
 import andraus.bluetoothhidemu.view.BluetoothDeviceView;
 import andraus.bluetoothhidemu.view.EchoEditText;
 import android.app.Activity;
@@ -214,14 +213,28 @@ public class BluetoothHidEmuActivity extends Activity {
 	
 	private void setupSpecialKeys() {
 	    SpecialKeyListener specialKeyListener = new SpecialKeyListener(getApplicationContext(), mSocketManager);
-	    ArrowButton button = (ArrowButton) findViewById(R.id.UpButton);
-	    button.setOnTouchListener(specialKeyListener);
-	    button = (ArrowButton) findViewById(R.id.DownButton);
-        button.setOnTouchListener(specialKeyListener);
-        button = (ArrowButton) findViewById(R.id.LeftButton);
-        button.setOnTouchListener(specialKeyListener);
-        button = (ArrowButton) findViewById(R.id.RightButton);
-        button.setOnTouchListener(specialKeyListener);
+	    
+	    View view = (View) findViewById(R.id.UpButton);
+	    view.setOnTouchListener(specialKeyListener);
+	    view = (View) findViewById(R.id.DownButton);
+        view.setOnTouchListener(specialKeyListener);
+        view = (View) findViewById(R.id.LeftButton);
+        view.setOnTouchListener(specialKeyListener);
+        view = (View) findViewById(R.id.RightButton);
+        view.setOnTouchListener(specialKeyListener);
+        
+        view = (View) findViewById(R.id.EnterButton);
+        view.setOnTouchListener(specialKeyListener);
+        view = (View) findViewById(R.id.EscButton);
+        view.setOnTouchListener(specialKeyListener);
+        
+        
+        view = (View) findViewById(R.id.PrevMediaButton);
+        view.setOnTouchListener(specialKeyListener);
+        view = (View) findViewById(R.id.PlayMediaButton);
+        view.setOnTouchListener(specialKeyListener);
+        view = (View) findViewById(R.id.ForwardMediaButton);
+        view.setOnTouchListener(specialKeyListener);
 	    
 	}
 	
