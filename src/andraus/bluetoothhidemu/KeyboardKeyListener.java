@@ -57,6 +57,10 @@ public class KeyboardKeyListener implements KeyListener {
         case KeyEvent.KEYCODE_DEL:
         	mHidPayload.assemblePayload(HidKeyPair.DEL);
             mSocketManager.sendPayload(mHidPayload);
+        case KeyEvent.KEYCODE_VOLUME_UP:
+        case KeyEvent.KEYCODE_VOLUME_DOWN:
+            mHidPayload.assemblePayload(keyCode);
+            mSocketManager.sendPayload(mHidPayload);
         default:
             return mTextKeyListener.onKeyDown(view, content, keyCode, event);
         }
@@ -72,7 +76,9 @@ public class KeyboardKeyListener implements KeyListener {
     public boolean onKeyUp(View view, Editable content, int keyCode, KeyEvent event) {
         DoLog.d(TAG, "onkeyUp()");
         
-        if (keyCode == KeyEvent.KEYCODE_ENTER || keyCode == KeyEvent.KEYCODE_DEL) {
+        if (keyCode == KeyEvent.KEYCODE_ENTER
+                || keyCode == KeyEvent.KEYCODE_DEL
+                || keyCode == KeyEvent.KEYCODE_VOLUME_UP) {
         	mHidPayload.assemblePayload(Character.MIN_VALUE);
             mSocketManager.sendPayload(mHidPayload);
         }

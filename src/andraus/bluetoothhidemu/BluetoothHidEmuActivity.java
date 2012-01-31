@@ -28,7 +28,9 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.text.method.KeyListener;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -456,6 +458,36 @@ public class BluetoothHidEmuActivity extends Activity {
 	    }
 	    
         super.onConfigurationChanged(newConfig);
+    }
+
+	/**
+	 * 
+	 */
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        
+        if (keyCode == KeyEvent.KEYCODE_VOLUME_UP || keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
+            KeyListener keyListener = mEchoEditText.getKeyListener();
+            keyListener.onKeyDown(mEchoEditText, mEchoEditText.getEditableText(), keyCode, event);
+            return true;
+        }
+        
+        return super.onKeyDown(keyCode, event);
+    }
+
+    /**
+     * 
+     */
+    @Override
+    public boolean onKeyUp(int keyCode, KeyEvent event) {
+
+        if (keyCode == KeyEvent.KEYCODE_VOLUME_UP || keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
+            KeyListener keyListener = mEchoEditText.getKeyListener();
+            keyListener.onKeyUp(mEchoEditText, mEchoEditText.getEditableText(), keyCode, event);
+            return true;
+        }
+        
+        return super.onKeyUp(keyCode, event);
     }
 
     /**
