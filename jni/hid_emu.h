@@ -5,7 +5,7 @@
 #define LOG_NDDEBUG 0
 #define LOG_NIDEBUG 0
 
-#define HIDEMU_VERSION "0.7"
+#define HIDEMU_VERSION "0.9i"
 
 #define LOG_TAG "HidEmu_jni"
 
