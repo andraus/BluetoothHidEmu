@@ -4,6 +4,9 @@ import andraus.bluetoothhidemu.BluetoothHidEmuActivity;
 
 /**
  * Generic payload implementation.
+ * 
+ * TODO: ref. for PS3 blu-ray remote: http://fedoraproject.org/wiki/Features/PlayStationBDRemote
+ * 
  */
 public abstract class HidPayload {
 	
