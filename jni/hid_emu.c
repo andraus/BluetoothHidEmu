@@ -68,10 +68,11 @@ static sdp_record_t *create_hid_keyb_record()
 	static const uint8_t hid_boot_device = 0x1;
 
 	const uint8_t hid_spec[] = {
+			/* Generic keyboard */
 			0x05, 0x01,         /*  Usage Page (Desktop),                   */
 			0x09, 0x06,         /*  Usage (Keyboard),                       */
 			0xA1, 0x01,         /*  Collection (Application),               */
-			0x85, 0x01,         /*      Report ID (1),                  */
+			0x85, 0x01,         /*      Report ID (1),                      */
 			0x05, 0x07,         /*      Usage Page (Keyboard),              */
 			0x19, 0xE0,         /*      Usage Minimum (KB Leftcontrol),     */
 			0x29, 0xE7,         /*      Usage Maximum (KB Right GUI),       */
@@ -100,6 +101,8 @@ static sdp_record_t *create_hid_keyb_record()
 			0x19, 0x00,         /*      Usage Minimum (None),               */
 			0x29, 0xE7,         /*      Usage Maximum (KB Right GUI),   */
 			0x81, 0x00,         /*      Input,                              */
+
+			/* Consumer specific - volume / mute */
 			0xC0,               /*  End Collection,                         */
 			0x05, 0x0C,         /*  Usage Page (Consumer),                  */
 			0x09, 0x01,         /*  Usage (Consumer Control),               */
@@ -117,6 +120,8 @@ static sdp_record_t *create_hid_keyb_record()
 			0x09, 0xE2,         /*      Usage (Mute),                       */
 			0x81, 0x06,         /*      Input (Variable, Relative),         */
 			0xC0,               /*  End Collection,                         */
+
+			/* Consumer specific - media controls */
 			0x05, 0x0C,         /*  Usage Page (Consumer),                  */
 			0x09, 0x01,         /*  Usage (Consumer Control),               */
 			0xA1, 0x01,         /*  Collection (Application),               */
@@ -153,35 +158,36 @@ static sdp_record_t *create_hid_keyb_record()
 			0x81, 0x06,         /*      Input (Variable, Relative),         */
 			0x95, 0x0B,         /*      Report Count (11),                  */
 			0x81, 0x01,         /*      Input (Constant),                   */
-			0xC0,                /*  End Collection                          */
+			0xC0,               /*  End Collection                          */
 
-		    0x05, 0x01,                    // USAGE_PAGE (Generic Desktop)
-		    0x09, 0x02,                    // USAGE (Mouse)
-		    0xa1, 0x01,                    // COLLECTION (Application)
-		    0x85, 0x02,         /*      Report ID (2),                  */
-		    0x09, 0x01,                    //   USAGE (Pointer)
-		    0xa1, 0x00,                    //   COLLECTION (Physical)
-		    0x05, 0x09,                    //     USAGE_PAGE (Button)
-		    0x19, 0x01,                    //     USAGE_MINIMUM (Button 1)
-		    0x29, 0x03,                    //     USAGE_MAXIMUM (Button 3)
-		    0x15, 0x00,                    //     LOGICAL_MINIMUM (0)
-		    0x25, 0x01,                    //     LOGICAL_MAXIMUM (1)
-		    0x95, 0x03,                    //     REPORT_COUNT (3)
-		    0x75, 0x01,                    //     REPORT_SIZE (1)
-		    0x81, 0x02,                    //     INPUT (Data,Var,Abs)
-		    0x95, 0x01,                    //     REPORT_COUNT (1)
-		    0x75, 0x05,                    //     REPORT_SIZE (5)
-		    0x81, 0x03,                    //     INPUT (Cnst,Var,Abs)
-		    0x05, 0x01,                    //     USAGE_PAGE (Generic Desktop)
-		    0x09, 0x30,                    //     USAGE (X)
-		    0x09, 0x31,                    //     USAGE (Y)
-		    0x15, 0x81,                    //     LOGICAL_MINIMUM (-127)
-		    0x25, 0x7f,                    //     LOGICAL_MAXIMUM (127)
-		    0x75, 0x08,                    //     REPORT_SIZE (8)
-		    0x95, 0x02,                    //     REPORT_COUNT (2)
-		    0x81, 0x06,                    //     INPUT (Data,Var,Rel)
-		    0xc0,                          //   END_COLLECTION
-		    0xc0                           // END_COLLECTION
+			/* Generic mouse pointer */
+		    0x05, 0x01,                    /* USAGE_PAGE (Generic Desktop)  		*/
+		    0x09, 0x02,                    /* USAGE (Mouse)  						*/
+		    0xa1, 0x01,                    /* COLLECTION (Application)  			*/
+		    0x85, 0x02,         		   /*      Report ID (2),                  	*/
+		    0x09, 0x01,                    /*   USAGE (Pointer)  					*/
+		    0xa1, 0x00,                    /*   COLLECTION (Physical)  				*/
+		    0x05, 0x09,                    /*     USAGE_PAGE (Button)  				*/
+		    0x19, 0x01,                    /*     USAGE_MINIMUM (Button 1)  		*/
+		    0x29, 0x03,                    /*     USAGE_MAXIMUM (Button 3)  		*/
+		    0x15, 0x00,                    /*     LOGICAL_MINIMUM (0)  				*/
+		    0x25, 0x01,                    /*     LOGICAL_MAXIMUM (1)  				*/
+		    0x95, 0x03,                    /*     REPORT_COUNT (3)  				*/
+		    0x75, 0x01,                    /*     REPORT_SIZE (1)  					*/
+		    0x81, 0x02,                    /*     INPUT (Data,Var,Abs)  			*/
+		    0x95, 0x01,                    /*     REPORT_COUNT (1)  				*/
+		    0x75, 0x05,                    /*     REPORT_SIZE (5)  					*/
+		    0x81, 0x03,                    /*     INPUT (Cnst,Var,Abs)  			*/
+		    0x05, 0x01,                    /*     USAGE_PAGE (Generic Desktop)  	*/
+		    0x09, 0x30,                    /*     USAGE (X)  						*/
+		    0x09, 0x31,                    /*     USAGE (Y)  						*/
+		    0x15, 0x81,                    /*     LOGICAL_MINIMUM (-127)  			*/
+		    0x25, 0x7f,                    /*     LOGICAL_MAXIMUM (127)  			*/
+		    0x75, 0x08,                    /*     REPORT_SIZE (8)  					*/
+		    0x95, 0x02,                    /*     REPORT_COUNT (2)  				*/
+		    0x81, 0x06,                    /*     INPUT (Data,Var,Rel)  			*/
+		    0xc0,                          /*   END_COLLECTION  					*/
+		    0xc0                           /* END_COLLECTION  						*/
 	};
 
 	sdp_record = sdp_record_alloc();
