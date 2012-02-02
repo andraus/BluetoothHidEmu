@@ -1,23 +1,23 @@
-From 5fb90635b363c41a774c6095329f519aba680a64 Mon Sep 17 00:00:00 2001
+From 7c6b01a010318c8510fd1f1e119951371364d4aa Mon Sep 17 00:00:00 2001
 From: Augusto Andraus <andraus@gmail.com>
 Date: Fri, 30 Dec 2011 12:41:03 -0200
 Subject: [PATCH] new APIs for bluetooth HID keyboard emulation
 
-Change-Id: I93239dfe00528b236b5afbf9a56320fae96e4275
+Change-Id: I664a22e28100ba7fee9fa8e10e79a13693a879b5
 ---
- core/java/android/bluetooth/BluetoothAdapter.java |   62 ++++++++++++-
+ core/java/android/bluetooth/BluetoothAdapter.java |   60 +++++++++++-
  core/java/android/bluetooth/BluetoothDevice.java  |   15 +++
  core/java/android/bluetooth/IBluetooth.aidl       |    4 +
  core/java/android/server/BluetoothService.java    |  108 ++++++++++++++++++++-
  core/jni/android_bluetooth_BluetoothSocket.cpp    |   13 +++-
  core/jni/android_server_BluetoothService.cpp      |   50 ++++++++++
- 6 files changed, 249 insertions(+), 3 deletions(-)
+ 6 files changed, 247 insertions(+), 3 deletions(-)
 
 diff --git a/core/java/android/bluetooth/BluetoothAdapter.java b/core/java/android/bluetooth/BluetoothAdapter.java
-index 510fd2b..0994cc3 100644
+index 510fd2b..10b6837 100644
 --- a/core/java/android/bluetooth/BluetoothAdapter.java
 +++ b/core/java/android/bluetooth/BluetoothAdapter.java
-@@ -969,7 +969,67 @@ public final class BluetoothAdapter {
+@@ -969,7 +969,65 @@ public final class BluetoothAdapter {
          }
          return socket;
      }
@@ -52,10 +52,8 @@ index 510fd2b..0994cc3 100644
 +     * 
 +     * @hide
 +     * 
-+     * @param services
 +     * @param newClass
-+     * @param minor
-+     * @return
++     * @return 0 if successful
 +     */
 +    public int spoofAdapterClass(int newClass) {
 +    	int ret = -1;

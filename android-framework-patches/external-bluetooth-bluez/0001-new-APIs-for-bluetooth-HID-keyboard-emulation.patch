@@ -1,18 +1,18 @@
-From 57d4df473006a34bd3f29cb5b90ae2152112f78e Mon Sep 17 00:00:00 2001
+From fc047cafc02ec07656db45aa5ef1dcb9d961731d Mon Sep 17 00:00:00 2001
 From: Augusto Andraus <andraus@gmail.com>
 Date: Fri, 30 Dec 2011 12:43:51 -0200
 Subject: [PATCH] new APIs for bluetooth HID keyboard emulation
 
-Change-Id: I49fa595d6676201aa62f167946884da37eb25c01
+Change-Id: Ibf1346730aa3c7468d2f7c515c52356ac5b66eec
 ---
- src/adapter.c |  281 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
- 1 files changed, 281 insertions(+), 0 deletions(-)
+ src/adapter.c |  374 +++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 files changed, 374 insertions(+), 0 deletions(-)
 
 diff --git a/src/adapter.c b/src/adapter.c
-index 86fae78..f04a4dd 100644
+index 86fae78..48b166a 100644
 --- a/src/adapter.c
 +++ b/src/adapter.c
-@@ -1848,6 +1848,284 @@ static DBusMessage *unregister_agent(DBusConnection *conn, DBusMessage *msg,
+@@ -1848,6 +1848,377 @@ static DBusMessage *unregister_agent(DBusConnection *conn, DBusMessage *msg,
  	return dbus_message_new_method_return(msg);
  }
  
@@ -30,6 +30,11 @@ index 86fae78..f04a4dd 100644
 +	sdp_list_free(langs, 0);
 +}
 +
++/**
++ * Creates the SDP record for HID emulation. Works well with many different
++ * clients.
++ * Tested so far, with windows, linux (ubuntu), PS3, and motorola android devices.
++ */
 +static sdp_record_t *create_hid_keyb_record()
 +{
 +	sdp_record_t *sdp_record;
@@ -68,39 +73,127 @@ index 86fae78..f04a4dd 100644
 +	static const uint8_t hid_normally_connectable = 0x0;
 +	static const uint8_t hid_boot_device = 0x1;
 +
-+	/*
-+	 * hid_spec[] follows section 6.2 of USB HID spec.
-+	 * below values were extracted from ps3 wireless keypad
-+	 */
 +	const uint8_t hid_spec[] = {
-+			0x05, 0x01, 0x09, 0x02, 0xa1, 0x01, 0x85, 0x02, 0x09,
-+			0x01, 0xa1, 0x00, 0x05, 0x09, 0x19, 0x01, 0x29, 0x02,
-+			0x15, 0x00, 0x25, 0x01, 0x95, 0x02, 0x75, 0x01, 0x81,
-+			0x02, 0x95, 0x01, 0x75, 0x06, 0x81, 0x03, 0x05, 0x01,
-+			0x09, 0x30, 0x09, 0x31, 0x15, 0x81, 0x25, 0x7f, 0x75,
-+			0x08, 0x95, 0x02, 0x81, 0x06, 0x75, 0x08, 0x95, 0x01,
-+			0x81, 0x01, 0x06, 0x00, 0xff, 0x09, 0x20, 0x15, 0x00,
-+			0x26, 0xff, 0x0f, 0x75, 0x0c, 0x95, 0x02, 0x81, 0x02,
-+			0x09, 0x21, 0x15, 0x00, 0x26, 0xff, 0x00, 0x75, 0x08,
-+			0x95, 0x01, 0x81, 0x02, 0xc0, 0xc0, 0x05, 0x01, 0x09,
-+			0x06, 0xa1, 0x01, 0x85, 0x01, 0x05, 0x07, 0x19, 0xe0,
-+			0x29, 0xe7, 0x15, 0x00, 0x25, 0x01, 0x75, 0x01, 0x95,
-+			0x08, 0x81, 0x02, 0x95, 0x01, 0x75, 0x08, 0x81, 0x01,
-+			0x95, 0x05, 0x75, 0x01, 0x05, 0x08, 0x19, 0x01, 0x29,
-+			0x05, 0x91, 0x02, 0x95, 0x01, 0x75, 0x03, 0x91, 0x01,
-+			0x95, 0x06, 0x75, 0x08, 0x15, 0x00, 0x26, 0xff, 0x00,
-+			0x05, 0x07, 0x19, 0x00, 0x29, 0xe7, 0x81, 0x00, 0xc0,
-+			0x06, 0x01, 0xff, 0x09, 0x20, 0xa1, 0x01, 0x09, 0x21,
-+			0x85, 0x03, 0x75, 0x08, 0x95, 0x01, 0x15, 0x00, 0x26,
-+			0xff, 0x00, 0x09, 0x22, 0x81, 0x02, 0x75, 0x08, 0x95,
-+			0x01, 0x15, 0x00, 0x26, 0xff, 0x00, 0x09, 0x23, 0x81,
-+			0x02, 0x75, 0x08, 0x95, 0x06, 0x81, 0x01, 0x09, 0x24,
-+			0x15, 0x00, 0x25, 0x01, 0x75, 0x08, 0x95, 0x01, 0x91,
-+			0x02, 0xc0, 0x06, 0x02, 0xff, 0x09, 0x20, 0xa1, 0x01,
-+			0x09, 0x21, 0x85, 0x04, 0x15, 0x00, 0x26, 0xff, 0x00,
-+			0x75, 0x08, 0x95, 0x0f, 0xb1, 0x02, 0x09, 0x22, 0x85,
-+			0x05, 0x15, 0x00, 0x26, 0xff, 0x00, 0x75, 0x08, 0x95,
-+			0x16, 0xb1, 0x02, 0xc0
++			/* Generic keyboard */
++			0x05, 0x01,         /*  Usage Page (Desktop),                   */
++			0x09, 0x06,         /*  Usage (Keyboard),                       */
++			0xA1, 0x01,         /*  Collection (Application),               */
++			0x85, 0x01,         /*      Report ID (1),                      */
++			0x05, 0x07,         /*      Usage Page (Keyboard),              */
++			0x19, 0xE0,         /*      Usage Minimum (KB Leftcontrol),     */
++			0x29, 0xE7,         /*      Usage Maximum (KB Right GUI),       */
++			0x15, 0x00,         /*      Logical Minimum (0),                */
++			0x25, 0x01,         /*      Logical Maximum (1),                */
++			0x75, 0x01,         /*      Report Size (1),                    */
++			0x95, 0x08,         /*      Report Count (8),                   */
++			0x81, 0x02,         /*      Input (Variable),                   */
++			0x95, 0x01,         /*      Report Count (1),                   */
++			0x75, 0x08,         /*      Report Size (8),                    */
++			0x81, 0x01,         /*      Input (Constant),                   */
++			0x95, 0x05,         /*      Report Count (5),                   */
++			0x75, 0x01,         /*      Report Size (1),                    */
++			0x05, 0x08,         /*      Usage Page (LED),                   */
++			0x19, 0x01,         /*      Usage Minimum (01h),                */
++			0x29, 0x05,         /*      Usage Maximum (05h),                */
++			0x91, 0x02,         /*      Output (Variable),                  */
++			0x95, 0x01,         /*      Report Count (1),                   */
++			0x75, 0x03,         /*      Report Size (3),                    */
++			0x91, 0x01,         /*      Output (Constant),                  */
++			0x95, 0x06,         /*      Report Count (6),                   */
++			0x75, 0x08,         /*      Report Size (8),                    */
++			0x15, 0x00,         /*      Logical Minimum (0),                */
++			0x26, 0xFF, 0x00,   /*      Logical Maximum (255),              */
++			0x05, 0x07,         /*      Usage Page (Keyboard),              */
++			0x19, 0x00,         /*      Usage Minimum (None),               */
++			0x29, 0xE7,         /*      Usage Maximum (KB Right GUI),   */
++			0x81, 0x00,         /*      Input,                              */
++
++			/* Consumer specific - volume / mute */
++			0xC0,               /*  End Collection,                         */
++			0x05, 0x0C,         /*  Usage Page (Consumer),                  */
++			0x09, 0x01,         /*  Usage (Consumer Control),               */
++			0xA1, 0x01,         /*  Collection (Application),               */
++			0x85, 0x01,         /*      Report ID (1),                      */
++			0x09, 0xE0,         /*      Usage (Volume),                     */
++			0x15, 0xE8,         /*      Logical Minimum (-24),              */
++			0x25, 0x18,         /*      Logical Maximum (24),               */
++			0x75, 0x07,         /*      Report Size (7),                    */
++			0x95, 0x01,         /*      Report Count (1),                   */
++			0x81, 0x06,         /*      Input (Variable, Relative),         */
++			0x15, 0x00,         /*      Logical Minimum (0),                */
++			0x25, 0x01,         /*      Logical Maximum (1),                */
++			0x75, 0x01,         /*      Report Size (1),                    */
++			0x09, 0xE2,         /*      Usage (Mute),                       */
++			0x81, 0x06,         /*      Input (Variable, Relative),         */
++			0xC0,               /*  End Collection,                         */
++
++			/* Consumer specific - media controls */
++			0x05, 0x0C,         /*  Usage Page (Consumer),                  */
++			0x09, 0x01,         /*  Usage (Consumer Control),               */
++			0xA1, 0x01,         /*  Collection (Application),               */
++			0x85, 0x03,         /*      Report ID (3),                      */
++			0x15, 0x00,         /*      Logical Minimum (0),                */
++			0x25, 0x01,         /*      Logical Maximum (1),                */
++			0x75, 0x01,         /*      Report Size (1),                    */
++			0x95, 0x01,         /*      Report Count (1),                   */
++			0x0A, 0x27, 0x02,   /*      Usage (AC Refresh),                 */
++			0x81, 0x06,         /*      Input (Variable, Relative),         */
++			0x0A, 0x94, 0x01,   /*      Usage (AL Local Machine Brwsr),     */
++			0x81, 0x06,         /*      Input (Variable, Relative),         */
++			0x0A, 0x23, 0x02,   /*      Usage (AC Home),                    */
++			0x81, 0x06,         /*      Input (Variable, Relative),         */
++			0x0A, 0x8A, 0x01,   /*      Usage (AL Email Reader),            */
++			0x81, 0x06,         /*      Input (Variable, Relative),         */
++			0x0A, 0x92, 0x01,   /*      Usage (AL Calculator),              */
++			0x81, 0x06,         /*      Input (Variable, Relative),         */
++			0x0A, 0x26, 0x02,   /*      Usage (AC Stop),                    */
++			0x81, 0x06,         /*      Input (Variable, Relative),         */
++			0x0A, 0x25, 0x02,   /*      Usage (AC Forward),                 */
++			0x81, 0x06,         /*      Input (Variable, Relative),         */
++			0x0A, 0x24, 0x02,   /*      Usage (AC Back),                    */
++			0x81, 0x06,         /*      Input (Variable, Relative),         */
++			0x09, 0xB5,         /*      Usage (Scan Next Track),            */
++			0x81, 0x06,         /*      Input (Variable, Relative),         */
++			0x09, 0xB6,         /*      Usage (Scan Previous Track),        */
++			0x81, 0x06,         /*      Input (Variable, Relative),         */
++			0x09, 0xCD,         /*      Usage (Play Pause),                 */
++			0x81, 0x06,         /*      Input (Variable, Relative),         */
++			0x09, 0xB7,         /*      Usage (Stop),                       */
++			0x81, 0x06,         /*      Input (Variable, Relative),         */
++			0x0A, 0x83, 0x01,   /*      Usage (AL Consumer Control Config), */
++			0x81, 0x06,         /*      Input (Variable, Relative),         */
++			0x95, 0x0B,         /*      Report Count (11),                  */
++			0x81, 0x01,         /*      Input (Constant),                   */
++			0xC0,               /*  End Collection                          */
++
++			/* Generic mouse pointer */
++		    0x05, 0x01,                    /* USAGE_PAGE (Generic Desktop)  		*/
++		    0x09, 0x02,                    /* USAGE (Mouse)  				*/
++		    0xa1, 0x01,                    /* COLLECTION (Application)  		*/
++		    0x85, 0x02,			   /*      Report ID (2),                  	*/
++		    0x09, 0x01,                    /*   USAGE (Pointer)  			*/
++		    0xa1, 0x00,                    /*   COLLECTION (Physical)  			*/
++		    0x05, 0x09,                    /*     USAGE_PAGE (Button)  			*/
++		    0x19, 0x01,                    /*     USAGE_MINIMUM (Button 1)  		*/
++		    0x29, 0x03,                    /*     USAGE_MAXIMUM (Button 3)  		*/
++		    0x15, 0x00,                    /*     LOGICAL_MINIMUM (0)  			*/
++		    0x25, 0x01,                    /*     LOGICAL_MAXIMUM (1)  			*/
++		    0x95, 0x03,                    /*     REPORT_COUNT (3)  			*/
++		    0x75, 0x01,                    /*     REPORT_SIZE (1)  			*/
++		    0x81, 0x02,                    /*     INPUT (Data,Var,Abs)  		*/
++		    0x95, 0x01,                    /*     REPORT_COUNT (1)  			*/
++		    0x75, 0x05,                    /*     REPORT_SIZE (5)  			*/
++		    0x81, 0x03,                    /*     INPUT (Cnst,Var,Abs)  		*/
++		    0x05, 0x01,                    /*     USAGE_PAGE (Generic Desktop)  	*/
++		    0x09, 0x30,                    /*     USAGE (X)  				*/
++		    0x09, 0x31,                    /*     USAGE (Y)  				*/
++		    0x15, 0x81,                    /*     LOGICAL_MINIMUM (-127)  		*/
++		    0x25, 0x7f,                    /*     LOGICAL_MAXIMUM (127)  		*/
++		    0x75, 0x08,                    /*     REPORT_SIZE (8)  			*/
++		    0x95, 0x02,                    /*     REPORT_COUNT (2)  			*/
++		    0x81, 0x06,                    /*     INPUT (Data,Var,Rel)  		*/
++		    0xc0,                          /*   END_COLLECTION  			*/
++		    0xc0                           /* END_COLLECTION  				*/
 +	};
 +
 +	sdp_record = sdp_record_alloc();
@@ -297,7 +390,7 @@ index 86fae78..f04a4dd 100644
  static sdp_record_t *create_rfcomm_record(struct btd_adapter *adapter,
  					const char *name, uuid_t uuid, uint8_t channel)
  {
-@@ -2059,6 +2337,9 @@ static GDBusMethodTable adapter_methods[] = {
+@@ -2059,6 +2430,9 @@ static GDBusMethodTable adapter_methods[] = {
  	{ "RegisterAgent",	"osb",	"",	register_agent_oob	},
  	{ "UnregisterAgent",	"o",	"",	unregister_agent	},
  	{ "AddRfcommServiceRecord",	"sttq",	"u",	add_rfcomm_service_record },

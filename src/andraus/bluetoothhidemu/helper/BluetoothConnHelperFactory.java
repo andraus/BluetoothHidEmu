@@ -8,8 +8,8 @@ public final class BluetoothConnHelperFactory {
     
     public static BluetoothConnHelper getInstance(Context appContext) {
         if (mInstance == null) {
-            //mInstance = new BluetoothConnHelperMoto();
-            mInstance = new BluetoothConnHelperGenericImpl(appContext);
+            mInstance = new BluetoothConnHelperMotoReflectImpl();
+            //mInstance = new BluetoothConnHelperGenericImpl(appContext);
         }
         
         return mInstance;
