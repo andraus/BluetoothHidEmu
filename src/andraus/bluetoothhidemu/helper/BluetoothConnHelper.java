@@ -2,7 +2,6 @@ package andraus.bluetoothhidemu.helper;
 
 import java.io.IOException;
 
-import andraus.bluetoothhidemu.R;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
@@ -12,9 +11,15 @@ public abstract class BluetoothConnHelper {
     
     protected String mSetupErrorMsg;
     protected Context mContext;
+    protected BluetoothAdapter mAdapter;
+    protected int mHidSdpHandle = 0;
+    protected int mOriginalDeviceClass = 0;
+
+
     
-    protected BluetoothConnHelper(Context appContext) {
+    protected BluetoothConnHelper(Context appContext, BluetoothAdapter adapter) {
         mContext  = appContext;
+        mAdapter = adapter;
     }
 
     /**
@@ -29,34 +34,31 @@ public abstract class BluetoothConnHelper {
      * @param adapter
      * @return
      */
-    public abstract int getBluetoothDeviceClass(BluetoothAdapter adapter);
+    public abstract int getBluetoothDeviceClass();
  
     /**
      * Spoof the bluetooth device class number. Format of <i>deviceClass</i> follows the same pattern from method
      * <i>getBluetoothDeviceClass</i>. <i>adapter</i> may be required depending on the implementation.
      * 
-     * @param adapter
      * @param deviceClass
      * @return
      */
-    public abstract int spoofBluetoothDeviceClass(BluetoothAdapter adapter, int deviceClass);
+    public abstract int spoofBluetoothDeviceClass(int deviceClass);
     
     /**
      * Adds a custom SDP record to enable HID emulation over bluetooth. <i>adapter</i> may be required 
      * depending on the implementation. 
      * 
-     * @param adapter
      * @return
      */
-    public abstract int addHidDeviceSdpRecord(BluetoothAdapter adapter);
+    public abstract int addHidDeviceSdpRecord();
     
     /**
      * Removes the HID SDP record. <i>adapter</i> may be required depending on 
      * implementation.
      * 
-     * @param adapter
      */
-    public abstract void delHidDeviceSdpRecord(BluetoothAdapter adapter);
+    protected abstract void delHidDeviceSdpRecord();
     
     /**
      * Returns a BluetoothSocket connected using L2CAP protocol.
@@ -74,7 +76,12 @@ public abstract class BluetoothConnHelper {
     /**
      * Performs clean-up actions, if needed.
      */
-    public abstract void cleanup();
+    public void cleanup() {
+        if (mOriginalDeviceClass != 0) {
+            spoofBluetoothDeviceClass(mOriginalDeviceClass);
+        }
+        delHidDeviceSdpRecord();
+    }
     
     /**
      * Performs set-up actions, if needed.
@@ -93,14 +100,4 @@ public abstract class BluetoothConnHelper {
         
     }
     
-    public boolean validateBluetoothAdapter(BluetoothAdapter adapter) {
-        if (!adapter.isEnabled()) {
-            mSetupErrorMsg = mContext.getResources().getString(R.string.msg_bluetooth_off);
-            return false;
-        } else {
-            return true;
-        }
-        
-    }
-
 }

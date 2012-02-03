@@ -15,6 +15,7 @@ import andraus.bluetoothhidemu.view.BluetoothDeviceView;
 import andraus.bluetoothhidemu.view.EchoEditText;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
@@ -59,12 +60,15 @@ public class BluetoothHidEmuActivity extends Activity {
     private static final int HANDLER_MONITOR_SOCKET = 0;
     private static final int HANDLER_MONITOR_PAIRING = 1;
     private static final int HANDLER_CONNECT = 2;
+    private static final int HANDLER_BLUETOOTH_ENABLED = 3;
 
 	private static String PREF_FILE = "pref";
 	private static String PREF_KEY_DEVICE = "selected_device";
 	
 	private static int BLUETOOTH_REQUEST_OK = 1;
 	private static int BLUETOOTH_DISCOVERABLE_DURATION = 300;
+	
+	private boolean mDisableBluetoothUponExit = false;
 	
 	private enum StatusIconStates { OFF, ON, INTERMEDIATE };
 	private StatusIconStates mStatusState = StatusIconStates.OFF;
@@ -111,6 +115,9 @@ public class BluetoothHidEmuActivity extends Activity {
             deviceViewSet.add(deviceView);
         }
         
+        if (mBluetoothDeviceArrayAdapter != null) {
+            mBluetoothDeviceArrayAdapter.clear();
+        }
         mBluetoothDeviceArrayAdapter = new BluetoothDeviceArrayAdapter(this, deviceViewSet);
         mBluetoothDeviceArrayAdapter.sort(BluetoothDeviceView.getComparator());
         
@@ -127,13 +134,13 @@ public class BluetoothHidEmuActivity extends Activity {
 	 * Customize bluetooth adapter
 	 */
 	private void setupBluetoothAdapter() {
-        int originalClass = mConnHelper.getBluetoothDeviceClass(mBluetoothAdapter);
+        int originalClass = mConnHelper.getBluetoothDeviceClass();
         DoLog.d(TAG, "original class = 0x" + Integer.toHexString(originalClass));
 
-        int err = mConnHelper.spoofBluetoothDeviceClass(mBluetoothAdapter, 0x002540);
+        int err = mConnHelper.spoofBluetoothDeviceClass(0x002540);
         DoLog.d(TAG, "set class ret = " + err);
 
-        int sdpRecHandle = mConnHelper.addHidDeviceSdpRecord(mBluetoothAdapter);
+        int sdpRecHandle = mConnHelper.addHidDeviceSdpRecord();
         
         DoLog.d(TAG, "SDP record handle = " + Integer.toHexString(sdpRecHandle));
 	}
@@ -169,9 +176,14 @@ public class BluetoothHidEmuActivity extends Activity {
 	 */
 	private void setupApp() {
 		setContentView(R.layout.main);
+		
+        if (!mConnHelper.setup()) {
+            Toast.makeText(getApplicationContext(), mConnHelper.getSetupErrorMsg(), Toast.LENGTH_LONG).show();
+            finish();
+        } else {
+            setupBluetoothAdapter();
+        }
 
-        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        mConnHelper = BluetoothConnHelperFactory.getInstance(getApplicationContext());
         mSocketManager = SocketManager.getInstance(mConnHelper);
 
 		mDeviceSpinner = (Spinner) findViewById(R.id.DeviceSpinner);
@@ -200,16 +212,12 @@ public class BluetoothHidEmuActivity extends Activity {
          */
         mEchoEditText.setKeyListener(new KeyboardKeyListener(mSocketManager));
         mEchoEditText.addTextChangedListener(new KeyboardTextWatcher(mSocketManager));
-        
+
         setupSpecialKeys();        
-        
-        registerIntentFilters();
-        
+
         if (mBluetoothAdapter.getBondedDevices().isEmpty()) {
             showNoBondedDevicesDialog();
         }
-        
-        populateBluetoothDeviceCombo();
         
 	}
 	
@@ -299,6 +307,10 @@ public class BluetoothHidEmuActivity extends Activity {
 
 	}
 	
+	/**
+	 * 
+	 * @param visibility
+	 */
 	private void toggleScreenElements(int visibility) {
 	    
 	    final int duration = 250;
@@ -358,8 +370,8 @@ public class BluetoothHidEmuActivity extends Activity {
 					editor.putString(PREF_KEY_DEVICE, device.getAddress());
 					editor.apply();
 					
-					mThreadMonitorHandler.removeMessages(HANDLER_MONITOR_SOCKET);
-					mThreadMonitorHandler.removeMessages(HANDLER_CONNECT);
+					mMainHandler.removeMessages(HANDLER_MONITOR_SOCKET);
+					mMainHandler.removeMessages(HANDLER_CONNECT);
 					
 					stopSockets(true);
 				}
@@ -379,15 +391,18 @@ public class BluetoothHidEmuActivity extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
-        setupApp();
+        mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
+        mConnHelper = BluetoothConnHelperFactory.getInstance(getApplicationContext(), mBluetoothAdapter);
         Thread.setDefaultUncaughtExceptionHandler(new CleanupExceptionHandler(mConnHelper));
 
-        if (!mConnHelper.validateBluetoothAdapter(mBluetoothAdapter) || !mConnHelper.setup()) {
-            Toast.makeText(getApplicationContext(), mConnHelper.getSetupErrorMsg(), Toast.LENGTH_LONG).show();
-            finish();
-        } else {
-            setupBluetoothAdapter();
+        if (!mBluetoothAdapter.isEnabled()) {
+            requestBluetoothAdapterOn();
+        } else { 
+            registerIntentFilters();
+            setupApp();
+            populateBluetoothDeviceCombo();
         }
+
     }
     
     /**
@@ -423,15 +438,25 @@ public class BluetoothHidEmuActivity extends Activity {
     @Override
     protected void onDestroy() {
         DoLog.d(TAG, "...being destroyed");
-        unregisterReceiver(mBluetoothReceiver);
-        mThreadMonitorHandler.removeCallbacksAndMessages(null);
-        stopSockets(false);
+        try {
+            unregisterReceiver(mBluetoothReceiver);
+        } catch (IllegalArgumentException e) {
+            DoLog.w(TAG, "Receiver not registered - nothing done.");
+        }
+        mMainHandler.removeCallbacksAndMessages(null);
         if (mConnHelper != null) {
             mConnHelper.cleanup();
         }
+
+        if (mSocketManager != null) {
+            stopSockets(false);
+            mSocketManager.destroyThreads();
+            mSocketManager = null;
+        }
         
-        mSocketManager.destroyThreads();
-        mSocketManager = null;
+        if (mDisableBluetoothUponExit) {
+            mBluetoothAdapter.disable();
+        }
         
         super.onDestroy();
     }
@@ -495,11 +520,18 @@ public class BluetoothHidEmuActivity extends Activity {
 	 */
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-	    if (requestCode == BLUETOOTH_REQUEST_OK && resultCode == BLUETOOTH_DISCOVERABLE_DURATION) {
+        
+	    if (requestCode == BLUETOOTH_REQUEST_OK && resultCode == BLUETOOTH_DISCOVERABLE_DURATION) { // bt discoverable
 	        
-	        mThreadMonitorHandler.sendEmptyMessage(HANDLER_MONITOR_PAIRING);
+	        mMainHandler.sendEmptyMessage(HANDLER_MONITOR_PAIRING);
+	        
+	    } else if (requestCode == BLUETOOTH_REQUEST_OK && resultCode == RESULT_OK) { // bt enabled
+	        
+	        ProgressDialog btEnableDialog = ProgressDialog.show(this, null, getResources().getString(R.string.msg_dialog_enabling_bluetooth));
+	        Message msg = Message.obtain(mMainHandler, HANDLER_BLUETOOTH_ENABLED, btEnableDialog);
+	        mMainHandler.sendMessageDelayed(msg, 5000 /* ms */);
 
-	    } else if (requestCode == BLUETOOTH_REQUEST_OK && resultCode == RESULT_CANCELED) {
+	    } else if (requestCode == BLUETOOTH_REQUEST_OK && resultCode == RESULT_CANCELED) { // request cancelled
 	        finish();
 	    }
 	    
@@ -533,6 +565,15 @@ public class BluetoothHidEmuActivity extends Activity {
 	    
 	    dialog.show();
 	}
+    
+    /**
+     * 
+     */
+    private void requestBluetoothAdapterOn() {
+        mDisableBluetoothUponExit = true;
+        Intent bluetoothIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+        startActivityForResult(bluetoothIntent, BLUETOOTH_REQUEST_OK);
+    }
 
 
     /**
@@ -543,7 +584,7 @@ public class BluetoothHidEmuActivity extends Activity {
 		mSocketManager.stopSockets();
 		
 		if (reconnect) {
-		    mThreadMonitorHandler.sendEmptyMessageDelayed(HANDLER_CONNECT, 1500 /*ms */);
+		    mMainHandler.sendEmptyMessageDelayed(HANDLER_CONNECT, 1500 /*ms */);
 		} 
     }
     
@@ -567,7 +608,7 @@ public class BluetoothHidEmuActivity extends Activity {
 
     	} else if (sm.checkState(SocketManager.STATE_WAITING)) {
 
-    	    mThreadMonitorHandler.sendEmptyMessageDelayed(HANDLER_MONITOR_SOCKET, 1000 /*ms */);
+    	    mMainHandler.sendEmptyMessageDelayed(HANDLER_MONITOR_SOCKET, 1000 /*ms */);
 
     	} else if (sm.checkState(SocketManager.STATE_DROPPED)) {
             
@@ -581,7 +622,7 @@ public class BluetoothHidEmuActivity extends Activity {
                 setStatusIconState(StatusIconStates.INTERMEDIATE);
             }
             
-            mThreadMonitorHandler.sendEmptyMessageDelayed(HANDLER_CONNECT, 5000 /*ms */);
+            mMainHandler.sendEmptyMessageDelayed(HANDLER_CONNECT, 5000 /*ms */);
     	
     	} else if (sm.checkState(SocketManager.STATE_ACCEPTED)) {
 
@@ -600,14 +641,14 @@ public class BluetoothHidEmuActivity extends Activity {
     	        mRightClickImageView.setOnLongClickListener(rightClickListener);
     	    }
     		
-    		mThreadMonitorHandler.sendEmptyMessageDelayed(HANDLER_MONITOR_SOCKET, 200 /*ms */);
+    		mMainHandler.sendEmptyMessageDelayed(HANDLER_MONITOR_SOCKET, 200 /*ms */);
     	}
     }
     
     /**
      * Main handler to deal with UI events
      */
-    private Handler mThreadMonitorHandler = new  Handler() {
+    private Handler mMainHandler = new  Handler() {
 
     	@Override
     	public void handleMessage(Message msg) {
@@ -615,6 +656,14 @@ public class BluetoothHidEmuActivity extends Activity {
     	    //DoLog.d(TAG, String.format("handleMessage(%d)", msg.what));
     	    
     	    switch (msg.what) {
+    	    
+    	    case HANDLER_BLUETOOTH_ENABLED:
+    	        registerIntentFilters();
+    	        setupApp();
+    	        populateBluetoothDeviceCombo();
+    	        ((ProgressDialog)msg.obj).dismiss();
+    	        break;
+    	    
     	    case HANDLER_MONITOR_SOCKET:
     	        monitorSocketStates();
     			break;
@@ -634,7 +683,7 @@ public class BluetoothHidEmuActivity extends Activity {
 
     	        mSocketManager.startSockets(mBluetoothAdapter, ((BluetoothDeviceView) mDeviceSpinner.getSelectedItem()).getBluetoothDevice());
     	        
-    	        mThreadMonitorHandler.sendEmptyMessageDelayed(HANDLER_MONITOR_SOCKET, 200);
+    	        mMainHandler.sendEmptyMessageDelayed(HANDLER_MONITOR_SOCKET, 200);
 
     	        break;
     		}

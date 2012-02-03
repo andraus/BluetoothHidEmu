@@ -17,7 +17,9 @@
     <string name="msg_menu_refresh_devices">Refresh paired devices</string>
     
     <string name="msg_dialog_no_bonded_devices_title">No paired devices found.</string>
-    <string name="msg_dialog_no_bonded_devices_text">No paired devices found.\nPlease, pair your host to this device.\n.</string>
+    <string name="msg_dialog_no_bonded_devices_text">Please, pair your host to this device.\n</string>
+    
+    <string name="msg_dialog_enabling_bluetooth">Configuring Bluetooth device...</string>
     
     <string name="msg_status_connected">Connected</string>
     <string name="msg_status_connecting">Connecting</string>

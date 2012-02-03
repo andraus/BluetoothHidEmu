@@ -10,8 +10,8 @@ import android.content.Context;
 
 public class BluetoothConnHelperMotoImpl extends BluetoothConnHelper {
 
-    BluetoothConnHelperMotoImpl() {
-        super(null);
+    BluetoothConnHelperMotoImpl(BluetoothAdapter adapter) {
+        super(null, adapter);
     }
     
     /**
@@ -22,12 +22,11 @@ public class BluetoothConnHelperMotoImpl extends BluetoothConnHelper {
      * 0xbb -> major device number
      * 0xcc -> minor device number
      * 
-     * @param adapter
      * @return
      */
 
     @Override
-    public int getBluetoothDeviceClass(BluetoothAdapter adapter) {
+    public int getBluetoothDeviceClass() {
        
         return adapter.getAdapterClass();
     }
@@ -36,12 +35,12 @@ public class BluetoothConnHelperMotoImpl extends BluetoothConnHelper {
      * Spoof the bluetooth device class number. Format of <i>deviceClass</i> follows the same pattern from method
      * <i>getBluetoothDeviceClass</i>.
      * 
-     * @param adapter
      * @param deviceClass
      * @return
      */
     @Override
-    public int spoofBluetoothDeviceClass(BluetoothAdapter adapter, int deviceClass) {
+    public int spoofBluetoothDeviceClass(int deviceClass) {
+        mOriginalDeviceClass = getBluetoothDeviceClass();
         
         return adapter.spoofAdapterClass(deviceClass);
     }
@@ -49,11 +48,10 @@ public class BluetoothConnHelperMotoImpl extends BluetoothConnHelper {
     /**
      * Adds a custom SDP record to enable HID emulation over bluetooth.
      * 
-     * @param adapter
      * @return
      */
     @Override
-    public int addHidDeviceSdpRecord(BluetoothAdapter adapter) {
+    public int addHidDeviceSdpRecord() {
 
         return adapter.addHidKeybSdpRecord();
     }
@@ -62,11 +60,10 @@ public class BluetoothConnHelperMotoImpl extends BluetoothConnHelper {
      * Removes a SDP record identified by <i>handle</i>. 
      * implementation.
      * 
-     * @param adapter
      */
     @Override
-    public void delHidDeviceSdpRecord(BluetoothAdapter adapter) {
-        // Not implemented - SDP Record will be automatically deleted once the application dies.
+    protected void delHidDeviceSdpRecord() {
+        adapter.removeServiceRecord(mHidSdpHandle);
 
     }
 
@@ -75,13 +72,6 @@ public class BluetoothConnHelperMotoImpl extends BluetoothConnHelper {
             boolean auth, boolean encrypt) throws IOException {
 
         return device.createl2capSocket(port, auth, encrypt);
-    }
-    
-    /**
-     * Clean-up is automatic in this implementation.
-     */
-    public void cleanup() {
-        
     }
     
     /**

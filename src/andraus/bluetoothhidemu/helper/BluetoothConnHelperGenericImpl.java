@@ -43,13 +43,20 @@ public class BluetoothConnHelperGenericImpl extends BluetoothConnHelper {
     private static final String CMD_DEL_HID_SDP = " del_hid 0x%06X\n";
     
     private String mHidEmuPath = null;
-    private int mOriginalDeviceClass = 0;
-    private int mHidSdpHandle = 0;
     
-    BluetoothConnHelperGenericImpl(Context appContext) {
-        super(appContext);
+    /**
+     * 
+     * @param appContext
+     * @param adapter
+     */
+    protected BluetoothConnHelperGenericImpl(Context appContext,
+            BluetoothAdapter adapter) {
+        super(appContext, adapter);
     }
 
+    /**
+     * 
+     */
     private class ShellResponse {
         static final int ERROR = -0x1;
         static final int SUCCESS = 0x0;
@@ -160,7 +167,7 @@ public class BluetoothConnHelperGenericImpl extends BluetoothConnHelper {
     }
 
     @Override
-    public int getBluetoothDeviceClass(BluetoothAdapter adapter) {
+    public int getBluetoothDeviceClass() {
         ShellResponse shellResp = executeShellCmd(mHidEmuPath + CMD_READ_CLASS);
         
         if (shellResp.code != 0) {
@@ -185,13 +192,10 @@ public class BluetoothConnHelperGenericImpl extends BluetoothConnHelper {
     }
 
     @Override
-    public int spoofBluetoothDeviceClass(BluetoothAdapter adapter,
-            int deviceClass) {
+    public int spoofBluetoothDeviceClass(int deviceClass) {
         
-        if (adapter != null) {
-            mOriginalDeviceClass = getBluetoothDeviceClass(adapter);
-            DoLog.d(TAG, String.format("original class stored: 0x%06X", mOriginalDeviceClass));
-        }
+        mOriginalDeviceClass = getBluetoothDeviceClass();
+        DoLog.d(TAG, String.format("original class stored: 0x%06X", mOriginalDeviceClass));
         
         ShellResponse shellResp = executeShellCmd(mHidEmuPath + String.format(CMD_SPOOF_CLASS, deviceClass));
         
@@ -207,7 +211,7 @@ public class BluetoothConnHelperGenericImpl extends BluetoothConnHelper {
     }
 
     @Override
-    public int addHidDeviceSdpRecord(BluetoothAdapter adapter) {
+    public int addHidDeviceSdpRecord() {
         
         if (mHidSdpHandle != 0) {
             DoLog.w(TAG, String.format("HID SDP record already present. Handle: 0x%06X",mHidSdpHandle));
@@ -237,7 +241,7 @@ public class BluetoothConnHelperGenericImpl extends BluetoothConnHelper {
     }
 
     @Override
-    public void delHidDeviceSdpRecord(BluetoothAdapter adapter) {
+    protected void delHidDeviceSdpRecord() {
         if (mHidSdpHandle == 0) {
             DoLog.w(TAG, "No HID SDP record handle present.");
             return;
@@ -310,16 +314,6 @@ public class BluetoothConnHelperGenericImpl extends BluetoothConnHelper {
         
         return socket;
         
-    }
-
-    @Override
-    public void cleanup() {
-        if (mOriginalDeviceClass != 0) {
-            spoofBluetoothDeviceClass(null, mOriginalDeviceClass);
-        }
-        if (mHidSdpHandle != 0) {
-            delHidDeviceSdpRecord(null);
-        }
     }
 
     @Override

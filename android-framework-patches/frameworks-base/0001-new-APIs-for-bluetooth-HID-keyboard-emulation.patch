@@ -1,27 +1,26 @@
-From 7c6b01a010318c8510fd1f1e119951371364d4aa Mon Sep 17 00:00:00 2001
+From 2c9704a4420cfa33d927c3ba0d1df6706ed569f4 Mon Sep 17 00:00:00 2001
 From: Augusto Andraus <andraus@gmail.com>
 Date: Fri, 30 Dec 2011 12:41:03 -0200
 Subject: [PATCH] new APIs for bluetooth HID keyboard emulation
 
-Change-Id: I664a22e28100ba7fee9fa8e10e79a13693a879b5
+Change-Id: Iaea76c8ddef84071ec9be69123f2c8c6f0753989
 ---
- core/java/android/bluetooth/BluetoothAdapter.java |   60 +++++++++++-
+ core/java/android/bluetooth/BluetoothAdapter.java |   71 ++++++++++++++
  core/java/android/bluetooth/BluetoothDevice.java  |   15 +++
  core/java/android/bluetooth/IBluetooth.aidl       |    4 +
  core/java/android/server/BluetoothService.java    |  108 ++++++++++++++++++++-
  core/jni/android_bluetooth_BluetoothSocket.cpp    |   13 +++-
  core/jni/android_server_BluetoothService.cpp      |   50 ++++++++++
- 6 files changed, 247 insertions(+), 3 deletions(-)
+ 6 files changed, 259 insertions(+), 2 deletions(-)
 
 diff --git a/core/java/android/bluetooth/BluetoothAdapter.java b/core/java/android/bluetooth/BluetoothAdapter.java
-index 510fd2b..10b6837 100644
+index 510fd2b..95d9394 100644
 --- a/core/java/android/bluetooth/BluetoothAdapter.java
 +++ b/core/java/android/bluetooth/BluetoothAdapter.java
-@@ -969,7 +969,65 @@ public final class BluetoothAdapter {
+@@ -969,8 +969,79 @@ public final class BluetoothAdapter {
          }
          return socket;
      }
--
 +    
 +    /**
 +     * Add HID Keyboard profile to sdp record. Requires BLUETOOTH_ADMIN permission
@@ -80,10 +79,24 @@ index 510fd2b..10b6837 100644
 +        }
 +        return ret;
 +    }
-+    
+ 
      /**
++     * @hide 
++     * 
++     * @param handle
++     */
++    public void removeServiceRecord(int handle) {
++        try {
++            mService.removeServiceRecord(handle);
++        } catch (RemoteException e) {
++            Log.e(TAG, "RemoteException: ", e);
++        }
++    }
++    
++    /**
       * Read the local Out of Band Pairing Data
       * <p>Requires {@link android.Manifest.permission#BLUETOOTH}
+      *
 diff --git a/core/java/android/bluetooth/BluetoothDevice.java b/core/java/android/bluetooth/BluetoothDevice.java
 index b3a9103..f1b0389 100644
 --- a/core/java/android/bluetooth/BluetoothDevice.java
