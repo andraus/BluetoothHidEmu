@@ -76,7 +76,7 @@ public class BluetoothHidEmuActivity extends Activity {
 	private TextView mStatusTextView = null;
 	private Spinner mDeviceSpinner = null;
 	
-	private RadioGroup mNavRadioGroup = null;
+	private RadioGroup mTabsRadioGroup = null;
 	private ViewFlipper mMainViewFlipper = null;
 	
 	private View mControlsLayout = null;
@@ -149,21 +149,24 @@ public class BluetoothHidEmuActivity extends Activity {
 	 * Setup top RadioButtons and ViewFlipper
 	 */
 	private void setupNavigationButtons() {
-		mNavRadioGroup = (RadioGroup) findViewById(R.id.NavRadioGroup);
+		mTabsRadioGroup = (RadioGroup) findViewById(R.id.NavRadioGroup);
 		mMainViewFlipper = (ViewFlipper) findViewById(R.id.MainViewFlipper);
 		
-		mNavRadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+		mTabsRadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
 			
 			@Override
 			public void onCheckedChanged(RadioGroup group, int checkedId) {
 				
 				switch (checkedId) {
 				case R.id.TouchpadRadioButton:
-					mMainViewFlipper.showNext();
+					mMainViewFlipper.setDisplayedChild(0);
 					break;
-				case R.id.SpecialKeysRadioButton:
-					mMainViewFlipper.showPrevious();
+				case R.id.NavKeysRadioButton:
+					mMainViewFlipper.setDisplayedChild(1);
 					break;
+				case R.id.MediaKeysRadioButton:
+				    mMainViewFlipper.setDisplayedChild(2);
+				    break;
 				}
 				
 			}

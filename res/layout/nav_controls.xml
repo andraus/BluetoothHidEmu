@@ -103,38 +103,4 @@
         
     </RelativeLayout>
     
-    <!--  Media -->    
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center_horizontal"
-        android:paddingTop="25dp"
-        android:orientation="horizontal" >
-
-        <ImageButton
-            android:id="@+id/PrevMediaButton"
-            android:layout_width="72dp"
-            android:layout_height="72dp"
-            android:padding="25dp"
-            android:background="@drawable/key_shape"
-            android:src="@android:drawable/ic_media_previous" />
-        
-        <ImageButton
-            android:id="@+id/PlayMediaButton"
-            android:layout_width="72dp"
-            android:layout_height="72dp"
-            android:padding="25dp"
-            android:background="@drawable/key_shape"
-            android:src="@android:drawable/ic_media_play" />
-        
-        <ImageButton
-            android:id="@+id/ForwardMediaButton"
-            android:layout_width="72dp"
-            android:layout_height="72dp"
-            android:padding="25dp"
-            android:background="@drawable/key_shape"
-            android:src="@android:drawable/ic_media_next" />
-        
-    </LinearLayout>
-    
 </LinearLayout>

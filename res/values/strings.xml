@@ -10,8 +10,9 @@
     <string name="msg_generic_failure">Generic failure: %s</string>
     <string name="msg_bluetooth_off">Please, enable Bluetooth to proceed</string>
     
-    <string name="msg_button_special">Special Keys</string>
-    <string name="msg_button_touchpad">Touchpad</string>
+    <string name="msg_button_nav">Nav</string>
+    <string name="msg_button_touchpad">Pad</string>
+    <string name="msg_button_media">Player</string>
     
     <string name="msg_menu_quit">Quit</string>
     <string name="msg_menu_refresh_devices">Refresh paired devices</string>
