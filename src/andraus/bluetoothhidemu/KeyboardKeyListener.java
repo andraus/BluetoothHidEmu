@@ -46,7 +46,6 @@ public class KeyboardKeyListener implements KeyListener {
 
     @Override
     public boolean onKeyDown(View view, Editable content, int keyCode, KeyEvent event) {
-        DoLog.d(TAG, String.format("onkeyDown(%d)",keyCode));
         switch (keyCode) {
         
         case KeyEvent.KEYCODE_ENTER:
@@ -68,13 +67,11 @@ public class KeyboardKeyListener implements KeyListener {
 
     @Override
     public boolean onKeyOther(View view, Editable content, KeyEvent event) {
-        DoLog.d(TAG, "onkeyOther()");
         return mTextKeyListener.onKeyOther(view, content, event);
     }
 
     @Override
     public boolean onKeyUp(View view, Editable content, int keyCode, KeyEvent event) {
-        DoLog.d(TAG, "onkeyUp()");
         
         if (keyCode == KeyEvent.KEYCODE_ENTER
                 || keyCode == KeyEvent.KEYCODE_DEL
