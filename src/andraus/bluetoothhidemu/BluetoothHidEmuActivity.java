@@ -23,11 +23,13 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
+import android.preference.PreferenceManager;
 import android.text.method.KeyListener;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -87,6 +89,7 @@ public class BluetoothHidEmuActivity extends Activity {
 	
 	private SocketManager mSocketManager = null;
 	private BluetoothConnHelper mConnHelper = null;
+	private OnSettingsChangeListener mSettingsChangeListener = null;
 
 	/**
 	 * Register intent filters for this activity
@@ -210,7 +213,7 @@ public class BluetoothHidEmuActivity extends Activity {
          */
         mEchoEditText.setKeyListener(new KeyboardKeyListener(mSocketManager));
         mEchoEditText.addTextChangedListener(new KeyboardTextWatcher(mSocketManager));
-
+        
         setupSpecialKeys();        
 
         if (mBluetoothAdapter.getBondedDevices().isEmpty()) {
@@ -387,6 +390,10 @@ public class BluetoothHidEmuActivity extends Activity {
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         mConnHelper = BluetoothConnHelperFactory.getInstance(getApplicationContext(), mBluetoothAdapter);
         Thread.setDefaultUncaughtExceptionHandler(new CleanupExceptionHandler(mConnHelper));
+
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        mSettingsChangeListener = new OnSettingsChangeListener();
+        sharedPreferences.registerOnSharedPreferenceChangeListener(mSettingsChangeListener);
 
         if (!mBluetoothAdapter.isEnabled()) {
             requestBluetoothAdapterOn();

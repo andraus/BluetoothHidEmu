@@ -1,7 +1,5 @@
 package andraus.bluetoothhidemu;
 
-import java.security.acl.LastOwnerException;
-
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -10,7 +8,8 @@ import android.preference.PreferenceManager;
 
 public class Settings extends PreferenceActivity {
     
-    private final static String PREF_LAST_DEVICE = "last_device";
+    /* package */ final static String PREF_EMULATION_MODE = "emulation_mode";
+    /* package */ final static String PREF_LAST_DEVICE = "last_device";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -19,6 +18,8 @@ public class Settings extends PreferenceActivity {
         addPreferencesFromResource(R.xml.main_preferences);
 
     }
+    
+    
 
     /**
      * 
@@ -26,7 +27,7 @@ public class Settings extends PreferenceActivity {
      * @return
      */
     public static int getEmulationMode(Context context) {
-        String value = PreferenceManager.getDefaultSharedPreferences(context).getString("emulation_mode", "-1");
+        String value = PreferenceManager.getDefaultSharedPreferences(context).getString(PREF_EMULATION_MODE, "-1");
         
         return Integer.valueOf(value);
     }
@@ -66,7 +67,5 @@ public class Settings extends PreferenceActivity {
         editor.apply();
         
     }
-    
-    
 
 }
