@@ -8,5 +8,9 @@
     <item android:id="@+id/menu_refresh_devices"
           android:icon="@drawable/ic_menu_refresh"
           android:title="@string/msg_menu_refresh_devices" />
-          
+    
+    <item android:id="@+id/menu_settings"
+          android:icon="@android:drawable/ic_menu_preferences"
+          android:title="@string/msg_menu_settings" />
+    
 </menu>

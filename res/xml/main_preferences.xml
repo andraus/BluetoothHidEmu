@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <ListPreference android:title="Emulation mode"
+                    android:summary="Select desired emulation mode"
+                    android:key="emulation_mode"
+                    android:defaultValue="0"
+                    android:entries="@array/emulation_mode_names"
+                    android:entryValues="@array/emulation_mode_values" />
+
+</PreferenceScreen>

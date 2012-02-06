@@ -23,7 +23,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -62,9 +61,6 @@ public class BluetoothHidEmuActivity extends Activity {
     private static final int HANDLER_CONNECT = 2;
     private static final int HANDLER_BLUETOOTH_ENABLED = 3;
 
-	private static String PREF_FILE = "pref";
-	private static String PREF_KEY_DEVICE = "selected_device";
-	
 	private static int BLUETOOTH_REQUEST_OK = 1;
 	private static int BLUETOOTH_DISCOVERABLE_DURATION = 300;
 	
@@ -104,8 +100,7 @@ public class BluetoothHidEmuActivity extends Activity {
 	 * 
 	 */
 	private void populateBluetoothDeviceCombo() {
-	    SharedPreferences pref = getSharedPreferences(PREF_FILE, MODE_PRIVATE);
-        String storedDeviceAddr = pref.getString(PREF_KEY_DEVICE, null);
+        String storedDeviceAddr = Settings.getLastConnectedDevice(this);
         DoLog.d(TAG, "restored from pref :" + storedDeviceAddr);
         
         Set<BluetoothDevice> deviceSet = mBluetoothAdapter.getBondedDevices();
@@ -365,13 +360,8 @@ public class BluetoothHidEmuActivity extends Activity {
 
 				@Override
 				public void onItemSelected(AdapterView<?> adapterView, View view, int pos, long id) {
-					SharedPreferences pref = getSharedPreferences(PREF_FILE, MODE_PRIVATE);
-					SharedPreferences.Editor editor = pref.edit();
-					
-					BluetoothDeviceView device = (BluetoothDeviceView) mDeviceSpinner.getSelectedItem();
-					
-					editor.putString(PREF_KEY_DEVICE, device.getAddress());
-					editor.apply();
+				    BluetoothDeviceView device = (BluetoothDeviceView) mDeviceSpinner.getSelectedItem();
+				    Settings.setLastDevice(getApplicationContext(), device.getAddress());
 					
 					mMainHandler.removeMessages(HANDLER_MONITOR_SOCKET);
 					mMainHandler.removeMessages(HANDLER_CONNECT);
@@ -430,8 +420,10 @@ public class BluetoothHidEmuActivity extends Activity {
         case R.id.menu_refresh_devices:
             populateBluetoothDeviceCombo();
             break;
-            
+        case R.id.menu_settings:
+            startActivity(new Intent(this, Settings.class));
         }
+        
         return super.onOptionsItemSelected(item);
     }
 
