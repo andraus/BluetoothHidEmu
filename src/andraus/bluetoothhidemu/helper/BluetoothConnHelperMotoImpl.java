@@ -28,7 +28,7 @@ public class BluetoothConnHelperMotoImpl extends BluetoothConnHelper {
     @Override
     public int getBluetoothDeviceClass() {
        
-        return adapter.getAdapterClass();
+        return mAdapter.getAdapterClass();
     }
 
     /**
@@ -42,7 +42,7 @@ public class BluetoothConnHelperMotoImpl extends BluetoothConnHelper {
     public int spoofBluetoothDeviceClass(int deviceClass) {
         mOriginalDeviceClass = getBluetoothDeviceClass();
         
-        return adapter.spoofAdapterClass(deviceClass);
+        return mAdapter.spoofAdapterClass(deviceClass);
     }
 
     /**
@@ -53,7 +53,7 @@ public class BluetoothConnHelperMotoImpl extends BluetoothConnHelper {
     @Override
     public int addHidDeviceSdpRecord() {
 
-        return adapter.addHidKeybSdpRecord();
+        return mAdapter.addHidKeybSdpRecord();
     }
 
     /**
@@ -63,7 +63,7 @@ public class BluetoothConnHelperMotoImpl extends BluetoothConnHelper {
      */
     @Override
     protected void delHidDeviceSdpRecord() {
-        adapter.removeServiceRecord(mHidSdpHandle);
+        mAdapter.removeServiceRecord(mHidSdpHandle);
 
     }
 

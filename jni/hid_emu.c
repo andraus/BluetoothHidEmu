@@ -25,11 +25,10 @@ static void add_lang_attr(sdp_record_t *r)
 }
 
 /**
- * Creates the SDP record for HID emulation. This is basically a clone of
- * a PS3 wireless keypad record. Seems to work well with many different
+ * Creates the SDP record for HID emulation. Works well with many different
  * clients: windows, linux (ubuntu), PS3, and motorola android devices.
  */
-static sdp_record_t *create_hid_keyb_record()
+static sdp_record_t *create_hid_generic_record()
 {
 	sdp_record_t *sdp_record;
 	sdp_list_t *svclass_id, *pfseq, *apseq, *root;
@@ -279,10 +278,180 @@ static sdp_record_t *create_hid_keyb_record()
 }
 
 /**
+ * Creates the SDP record for BD remtoe HID emulation. Probably works with PS3 only
+ */
+static sdp_record_t *create_hid_bdremote_record()
+{
+	sdp_record_t *sdp_record;
+	sdp_list_t *svclass_id, *pfseq, *apseq, *root;
+	uuid_t root_uuid, hidkb_uuid, l2cap_uuid, hidp_uuid;
+	sdp_profile_desc_t profile[1];
+	sdp_list_t *aproto, *proto[3];
+	sdp_data_t *channel, *lang_lst, *lang_lst2, *hid_spec_lst, *hid_spec_lst2;
+	int i;
+	uint8_t dtd = SDP_UINT16;
+	uint8_t dtd2 = SDP_UINT8;
+	uint8_t dtd_data = SDP_TEXT_STR8;
+	void *dtds[2];
+	void *values[2];
+	void *dtds2[2];
+	void *values2[2];
+	int leng[2];
+	uint8_t hid_spec_type = 0x22;
+	uint16_t hid_attr_lang[] = {0x409,0x100};
+	uint16_t value_int = 0;
+	static const uint16_t ctrl = 0x11;
+	static const uint16_t intr = 0x13;
+
+	static const uint16_t hid_release_num = 0x100;
+	static const uint16_t hid_parser_version = 0x111;
+	static const uint8_t hid_dev_subclass = 0x0c;
+	static const uint8_t hid_country_code = 0x21;
+	static const uint8_t hid_virtual_cable = 0x1;
+	static const uint8_t hid_reconn_initiate = 0x1;
+
+	static const uint8_t hid_sdp_disable = 0x0;
+	static const uint8_t hid_batt_power = 0x1;
+	static const uint8_t hid_remote_wake = 0x1;
+	static const uint16_t hid_profile_version = 0x100;
+	static const uint16_t hid_superv_timeout = 0x1f40;
+	static const uint8_t hid_normally_connectable = 0x0;
+	static const uint8_t hid_boot_device = 0x10;
+
+	const uint8_t hid_spec[] = {
+		    /* PS3 blu-ray remote */
+		    0x05, 0x01,					/* Usage Page (Generic Desktop)				*/
+		    0x09, 0x05,					/* Usage ID (Game Pad)						*/
+		    0xa1, 0x01,					/* Collection (Application)					*/
+		    0x85, 0x01,					/*	Report ID (1)							*/
+		    0x15, 0x00,					/*	Logical Minimum (0)						*/
+		    0x26, 0xff, 0x00,			/*  Logical Maximum (255)					*/
+		    0x75, 0x08,					/*	Report Size (8)							*/
+		    0x95, 0x0b,					/*	Report Count (11)						*/
+		    0x06, 0x00, 0xff,			/* Usage Page (Vendor Defined Page 1)		*/
+		    0x09, 0x01,					/*	Usage (Vendor Usage 1)					*/
+		    0x81, 0x00,					/*	Input (Data,Array,Absolute)				*/
+		    0x85, 0x01,					/*	Report ID (1)							*/
+		    0x95, 0x0b,					/*	Report Count (11)						*/
+		    0x09, 0x01,					/*	Usage (Vendor Usage 1)					*/
+		    0xb1, 0x00,					/*	Feature (Data,Array,Absolute)			*/
+		    0x85, 0x02,					/*	Report ID (2)							*/
+		    0x95, 0x0b,					/*	Report Count (11)						*/
+		    0x09, 0x01,					/*	Usage (Vendor Usage 1)					*/
+		    0xb1, 0x00,					/*	Feature (Data,Array,Absolute)			*/
+		    0x85, 0x03,					/*	Report ID (3)							*/
+		    0x95, 0x0b,					/*	Report Count (11)						*/
+		    0x09, 0x01,					/*	Usage (Vendor Usage 1)					*/
+		    0xb1, 0x00,					/*	Feature (Data,Array,Absolute)			*/
+		    0x85, 0x04,					/*	Report ID (4)							*/
+		    0x95, 0x0b,					/*	Report Count (11)						*/
+		    0x09, 0x01,					/*	Usage (Vendor Usage 1)					*/
+		    0xb1, 0x00,					/*	Feature (Data,Array,Absolute)			*/
+		    0x85, 0x05,					/*	Report ID (5)							*/
+		    0x95, 0x0b,					/*	Report count (11)						*/
+		    0x09, 0x01,					/*	Usage (Vendor Usage 1)					*/
+		    0xb1, 0x00,					/*	Feature (Data,Array,Absolute)			*/
+		    0x85, 0x06,					/*	Report ID (6)							*/
+		    0x95, 0x0b,					/*	Report count (11)						*/
+		    0x09, 0x01,					/*	Usage (Vendor Usage 1)					*/
+		    0xb1, 0x00,					/*	Feature (Data,Array,Absolute)			*/
+		    0xc0					/*  End Collection								*/
+	};
+
+	sdp_record = sdp_record_alloc();
+	if (!sdp_record) {
+		return NULL;
+	}
+
+	memset((void*)sdp_record, 0, sizeof(sdp_record_t));
+	sdp_record->handle = 0xffffffff;
+	sdp_uuid16_create(&root_uuid, PUBLIC_BROWSE_GROUP);
+	root = sdp_list_append(0, &root_uuid);
+	sdp_set_browse_groups(sdp_record, root);
+
+	add_lang_attr(sdp_record);
+
+	sdp_uuid16_create(&hidkb_uuid, HID_SVCLASS_ID);
+	svclass_id = sdp_list_append(0, &hidkb_uuid);
+	sdp_set_service_classes(sdp_record, svclass_id);
+
+	sdp_uuid16_create(&profile[0].uuid, HID_PROFILE_ID);
+	profile[0].version = 0x0100;
+	pfseq = sdp_list_append(0, profile);
+	sdp_set_profile_descs(sdp_record, pfseq);
+
+	/* PROTO */
+	sdp_uuid16_create(&l2cap_uuid, L2CAP_UUID);
+	proto[1] = sdp_list_append(0, &l2cap_uuid);
+	channel = sdp_data_alloc(SDP_UINT8, &ctrl);
+	proto[1] = sdp_list_append(proto[1], channel);
+	apseq = sdp_list_append(0, proto[1]);
+
+	sdp_uuid16_create(&hidp_uuid, HIDP_UUID);
+	proto[2] = sdp_list_append(0, &hidp_uuid);
+	apseq = sdp_list_append(apseq, proto[2]);
+
+	aproto = sdp_list_append(0, apseq);
+	sdp_set_access_protos(sdp_record, aproto);
+
+	/* ATTR_ADD_PROTO */
+	proto[1] = sdp_list_append(0, &l2cap_uuid);
+	channel = sdp_data_alloc(SDP_UINT8, &intr);
+	proto[1] = sdp_list_append(proto[1], channel);
+	apseq = sdp_list_append(0, proto[1]);
+
+	sdp_uuid16_create(&hidp_uuid, HIDP_UUID);
+	proto[2] = sdp_list_append(0, &hidp_uuid);
+	apseq = sdp_list_append(apseq, proto[2]);
+
+	aproto = sdp_list_append(0, apseq);
+	sdp_set_add_access_protos(sdp_record, aproto);
+
+	sdp_set_info_attr(sdp_record, "Android Bluetooth Keyboard",
+		"", "HID device over Bluetooth for Android");
+
+	sdp_attr_add_new(sdp_record, SDP_ATTR_HID_DEVICE_RELEASE_NUMBER, SDP_UINT16, &hid_release_num);
+	sdp_attr_add_new(sdp_record, SDP_ATTR_HID_PARSER_VERSION, SDP_UINT16, &hid_parser_version);
+	sdp_attr_add_new(sdp_record, SDP_ATTR_HID_DEVICE_SUBCLASS, SDP_UINT8, &hid_dev_subclass);
+	sdp_attr_add_new(sdp_record, SDP_ATTR_HID_COUNTRY_CODE, SDP_UINT8, &hid_country_code);
+	sdp_attr_add_new(sdp_record, SDP_ATTR_HID_VIRTUAL_CABLE, SDP_BOOL, &hid_virtual_cable);
+	sdp_attr_add_new(sdp_record, SDP_ATTR_HID_RECONNECT_INITIATE, SDP_BOOL, &hid_reconn_initiate);
+
+	dtds[0] = &dtd2;
+	values[0] = &hid_spec_type;
+	dtds[1] = &dtd_data;
+	values[1] = (uint8_t*)hid_spec;
+	leng[0] = 0;
+	leng[1] = sizeof(hid_spec);
+	hid_spec_lst = sdp_seq_alloc_with_length(dtds, values, leng, 2);
+	hid_spec_lst2 = sdp_data_alloc(SDP_SEQ8, hid_spec_lst);
+	sdp_attr_add(sdp_record, SDP_ATTR_HID_DESCRIPTOR_LIST, hid_spec_lst2);
+
+	for (i = 0; i < sizeof(hid_attr_lang)/2; i++) {
+		dtds2[i] = &dtd;
+		values2[i] = &hid_attr_lang[i];
+	}
+	lang_lst = sdp_seq_alloc(dtds2, values2, sizeof(hid_attr_lang)/2);
+	lang_lst2 = sdp_data_alloc(SDP_SEQ8, lang_lst);
+	sdp_attr_add(sdp_record, SDP_ATTR_HID_LANG_ID_BASE_LIST, lang_lst2);
+
+	sdp_attr_add_new(sdp_record, SDP_ATTR_HID_SDP_DISABLE, SDP_BOOL, &hid_sdp_disable);
+	sdp_attr_add_new(sdp_record, SDP_ATTR_HID_BATTERY_POWER, SDP_BOOL, &hid_batt_power);
+	sdp_attr_add_new(sdp_record, SDP_ATTR_HID_REMOTE_WAKEUP, SDP_BOOL, &hid_remote_wake);
+	sdp_attr_add_new(sdp_record, SDP_ATTR_HID_PROFILE_VERSION, SDP_UINT16, &hid_profile_version);
+	sdp_attr_add_new(sdp_record, SDP_ATTR_HID_SUPERVISION_TIMEOUT, SDP_UINT16, &hid_superv_timeout);
+	sdp_attr_add_new(sdp_record, SDP_ATTR_HID_NORMALLY_CONNECTABLE, SDP_BOOL, &hid_normally_connectable);
+	sdp_attr_add_new(sdp_record, SDP_ATTR_HID_BOOT_DEVICE, SDP_BOOL, &hid_boot_device);
+
+	return sdp_record;
+}
+
+
+/**
  * Registers the new SDP record for HID, and returns the sdp_record_t *.
  */
-sdp_record_t *sdp_register_hid() {
-	sdp_record_t *rec = create_hid_keyb_record();
+sdp_record_t *sdp_register_hid(int hid_mode) {
+	sdp_record_t *rec = (hid_mode == HID_MODE_GENERIC) ? create_hid_generic_record() : create_hid_bdremote_record();
 
 	int ret = -1;
 
@@ -391,14 +560,17 @@ int is_hid_sdp_record_registered() {
 	*/
 }
 
-int add_hid() {
+/**
+ *
+ */
+int add_hid(int hid_mode) {
 
 	int handle = 0x0;
 	int ret = sdp_open();
 
 	if (ret == 0) {
 		if ((handle = is_hid_sdp_record_registered()) == 0) {
-			sdp_record = sdp_register_hid();
+			sdp_record = sdp_register_hid(hid_mode);
 			if (sdp_record == NULL) {
 				LOGE("Error register sdp record: %d\n", ret);
 				sdp_close(sdp_session);
@@ -469,7 +641,8 @@ int spoof_device_class(int hdev, char *cls) {
  */
 
 const int ADD_HID_ARGS = 2;
-const char *ADD_HID = "add_hid";
+const char *ADD_HID_GENERIC = "add_hid_generic";
+const char *ADD_HID_BDREMOTE = "add_hid_bdremote";
 const int DEL_HID_ARGS = 3;
 const char *DEL_HID = "del_hid";
 const int READ_CLASS_ARGS = 2;
@@ -499,12 +672,19 @@ int main(int argc, char *argv[]) {
 
 	}
 
-	if (argc == ADD_HID_ARGS && (strncmp(argv[1], ADD_HID, strlen(argv[1])) == 0)) {
-		int handle = add_hid();
+	if (argc == ADD_HID_ARGS && (strncmp(argv[1], ADD_HID_GENERIC, strlen(argv[1])) == 0)) {
+		int handle = add_hid(HID_MODE_GENERIC);
 		printf("handle: 0x%X\n", handle);
 		if (sdp_record != NULL) {
 			sdp_record_free(sdp_record);
 		}
+	} else if (argc == ADD_HID_ARGS && (strncmp(argv[1], ADD_HID_BDREMOTE, strlen(argv[1])) == 0)) {
+		int handle = add_hid(HID_MODE_BDREMOTE);
+		printf("handle: 0x%X\n", handle);
+		if (sdp_record != NULL) {
+			sdp_record_free(sdp_record);
+		}
+
 
 	} else if (argc == DEL_HID_ARGS && (strncmp(argv[1], DEL_HID, strlen(argv[1])) == 0) && !strncasecmp(argv[2], "0x", 2)) {
 		int handle = strtol(argv[2]+2, NULL, 16);

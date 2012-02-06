@@ -15,8 +15,8 @@ public final class BluetoothConnHelperFactory {
      */
     public static BluetoothConnHelper getInstance(Context appContext, BluetoothAdapter adapter) {
         if (mInstance == null) {
-            mInstance = new BluetoothConnHelperMotoReflectImpl(adapter);
-            //mInstance = new BluetoothConnHelperGenericImpl(appContext, adapter);
+            //mInstance = new BluetoothConnHelperMotoReflectImpl(adapter);
+            mInstance = new BluetoothConnHelperGenericImpl(appContext, adapter);
         }
         
         return mInstance;

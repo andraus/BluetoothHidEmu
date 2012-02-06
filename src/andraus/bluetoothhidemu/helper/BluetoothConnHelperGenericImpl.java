@@ -37,7 +37,7 @@ public class BluetoothConnHelperGenericImpl extends BluetoothConnHelper {
     private static final String CMD_SPOOF_CLASS = " spoof_class 0x%06X\n";
     private static final String CMD_SPOOF_CLASS_RESP = "class spoofed.";
     
-    private static final String CMD_ADD_HID_SDP = " add_hid\n";
+    private static final String CMD_ADD_HID_SDP = " add_hid_generic\n";
     private static final String CMD_ADD_HID_SDP_RESP = "handle";
     
     private static final String CMD_DEL_HID_SDP = " del_hid 0x%06X\n";
