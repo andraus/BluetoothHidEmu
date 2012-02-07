@@ -129,21 +129,6 @@ public class BluetoothHidEmuActivity extends Activity {
 	}
 
 	/**
-	 * Customize bluetooth adapter
-	 */
-	private void setupBluetoothAdapter() {
-        int originalClass = mConnHelper.getBluetoothDeviceClass();
-        DoLog.d(TAG, "original class = 0x" + Integer.toHexString(originalClass));
-
-        int err = mConnHelper.spoofBluetoothDeviceClass(0x002540);
-        DoLog.d(TAG, "set class ret = " + err);
-
-        int sdpRecHandle = mConnHelper.addHidDeviceSdpRecord();
-        
-        DoLog.d(TAG, "SDP record handle = " + Integer.toHexString(sdpRecHandle));
-	}
-	
-	/**
 	 * Setup top RadioButtons and ViewFlipper
 	 */
 	private void setupNavigationButtons() {
@@ -178,11 +163,12 @@ public class BluetoothHidEmuActivity extends Activity {
 	private void setupApp() {
 		setContentView(R.layout.main);
 		
-        if (!mConnHelper.setup()) {
+        if (!mConnHelper.requirementsCheck()) {
             Toast.makeText(getApplicationContext(), mConnHelper.getSetupErrorMsg(), Toast.LENGTH_LONG).show();
             finish();
         } else {
-            setupBluetoothAdapter();
+            // TODO: check for preferences to choose spoof mode
+            mConnHelper.tearUpSpoofing(BluetoothConnHelper.SpoofMode.HID_GENERIC);
         }
 
         mSocketManager = SocketManager.getInstance(mConnHelper);
@@ -446,8 +432,8 @@ public class BluetoothHidEmuActivity extends Activity {
             DoLog.w(TAG, "Receiver not registered - nothing done.");
         }
         mMainHandler.removeCallbacksAndMessages(null);
-        if (mConnHelper != null) {
-            mConnHelper.cleanup();
+        if (mConnHelper != null && mConnHelper.isSpoofed()) {
+            mConnHelper.tearDownSpoofing();
         }
 
         if (mSocketManager != null) {

@@ -14,7 +14,7 @@ public class CleanupExceptionHandler implements Thread.UncaughtExceptionHandler 
     public void uncaughtException(Thread thread, Throwable ex) {
 
         if (mConnHelper != null) {
-            mConnHelper.cleanup();
+            mConnHelper.tearDownSpoofing();
         }
         
         mDefaultExceptionHandler.uncaughtException(thread, ex);

@@ -12,7 +12,6 @@ import java.io.OutputStreamWriter;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 
-import andraus.bluetoothhidemu.BluetoothHidEmuActivity;
 import andraus.bluetoothhidemu.R;
 import andraus.bluetoothhidemu.util.DoLog;
 import android.bluetooth.BluetoothAdapter;
@@ -24,8 +23,6 @@ import android.os.ParcelUuid;
 public class BluetoothConnHelperGenericImpl extends BluetoothConnHelper {
     
 
-    private static final String TAG = BluetoothHidEmuActivity.TAG;
-    
     private static final String CMD_SU = "su";
 
     private static final String CMD_ID = "id\n";
@@ -37,13 +34,16 @@ public class BluetoothConnHelperGenericImpl extends BluetoothConnHelper {
     private static final String CMD_SPOOF_CLASS = " spoof_class 0x%06X\n";
     private static final String CMD_SPOOF_CLASS_RESP = "class spoofed.";
     
-    private static final String CMD_ADD_HID_SDP = " add_hid_generic\n";
+    private static final String CMD_ADD_HID_SDP_GENERIC = " add_hid_generic\n";
+    private static final String CMD_ADD_HID_SDP_BDREMOTE = " add_hid_bdremote\n";
     private static final String CMD_ADD_HID_SDP_RESP = "handle";
     
     private static final String CMD_DEL_HID_SDP = " del_hid 0x%06X\n";
     
     private String mHidEmuPath = null;
-    
+
+    private int mHidSdpHandle;
+
     /**
      * 
      * @param appContext
@@ -167,7 +167,7 @@ public class BluetoothConnHelperGenericImpl extends BluetoothConnHelper {
     }
 
     @Override
-    public int getBluetoothDeviceClass() {
+    protected int getBluetoothDeviceClass() {
         ShellResponse shellResp = executeShellCmd(mHidEmuPath + CMD_READ_CLASS);
         
         if (shellResp.code != 0) {
@@ -192,7 +192,7 @@ public class BluetoothConnHelperGenericImpl extends BluetoothConnHelper {
     }
 
     @Override
-    public int spoofBluetoothDeviceClass(int deviceClass) {
+    protected int spoofBluetoothDeviceClass(int deviceClass) {
         
         mOriginalDeviceClass = getBluetoothDeviceClass();
         DoLog.d(TAG, String.format("original class stored: 0x%06X", mOriginalDeviceClass));
@@ -211,14 +211,16 @@ public class BluetoothConnHelperGenericImpl extends BluetoothConnHelper {
     }
 
     @Override
-    public int addHidDeviceSdpRecord() {
+    protected int addHidDeviceSdpRecord(SpoofMode mode) {
         
         if (mHidSdpHandle != 0) {
             DoLog.w(TAG, String.format("HID SDP record already present. Handle: 0x%06X",mHidSdpHandle));
             return mHidSdpHandle;
         }
         
-        ShellResponse shellResp = executeShellCmd(mHidEmuPath + CMD_ADD_HID_SDP);
+        String cmd = (mode == SpoofMode.HID_GENERIC) ? CMD_ADD_HID_SDP_GENERIC : CMD_ADD_HID_SDP_BDREMOTE; 
+        
+        ShellResponse shellResp = executeShellCmd(mHidEmuPath + cmd);
         
         if (shellResp.code != 0) {
             throw new IllegalStateException("Unexpected failure");
@@ -240,7 +242,9 @@ public class BluetoothConnHelperGenericImpl extends BluetoothConnHelper {
         return mHidSdpHandle;
     }
 
-    @Override
+    /**
+     * Removes the SDP record of mHidSdpHandle
+     */
     protected void delHidDeviceSdpRecord() {
         if (mHidSdpHandle == 0) {
             DoLog.w(TAG, "No HID SDP record handle present.");
@@ -317,7 +321,7 @@ public class BluetoothConnHelperGenericImpl extends BluetoothConnHelper {
     }
 
     @Override
-    public boolean setup() {
+    public boolean requirementsCheck() {
         ShellResponse shellResp = executeShellCmd(CMD_ID);
         
         switch (shellResp.code) {

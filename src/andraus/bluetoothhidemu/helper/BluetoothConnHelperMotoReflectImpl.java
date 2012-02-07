@@ -19,6 +19,7 @@ import android.os.ParcelUuid;
 public class BluetoothConnHelperMotoReflectImpl extends BluetoothConnHelper {
     
     private static final String TAG = BluetoothHidEmuActivity.TAG;
+    private Integer mHidSdpHandle;
 
     /**
      * 
@@ -38,9 +39,7 @@ public class BluetoothConnHelperMotoReflectImpl extends BluetoothConnHelper {
      * 
      * @return
      */
-
-    @Override
-    public int getBluetoothDeviceClass() {
+    protected int getBluetoothDeviceClass() {
         Integer devClass = 0;
         try {
             Method getAdapterClassMethod = BluetoothAdapter.class.getMethod("getAdapterClass", (Class<?>[]) null);
@@ -75,8 +74,7 @@ public class BluetoothConnHelperMotoReflectImpl extends BluetoothConnHelper {
      * @param deviceClass
      * @return
      */
-    @Override
-    public int spoofBluetoothDeviceClass(int deviceClass) {
+    protected int spoofBluetoothDeviceClass(int deviceClass) {
         mOriginalDeviceClass = getBluetoothDeviceClass();
         
         Integer newClass = 0;
@@ -112,10 +110,11 @@ public class BluetoothConnHelperMotoReflectImpl extends BluetoothConnHelper {
      * 
      * @return
      */
-    @Override
-    public int addHidDeviceSdpRecord() {
+    public int addHidDeviceSdpRecord(SpoofMode mode) {
         Integer handle = 0;
         try {
+            // TODO: must finish the frameworks implementation to validate this call
+            
             Method addHidSdpRecordMethod = BluetoothAdapter.class.getMethod("addHidKeybSdpRecord", (Class<?>[]) null);
             addHidSdpRecordMethod.setAccessible(true);
             
@@ -149,7 +148,6 @@ public class BluetoothConnHelperMotoReflectImpl extends BluetoothConnHelper {
      * 
      * @param adapter
      */
-    @Override
     protected void delHidDeviceSdpRecord() {
         try {
 
@@ -232,11 +230,10 @@ public class BluetoothConnHelperMotoReflectImpl extends BluetoothConnHelper {
         return socket;
         
     }
-    
-    /**
-     * No set-up necessary in this implementation.
-     */
-    public boolean setup() {
+
+    @Override
+    public boolean requirementsCheck() {
+        // TODO implement check for frameworks support
         return true;
     }
     
