@@ -1,20 +1,20 @@
-package andraus.bluetoothhidemu.helper;
+package andraus.bluetoothhidemu.spoof;
 
 public class CleanupExceptionHandler implements Thread.UncaughtExceptionHandler {
     
-    private BluetoothConnHelper mConnHelper = null;
+    private BluetoothAdapterSpoofer mSpoofer = null;
     private Thread.UncaughtExceptionHandler mDefaultExceptionHandler = null ;
     
-    public CleanupExceptionHandler(BluetoothConnHelper connHelper) {
+    public CleanupExceptionHandler(BluetoothAdapterSpoofer connHelper) {
         mDefaultExceptionHandler = Thread.getDefaultUncaughtExceptionHandler();
-        mConnHelper = connHelper;
+        mSpoofer = connHelper;
     }
 
     @Override
     public void uncaughtException(Thread thread, Throwable ex) {
 
-        if (mConnHelper != null) {
-            mConnHelper.tearDownSpoofing();
+        if (mSpoofer != null && mSpoofer.isSpoofed()) {
+            mSpoofer.tearDownSpoofing();
         }
         
         mDefaultExceptionHandler.uncaughtException(thread, ex);

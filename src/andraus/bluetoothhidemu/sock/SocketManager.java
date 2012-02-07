@@ -4,8 +4,8 @@ import java.io.IOException;
 import java.util.Set;
 
 import andraus.bluetoothhidemu.BluetoothHidEmuActivity;
-import andraus.bluetoothhidemu.helper.BluetoothConnHelper;
 import andraus.bluetoothhidemu.sock.payload.HidPayload;
+import andraus.bluetoothhidemu.spoof.BluetoothAdapterSpoofer;
 import andraus.bluetoothhidemu.util.DoLog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -27,7 +27,7 @@ public class SocketManager {
     public static final int STATE_DROPPING = BluetoothSocketThread.STATE_DROPPING;
     public static final int STATE_DROPPED = BluetoothSocketThread.STATE_DROPPED;
     
-    private BluetoothConnHelper mConnHelper = null;
+    private BluetoothAdapterSpoofer mSpoofer = null;
     
     private BluetoothSocketThread mCtrlThread = null;
     private BluetoothSocketThread mIntrThread = null;
@@ -37,8 +37,8 @@ public class SocketManager {
      * @param bluetoothAdapter
      * @param connHelper
      */
-    private SocketManager(BluetoothConnHelper connHelper) {
-        mConnHelper = connHelper;
+    private SocketManager(BluetoothAdapterSpoofer connHelper) {
+        mSpoofer = connHelper;
     }
 
     /**
@@ -46,7 +46,7 @@ public class SocketManager {
      * @param connHelper
      * @return
      */
-    public static SocketManager getInstance(BluetoothConnHelper connHelper) {
+    public static SocketManager getInstance(BluetoothAdapterSpoofer connHelper) {
         if (mInstance == null) {
             mInstance = new SocketManager(connHelper);
         }
@@ -89,7 +89,7 @@ public class SocketManager {
         BluetoothSocket socket;
 
         try {
-            socket = mConnHelper.connectL2capSocket(hostDevice, socketPort, true, true);
+            socket = mSpoofer.connectL2capSocket(hostDevice, socketPort, true, true);
         } catch (IOException e) {
             DoLog.e(TAG, String.format("Cannot acquire %sSocket", name), e);
             throw new RuntimeException(e);

@@ -1,4 +1,4 @@
-package andraus.bluetoothhidemu.helper;
+package andraus.bluetoothhidemu.spoof;
 
 import java.io.IOException;
 import java.lang.reflect.Constructor;
@@ -13,10 +13,10 @@ import android.bluetooth.BluetoothSocket;
 import android.os.ParcelUuid;
 
 /**
- * Same as BluetoothConnHelperMotoImpl, except that it calls framework functions 
+ * Same as BluetoothAdapterSpooferMotoImpl, except that it calls framework functions 
  * through Reflection
  */
-public class BluetoothConnHelperMotoReflectImpl extends BluetoothConnHelper {
+public class BluetoothAdapterSpooferMotoReflect extends BluetoothAdapterSpoofer {
     
     private static final String TAG = BluetoothHidEmuActivity.TAG;
     private Integer mHidSdpHandle;
@@ -25,7 +25,7 @@ public class BluetoothConnHelperMotoReflectImpl extends BluetoothConnHelper {
      * 
      * @param adapter
      */
-    BluetoothConnHelperMotoReflectImpl(BluetoothAdapter adapter) {
+    BluetoothAdapterSpooferMotoReflect(BluetoothAdapter adapter) {
         super(null, adapter);
     }
     

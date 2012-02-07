@@ -1,16 +1,17 @@
-package andraus.bluetoothhidemu.helper;
+package andraus.bluetoothhidemu.spoof;
 
 import java.io.IOException;
 
-import andraus.bluetoothhidemu.helper.BluetoothConnHelper;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 
-public class BluetoothConnHelperMotoImpl extends BluetoothConnHelper {
+public class BluetoothAdapterSpooferMoto extends BluetoothAdapterSpoofer {
 
-    BluetoothConnHelperMotoImpl(BluetoothAdapter adapter) {
+    private Object mHidSdpHandle;
+
+    BluetoothAdapterSpooferMoto(BluetoothAdapter adapter) {
         super(null, adapter);
     }
     
@@ -26,7 +27,7 @@ public class BluetoothConnHelperMotoImpl extends BluetoothConnHelper {
      */
 
     @Override
-    public int getBluetoothDeviceClass() {
+    protected int getBluetoothDeviceClass() {
        
         return mAdapter.getAdapterClass();
     }
@@ -39,7 +40,7 @@ public class BluetoothConnHelperMotoImpl extends BluetoothConnHelper {
      * @return
      */
     @Override
-    public int spoofBluetoothDeviceClass(int deviceClass) {
+    protected int spoofBluetoothDeviceClass(int deviceClass) {
         mOriginalDeviceClass = getBluetoothDeviceClass();
         
         return mAdapter.spoofAdapterClass(deviceClass);
@@ -51,9 +52,11 @@ public class BluetoothConnHelperMotoImpl extends BluetoothConnHelper {
      * @return
      */
     @Override
-    public int addHidDeviceSdpRecord() {
+    protected int addHidDeviceSdpRecord(SpoofMode mode) {
+        
+        mHidSdpHandle = (mode == SpoofMode.HID_GENERIC) ? mAdapter.addHidKeybSdpRecord() : mAdapter.addHidBdRemoteRecord();
 
-        return mAdapter.addHidKeybSdpRecord();
+        return mHidSdpHandle;
     }
 
     /**
@@ -74,10 +77,9 @@ public class BluetoothConnHelperMotoImpl extends BluetoothConnHelper {
         return device.createl2capSocket(port, auth, encrypt);
     }
     
-    /**
-     * No set-up necessary in this implementation.
-     */
-    public boolean setup() {
+    @Override
+    public boolean requirementsCheck() {
+        // TODO implement check for frameworks support
         return true;
     }
     

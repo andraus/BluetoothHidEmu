@@ -1,4 +1,4 @@
-package andraus.bluetoothhidemu.helper;
+package andraus.bluetoothhidemu.spoof;
 
 import java.io.IOException;
 
@@ -12,7 +12,7 @@ import android.content.Context;
 /**
  * Abstraction of a class that will implement the necessary spoofing for the bluetooth adapter.
  */
-public abstract class BluetoothConnHelper {
+public abstract class BluetoothAdapterSpoofer {
     
     protected static final String TAG = BluetoothHidEmuActivity.TAG;
 
@@ -27,7 +27,7 @@ public abstract class BluetoothConnHelper {
     protected BluetoothAdapter mAdapter;
     protected int mOriginalDeviceClass;
 
-    protected BluetoothConnHelper(Context appContext, BluetoothAdapter adapter) {
+    protected BluetoothAdapterSpoofer(Context appContext, BluetoothAdapter adapter) {
         mContext  = appContext;
         mAdapter = adapter;
     }

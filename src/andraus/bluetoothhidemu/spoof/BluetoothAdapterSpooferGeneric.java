@@ -1,4 +1,4 @@
-package andraus.bluetoothhidemu.helper;
+package andraus.bluetoothhidemu.spoof;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
@@ -20,7 +20,7 @@ import android.bluetooth.BluetoothSocket;
 import android.content.Context;
 import android.os.ParcelUuid;
 
-public class BluetoothConnHelperGenericImpl extends BluetoothConnHelper {
+public class BluetoothAdapterSpooferGeneric extends BluetoothAdapterSpoofer {
     
 
     private static final String CMD_SU = "su";
@@ -49,7 +49,7 @@ public class BluetoothConnHelperGenericImpl extends BluetoothConnHelper {
      * @param appContext
      * @param adapter
      */
-    protected BluetoothConnHelperGenericImpl(Context appContext,
+    protected BluetoothAdapterSpooferGeneric(Context appContext,
             BluetoothAdapter adapter) {
         super(appContext, adapter);
     }

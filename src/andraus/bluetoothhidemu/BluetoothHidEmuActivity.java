@@ -5,11 +5,11 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import andraus.bluetoothhidemu.helper.BluetoothConnHelper;
-import andraus.bluetoothhidemu.helper.BluetoothConnHelperFactory;
-import andraus.bluetoothhidemu.helper.CleanupExceptionHandler;
 import andraus.bluetoothhidemu.sock.SocketManager;
 import andraus.bluetoothhidemu.sock.payload.HidPointerPayload;
+import andraus.bluetoothhidemu.spoof.BluetoothAdapterSpoofer;
+import andraus.bluetoothhidemu.spoof.BluetoothAdapterSpooferFactory;
+import andraus.bluetoothhidemu.spoof.CleanupExceptionHandler;
 import andraus.bluetoothhidemu.util.DoLog;
 import andraus.bluetoothhidemu.view.BluetoothDeviceView;
 import andraus.bluetoothhidemu.view.EchoEditText;
@@ -88,7 +88,7 @@ public class BluetoothHidEmuActivity extends Activity {
 	private BluetoothAdapter mBluetoothAdapter = null;
 	
 	private SocketManager mSocketManager = null;
-	private BluetoothConnHelper mConnHelper = null;
+	private BluetoothAdapterSpoofer mSpoofer = null;
 	private OnSettingsChangeListener mSettingsChangeListener = null;
 
 	/**
@@ -163,15 +163,15 @@ public class BluetoothHidEmuActivity extends Activity {
 	private void setupApp() {
 		setContentView(R.layout.main);
 		
-        if (!mConnHelper.requirementsCheck()) {
-            Toast.makeText(getApplicationContext(), mConnHelper.getSetupErrorMsg(), Toast.LENGTH_LONG).show();
+        if (!mSpoofer.requirementsCheck()) {
+            Toast.makeText(getApplicationContext(), mSpoofer.getSetupErrorMsg(), Toast.LENGTH_LONG).show();
             finish();
         } else {
             // TODO: check for preferences to choose spoof mode
-            mConnHelper.tearUpSpoofing(BluetoothConnHelper.SpoofMode.HID_GENERIC);
+            mSpoofer.tearUpSpoofing(BluetoothAdapterSpoofer.SpoofMode.HID_GENERIC);
         }
 
-        mSocketManager = SocketManager.getInstance(mConnHelper);
+        mSocketManager = SocketManager.getInstance(mSpoofer);
 
 		mDeviceSpinner = (Spinner) findViewById(R.id.DeviceSpinner);
 		mStatusTextView = (TextView) findViewById(R.id.StatusTextView);
@@ -374,8 +374,8 @@ public class BluetoothHidEmuActivity extends Activity {
         super.onCreate(savedInstanceState);
         
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
-        mConnHelper = BluetoothConnHelperFactory.getInstance(getApplicationContext(), mBluetoothAdapter);
-        Thread.setDefaultUncaughtExceptionHandler(new CleanupExceptionHandler(mConnHelper));
+        mSpoofer = BluetoothAdapterSpooferFactory.getInstance(getApplicationContext(), mBluetoothAdapter);
+        Thread.setDefaultUncaughtExceptionHandler(new CleanupExceptionHandler(mSpoofer));
 
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         mSettingsChangeListener = new OnSettingsChangeListener();
@@ -432,8 +432,8 @@ public class BluetoothHidEmuActivity extends Activity {
             DoLog.w(TAG, "Receiver not registered - nothing done.");
         }
         mMainHandler.removeCallbacksAndMessages(null);
-        if (mConnHelper != null && mConnHelper.isSpoofed()) {
-            mConnHelper.tearDownSpoofing();
+        if (mSpoofer != null && mSpoofer.isSpoofed()) {
+            mSpoofer.tearDownSpoofing();
         }
 
         if (mSocketManager != null) {
