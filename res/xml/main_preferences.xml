@@ -13,4 +13,6 @@
                         android:summaryOff="@string/msg_pref_summary_spoof_off"
                         android:summaryOn="@string/msg_pref_summary_spoof_on" />
 
+    <CheckBoxPreference android:title="@string/msg_pref_title_bluetooth_discoverable" />
+
 </PreferenceScreen>

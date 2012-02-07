@@ -33,5 +33,6 @@
     <string name="msg_pref_title_spoof">Spoof device</string>
     <string name="msg_pref_summary_spoof_on">Spoofing is ON.</string>
     <string name="msg_pref_summary_spoof_off">Spoofing is off.</string>
+    <string name="msg_pref_title_bluetooth_discoverable">Bluetooth discoverable</string>
 
 </resources>
