@@ -27,5 +27,11 @@
     <string name="msg_status_connected">Connected</string>
     <string name="msg_status_connecting">Connecting</string>
     <string name="msg_status_disconnected">Offline</string>
+    
+    <string name="msg_pref_title_emulation_mode">Emulation mode</string>
+    <string name="msg_pref_summary_emulation_mode">Mode: %s</string>
+    <string name="msg_pref_title_spoof">Spoof device</string>
+    <string name="msg_pref_summary_spoof_on">Spoofing is ON.</string>
+    <string name="msg_pref_summary_spoof_off">Spoofing is off.</string>
 
 </resources>

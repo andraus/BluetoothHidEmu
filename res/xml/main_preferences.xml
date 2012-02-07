@@ -1,11 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
 
-    <ListPreference android:title="Emulation mode"
-                    android:summary="Select desired emulation mode"
+    <ListPreference android:title="@string/msg_pref_title_emulation_mode"
                     android:key="emulation_mode"
                     android:defaultValue="0"
                     android:entries="@array/emulation_mode_names"
                     android:entryValues="@array/emulation_mode_values" />
+                    
+    <CheckBoxPreference android:title="@string/msg_pref_title_spoof"
+                        android:key="spoof_enabled"
+                        android:defaultValue="false"
+                        android:summaryOff="@string/msg_pref_summary_spoof_off"
+                        android:summaryOn="@string/msg_pref_summary_spoof_on" />
 
 </PreferenceScreen>

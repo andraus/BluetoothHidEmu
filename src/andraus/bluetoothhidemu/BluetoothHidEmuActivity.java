@@ -460,6 +460,11 @@ public class BluetoothHidEmuActivity extends Activity {
             mBluetoothAdapter.disable();
         }
         
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
+        mSettingsChangeListener = new OnSettingsChangeListener();
+        sharedPreferences.unregisterOnSharedPreferenceChangeListener(mSettingsChangeListener);
+        
+        
         super.onDestroy();
     }
     
