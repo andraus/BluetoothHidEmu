@@ -5,6 +5,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import andraus.bluetoothhidemu.settings.OnSettingsChangeListener;
+import andraus.bluetoothhidemu.settings.Settings;
 import andraus.bluetoothhidemu.sock.SocketManager;
 import andraus.bluetoothhidemu.sock.payload.HidPointerPayload;
 import andraus.bluetoothhidemu.spoof.BluetoothAdapterSpoofer;
@@ -59,13 +61,9 @@ public class BluetoothHidEmuActivity extends Activity {
 	public static String TAG = "BluetoothHidEmu";
 	
     private static final int HANDLER_MONITOR_SOCKET = 0;
-    private static final int HANDLER_MONITOR_PAIRING = 1;
-    private static final int HANDLER_CONNECT = 2;
-    private static final int HANDLER_BLUETOOTH_ENABLED = 3;
+    private static final int HANDLER_CONNECT = 1;
+    private static final int HANDLER_BLUETOOTH_ENABLED = 2;
 
-	private static int BLUETOOTH_REQUEST_OK = 1;
-	private static int BLUETOOTH_DISCOVERABLE_DURATION = 300;
-	
 	private boolean mDisableBluetoothUponExit = false;
 	
 	private enum StatusIconStates { OFF, ON, INTERMEDIATE };
@@ -168,7 +166,7 @@ public class BluetoothHidEmuActivity extends Activity {
             finish();
         } else {
             // TODO: check for preferences to choose spoof mode
-            mSpoofer.tearUpSpoofing(BluetoothAdapterSpoofer.SpoofMode.HID_GENERIC);
+            //if (!mSpoofer.isSpoofed()) mSpoofer.tearUpSpoofing(BluetoothAdapterSpoofer.SpoofMode.HID_GENERIC);
         }
 
         mSocketManager = SocketManager.getInstance(mSpoofer);
@@ -514,17 +512,13 @@ public class BluetoothHidEmuActivity extends Activity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         
-	    if (requestCode == BLUETOOTH_REQUEST_OK && resultCode == BLUETOOTH_DISCOVERABLE_DURATION) { // bt discoverable
-	        
-	        mMainHandler.sendEmptyMessage(HANDLER_MONITOR_PAIRING);
-	        
-	    } else if (requestCode == BLUETOOTH_REQUEST_OK && resultCode == RESULT_OK) { // bt enabled
+        if (requestCode == Settings.BLUETOOTH_REQUEST_OK && resultCode == RESULT_OK) { // bt enabled
 	        
 	        ProgressDialog btEnableDialog = ProgressDialog.show(this, null, getResources().getString(R.string.msg_dialog_enabling_bluetooth));
 	        Message msg = Message.obtain(mMainHandler, HANDLER_BLUETOOTH_ENABLED, btEnableDialog);
 	        mMainHandler.sendMessageDelayed(msg, 5000 /* ms */);
 
-	    } else if (requestCode == BLUETOOTH_REQUEST_OK && resultCode == RESULT_CANCELED) { // request cancelled
+	    } else if (requestCode == Settings.BLUETOOTH_REQUEST_OK && resultCode == RESULT_CANCELED) { // request cancelled
 	        finish();
 	    }
 	    
@@ -542,9 +536,9 @@ public class BluetoothHidEmuActivity extends Activity {
                 switch (which) {
                 
                 case DialogInterface.BUTTON_NEUTRAL:
-                    Intent bluetoothIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
-                    bluetoothIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, BLUETOOTH_DISCOVERABLE_DURATION);
-                    startActivityForResult(bluetoothIntent, BLUETOOTH_REQUEST_OK);
+                    
+                    startActivity(new Intent(getApplicationContext(), Settings.class));
+                    
                     break;
                 }
                 
@@ -565,7 +559,7 @@ public class BluetoothHidEmuActivity extends Activity {
     private void requestBluetoothAdapterOn() {
         mDisableBluetoothUponExit = true;
         Intent bluetoothIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-        startActivityForResult(bluetoothIntent, BLUETOOTH_REQUEST_OK);
+        startActivityForResult(bluetoothIntent, Settings.BLUETOOTH_REQUEST_OK);
     }
 
 
@@ -661,16 +655,6 @@ public class BluetoothHidEmuActivity extends Activity {
     	        monitorSocketStates();
     			break;
     			
-    	    case HANDLER_MONITOR_PAIRING:
-    	        DoLog.d(TAG, "waiting for a device to show up...");
-    	        if (mBluetoothAdapter.getBondedDevices().isEmpty()) {
-    	            sendEmptyMessageDelayed(HANDLER_MONITOR_PAIRING, 500 /* ms */);
-    	        } else {
-    	            populateBluetoothDeviceCombo();
-    	        }
-    	        
-    	        break;
-    	        
     	    case HANDLER_CONNECT:
     	        setStatusIconState(StatusIconStates.INTERMEDIATE);
 

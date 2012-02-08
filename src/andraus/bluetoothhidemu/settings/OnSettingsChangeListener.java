@@ -1,5 +1,6 @@
-package andraus.bluetoothhidemu;
+package andraus.bluetoothhidemu.settings;
 
+import andraus.bluetoothhidemu.BluetoothHidEmuActivity;
 import andraus.bluetoothhidemu.util.DoLog;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;

@@ -34,5 +34,13 @@
     <string name="msg_pref_summary_spoof_on">Spoofing is ON.</string>
     <string name="msg_pref_summary_spoof_off">Spoofing is off.</string>
     <string name="msg_pref_title_bluetooth_discoverable">Bluetooth discoverable</string>
+    <string name="msg_pref_summary_bluetooth_discoverable_click">Tap to enable discovery mode.</string>
+    
+    <string name="msg_pref_title_device_list">Paired devices:</string>
+    
+    <plurals name="msg_pref_summary_bluetooth_discoverable_timeout">
+        <item quantity="one">Discoverable for one second...</item>
+        <item quantity="other">Discoverable for %d seconds...</item>
+    </plurals>
 
 </resources>
