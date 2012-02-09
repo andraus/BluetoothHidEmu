@@ -11,6 +11,7 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
@@ -31,7 +32,7 @@ public class Settings extends PreferenceActivity implements OnSharedPreferenceCh
     private static final String TAG = BluetoothHidEmuActivity.TAG;
     
     public static final int BLUETOOTH_REQUEST_OK = 1;
-    public static final int BLUETOOTH_DISCOVERABLE_DURATION = 15;
+    public static final int BLUETOOTH_DISCOVERABLE_DURATION = 30;
     
     /* package */ final static String PREF_LAST_DEVICE = "last_device";
     /* package */ final static String PREF_EMULATION_MODE = "emulation_mode";
@@ -52,6 +53,9 @@ public class Settings extends PreferenceActivity implements OnSharedPreferenceCh
     
     // workaround for onResume() being called twice after bluetooth dialog
     private boolean mIsResumingFromDialog = false;
+    
+    private BluetoothDeviceStateReceiver mBluetoothDeviceReceiver = null;
+    
     
     // Runnable used with mUiUpdateHandler to display discoverability countdown
     private final Runnable mUpdateCountdownSummaryRunnable = new Runnable() {
@@ -88,11 +92,15 @@ public class Settings extends PreferenceActivity implements OnSharedPreferenceCh
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        
+        DoLog.d(TAG, "onCreate()");
         addPreferencesFromResource(R.xml.main_preferences);
         
         mBtDiscoverablePreference = (CheckBoxPreference) findPreference(PREF_BT_DISCOVERABLE);
         mDeviceListCategory = (PreferenceCategory) findPreference(PREF_DEVICE_LIST);
+        mBluetoothDeviceReceiver = new BluetoothDeviceStateReceiver(mDeviceListCategory);
+        populateDeviceList(mDeviceListCategory);
+        IntentFilter intentFilter = new IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED);
+        registerReceiver(mBluetoothDeviceReceiver, intentFilter);
         
         mSpoofer = BluetoothAdapterSpooferFactory.getInstance(getApplicationContext(), BluetoothAdapter.getDefaultAdapter());
         
@@ -119,6 +127,19 @@ public class Settings extends PreferenceActivity implements OnSharedPreferenceCh
         });
 
     }
+    
+    /**
+     * 
+     */
+    @Override
+    protected void onDestroy() {
+
+        if (mBluetoothDeviceReceiver != null) {
+            unregisterReceiver(mBluetoothDeviceReceiver);
+        }
+        
+        super.onDestroy();
+    }
 
     /**
      * onPause
@@ -128,7 +149,7 @@ public class Settings extends PreferenceActivity implements OnSharedPreferenceCh
         
         getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
         mUiUpdateHandler.removeCallbacksAndMessages(null);
-        
+
         super.onPause();
     }
 
@@ -139,12 +160,9 @@ public class Settings extends PreferenceActivity implements OnSharedPreferenceCh
     protected void onResume() {
         super.onResume();
         
-        populateDeviceList();
-
         if (!mIsResumingFromDialog) {
             getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
             updateEmulationModeSummary();
-            
             
             setBluetoothDiscoverableCheck(BluetoothAdapter.getDefaultAdapter().getScanMode() == BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE);
             if (mBtDiscoverablePreference.isChecked()) {
@@ -275,8 +293,8 @@ public class Settings extends PreferenceActivity implements OnSharedPreferenceCh
     /**
      * 
      */
-    private void populateDeviceList() {
-        mDeviceListCategory.removeAll();
+    private void populateDeviceList(PreferenceCategory deviceListCategory) {
+        deviceListCategory.removeAll();
         Set<BluetoothDevice> deviceSet = BluetoothAdapter.getDefaultAdapter().getBondedDevices();
         
         for (BluetoothDevice device: deviceSet) {
@@ -284,10 +302,9 @@ public class Settings extends PreferenceActivity implements OnSharedPreferenceCh
             devicePref.setTitle(device.getName());
             devicePref.setSummary(device.getAddress());
             
-            mDeviceListCategory.addPreference(devicePref);
+            deviceListCategory.addPreference(devicePref);
         }
         
     }
-    
     
 }
