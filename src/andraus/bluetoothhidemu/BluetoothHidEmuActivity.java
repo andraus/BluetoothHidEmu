@@ -1,10 +1,9 @@
 package andraus.bluetoothhidemu;
 
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 
+import andraus.bluetoothhidemu.settings.BluetoothDeviceStateReceiver;
 import andraus.bluetoothhidemu.settings.OnSettingsChangeListener;
 import andraus.bluetoothhidemu.settings.Settings;
 import andraus.bluetoothhidemu.sock.SocketManager;
@@ -13,6 +12,7 @@ import andraus.bluetoothhidemu.spoof.BluetoothAdapterSpoofer;
 import andraus.bluetoothhidemu.spoof.BluetoothAdapterSpooferFactory;
 import andraus.bluetoothhidemu.spoof.CleanupExceptionHandler;
 import andraus.bluetoothhidemu.util.DoLog;
+import andraus.bluetoothhidemu.view.BluetoothDeviceArrayAdapter;
 import andraus.bluetoothhidemu.view.BluetoothDeviceView;
 import andraus.bluetoothhidemu.view.EchoEditText;
 import android.app.Activity;
@@ -46,12 +46,10 @@ import android.view.animation.DecelerateInterpolator;
 import android.view.animation.TranslateAnimation;
 import android.view.inputmethod.EditorInfo;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RadioGroup;
 import android.widget.Spinner;
-import android.widget.SpinnerAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ViewFlipper;
@@ -88,6 +86,8 @@ public class BluetoothHidEmuActivity extends Activity {
 	private SocketManager mSocketManager = null;
 	private BluetoothAdapterSpoofer mSpoofer = null;
 	private OnSettingsChangeListener mSettingsChangeListener = null;
+	
+	private BluetoothDeviceStateReceiver mBluetoothDeviceStateReceiver = null;
 
 	/**
 	 * Register intent filters for this activity
@@ -95,6 +95,13 @@ public class BluetoothHidEmuActivity extends Activity {
 	private void registerIntentFilters() {
         IntentFilter intentFilter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
         registerReceiver(mBluetoothReceiver, intentFilter);
+        
+        if (mBluetoothDeviceStateReceiver == null) {
+            mBluetoothDeviceStateReceiver = new BluetoothDeviceStateReceiver(mBluetoothDeviceArrayAdapter);
+        }
+        
+        intentFilter = new IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED);
+        registerReceiver(mBluetoothDeviceStateReceiver, intentFilter);
 	}
 	
 	/**
@@ -115,6 +122,7 @@ public class BluetoothHidEmuActivity extends Activity {
             mBluetoothDeviceArrayAdapter.clear();
         }
         mBluetoothDeviceArrayAdapter = new BluetoothDeviceArrayAdapter(this, deviceViewSet);
+        mBluetoothDeviceArrayAdapter.setNotifyOnChange(true);
         mBluetoothDeviceArrayAdapter.sort(BluetoothDeviceView.getComparator());
         
         int posStoredDevice = mBluetoothDeviceArrayAdapter.getPositionByAddress(storedDeviceAddr);
@@ -378,13 +386,13 @@ public class BluetoothHidEmuActivity extends Activity {
         SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
         mSettingsChangeListener = new OnSettingsChangeListener();
         sharedPreferences.registerOnSharedPreferenceChangeListener(mSettingsChangeListener);
-
+        
         if (!mBluetoothAdapter.isEnabled()) {
             requestBluetoothAdapterOn();
         } else { 
-            registerIntentFilters();
             setupApp();
             populateBluetoothDeviceCombo();
+            registerIntentFilters();
         }
 
     }
@@ -429,6 +437,8 @@ public class BluetoothHidEmuActivity extends Activity {
         } catch (IllegalArgumentException e) {
             DoLog.w(TAG, "Receiver not registered - nothing done.");
         }
+        unregisterReceiver(mBluetoothDeviceStateReceiver);
+        
         mMainHandler.removeCallbacksAndMessages(null);
         if (mSpoofer != null && mSpoofer.isSpoofed()) {
             mSpoofer.tearDownSpoofing();
@@ -645,9 +655,9 @@ public class BluetoothHidEmuActivity extends Activity {
     	    switch (msg.what) {
     	    
     	    case HANDLER_BLUETOOTH_ENABLED:
-    	        registerIntentFilters();
     	        setupApp();
     	        populateBluetoothDeviceCombo();
+                registerIntentFilters();
     	        ((ProgressDialog)msg.obj).dismiss();
     	        break;
     	    
@@ -682,79 +692,5 @@ public class BluetoothHidEmuActivity extends Activity {
         }
         
     };
-    
-    /**
-     * Custom ArrayAdapter
-     *
-     */
-    private final class BluetoothDeviceArrayAdapter extends ArrayAdapter<BluetoothDeviceView> implements SpinnerAdapter {
-    	
-    	// array to store the "raw" string format
-    	Map<Integer, BluetoothDeviceView> deviceMap = null;
-    	
-    	/**
-    	 * Constructor
-    	 * @param context
-    	 * @param strings
-    	 */
-		public BluetoothDeviceArrayAdapter(Context context, Set<BluetoothDeviceView> bluetoothDeviceSet) {
-			super(context, R.layout.spinner_layout);
-			setDropDownViewResource(R.layout.spinner_dropdown_layout);
-			
-			deviceMap = new HashMap<Integer, BluetoothDeviceView>();
-			int i = 0;
-			for (BluetoothDeviceView deviceView:bluetoothDeviceSet ) {
-				deviceMap.put(Integer.valueOf(i++), deviceView);
-			}
-			
-		}
-
-		@Override
-		public int getCount() {
-			
-			return deviceMap.size();
-		}
-
-		/**
-		 * Return screen-formatted value
-		 */
-		@Override
-		public BluetoothDeviceView getItem(int i) {
-			return deviceMap.get(Integer.valueOf(i));
-		}
-
-		@Override
-		public long getItemId(int i) {
-			return i;
-		}
-		
-		/**
-		 * Returns the array position. <b>item</b> must be raw-formatted.
-		 */
-		@Override
-		public int getPosition(BluetoothDeviceView item) {
-				
-			for (int i = 0; i < deviceMap.size(); i++) {
-				BluetoothDeviceView deviceView = deviceMap.get(Integer.valueOf(i));
-				if (deviceView.equals(item)) {
-					return i;
-				}
-			}
-			
-			return -1;
-		}
-		
-		public int getPositionByAddress(String bluetoothAddress) {
-		    for (int i = 0; i < deviceMap.size(); i++) {
-		        BluetoothDeviceView deviceView = deviceMap.get(Integer.valueOf(i));
-		        if (deviceView.getAddress().equals(bluetoothAddress)) {
-		            return i;
-		        }
-		    }
-		    
-		    return -1;
-		}
-		
-    }; 
     	
 }

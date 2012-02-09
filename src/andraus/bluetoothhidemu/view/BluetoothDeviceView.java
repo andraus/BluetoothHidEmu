@@ -8,17 +8,17 @@ public class BluetoothDeviceView {
     
     private BluetoothDevice mBluetoothDevice = null;
     
-    public BluetoothDeviceView(BluetoothDevice mBluetoothDevice) {
+    public BluetoothDeviceView(BluetoothDevice bluetoothDevice) {
         super();
-        this.mBluetoothDevice = mBluetoothDevice;
+        this.mBluetoothDevice = bluetoothDevice;
     }
 
     public BluetoothDevice getBluetoothDevice() {
         return mBluetoothDevice;
     }
 
-    public void setBluetoothDevice(BluetoothDevice mBluetoothDevice) {
-        this.mBluetoothDevice = mBluetoothDevice;
+    public void setBluetoothDevice(BluetoothDevice bluetoothDevice) {
+        this.mBluetoothDevice = bluetoothDevice;
     }
     
     public String getAddress() {

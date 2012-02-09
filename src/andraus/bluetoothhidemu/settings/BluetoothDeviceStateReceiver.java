@@ -1,6 +1,8 @@
 package andraus.bluetoothhidemu.settings;
 
 import andraus.bluetoothhidemu.util.DoLog;
+import andraus.bluetoothhidemu.view.BluetoothDeviceArrayAdapter;
+import andraus.bluetoothhidemu.view.BluetoothDeviceView;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -14,6 +16,7 @@ import android.preference.PreferenceCategory;
 public class BluetoothDeviceStateReceiver extends BroadcastReceiver {
     
     private PreferenceCategory mBluetoothDevicePrefCategory = null;
+    private BluetoothDeviceArrayAdapter mBluetoothDeviceArrayAdapter = null;
     
 
     
@@ -27,6 +30,15 @@ public class BluetoothDeviceStateReceiver extends BroadcastReceiver {
         mBluetoothDevicePrefCategory = bluetoothDevicePrefCategory;
     }
 
+    /**
+     * 
+     * @param bluetoothDeviceArrayAdapter
+     */
+    public BluetoothDeviceStateReceiver(BluetoothDeviceArrayAdapter bluetoothDeviceArrayAdapter) {
+        super();
+        
+        mBluetoothDeviceArrayAdapter = bluetoothDeviceArrayAdapter;
+    }
 
     /**
      * 
@@ -44,9 +56,11 @@ public class BluetoothDeviceStateReceiver extends BroadcastReceiver {
             switch (state) {
             case BluetoothDevice.BOND_BONDED:
                 addDeviceToPreference(context, device);
+                addDeviceToArrayAdapter(device);
                 break;
             case BluetoothDevice.BOND_NONE:
                 removeDeviceFromPreference(device);
+                removeDeviceFromArrayAdapter(device);
                 break;
             }
             
@@ -55,6 +69,10 @@ public class BluetoothDeviceStateReceiver extends BroadcastReceiver {
 
     }
     
+    /**
+     * 
+     * @param device
+     */
     private void removeDeviceFromPreference(BluetoothDevice device) {
         
         if (mBluetoothDevicePrefCategory == null) {
@@ -70,7 +88,34 @@ public class BluetoothDeviceStateReceiver extends BroadcastReceiver {
             }
         }
     }
+
+    /**
+     * 
+     * @param device
+     */
+    private void removeDeviceFromArrayAdapter(BluetoothDevice device) {
+        
+        if (mBluetoothDeviceArrayAdapter == null) {
+            return;
+        }
+        
+        for (int i = 0; i < mBluetoothDeviceArrayAdapter.getCount(); i++) {
+            BluetoothDeviceView deviceView = mBluetoothDeviceArrayAdapter.getItem(i);
+            
+            if (deviceView.getAddress().equals(device.getAddress())) {
+                mBluetoothDeviceArrayAdapter.remove(deviceView);
+                mBluetoothDeviceArrayAdapter.notifyDataSetChanged();
+                break;
+            }
+            
+        }
+    }
     
+    /**
+     * 
+     * @param context
+     * @param device
+     */
     private void addDeviceToPreference(Context context, BluetoothDevice device) {
         
         if (mBluetoothDevicePrefCategory == null) {
@@ -95,6 +140,42 @@ public class BluetoothDeviceStateReceiver extends BroadcastReceiver {
             
             mBluetoothDevicePrefCategory.addPreference(devicePref);
         }
+    }
+    
+    /**
+     * 
+     * @param device
+     */
+    private void addDeviceToArrayAdapter(BluetoothDevice device) {
+        
+        if (mBluetoothDeviceArrayAdapter == null) {
+            return;
+        }
+        
+        boolean exists = false;
+        for (int i = 0; i < mBluetoothDeviceArrayAdapter.getCount(); i++) {
+            BluetoothDeviceView deviceView = mBluetoothDeviceArrayAdapter.getItem(i);
+            
+            if (deviceView.getBluetoothDevice().getAddress().equals(device.getAddress())) {
+                deviceView.setBluetoothDevice(device);
+                exists = true;
+                break;
+            }
+        }
+        
+        if (!exists) {
+            mBluetoothDeviceArrayAdapter.add(new BluetoothDeviceView(device));
+        }
+        mBluetoothDeviceArrayAdapter.notifyDataSetChanged();
+    }
+    
+    /**
+     * Setter
+     * 
+     * @param bluetoothDeviceArrayAdapter
+     */
+    public void setBluetoothDeviceArrayAdapter(BluetoothDeviceArrayAdapter bluetoothDeviceArrayAdapter) {
+        mBluetoothDeviceArrayAdapter = bluetoothDeviceArrayAdapter;
     }
 
 }
