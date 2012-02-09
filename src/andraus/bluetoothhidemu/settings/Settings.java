@@ -31,7 +31,7 @@ public class Settings extends PreferenceActivity implements OnSharedPreferenceCh
     private static final String TAG = BluetoothHidEmuActivity.TAG;
     
     public static final int BLUETOOTH_REQUEST_OK = 1;
-    public static final int BLUETOOTH_DISCOVERABLE_DURATION = 300;
+    public static final int BLUETOOTH_DISCOVERABLE_DURATION = 15;
     
     /* package */ final static String PREF_LAST_DEVICE = "last_device";
     /* package */ final static String PREF_EMULATION_MODE = "emulation_mode";
@@ -60,13 +60,16 @@ public class Settings extends PreferenceActivity implements OnSharedPreferenceCh
             if (BluetoothAdapter.getDefaultAdapter().getScanMode() == BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE) {
             
                 
-                if (mCountDown != Integer.MAX_VALUE) {
-                    mCountDown--;
+                if (mCountDown != Integer.MAX_VALUE && mCountDown > 0) {
                     mBtDiscoverablePreference.setSummary(
                             getResources().getQuantityString(
                                     R.plurals.msg_pref_summary_bluetooth_discoverable_timeout, 
                                     mCountDown, 
                                     mCountDown));
+                    mCountDown--;
+                    
+                } else if (mCountDown == Integer.MAX_VALUE) {
+                    mBtDiscoverablePreference.setSummary(R.string.Msg_pref_summary_bluetooth_discoverable_no_timeout);
                 }
                 
                 mUiUpdateHandler.postDelayed(this, 1000 /* ms */);
@@ -125,7 +128,6 @@ public class Settings extends PreferenceActivity implements OnSharedPreferenceCh
         
         getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
         mUiUpdateHandler.removeCallbacksAndMessages(null);
-        mDeviceListCategory.removeAll();
         
         super.onPause();
     }
@@ -137,11 +139,12 @@ public class Settings extends PreferenceActivity implements OnSharedPreferenceCh
     protected void onResume() {
         super.onResume();
         
+        populateDeviceList();
+
         if (!mIsResumingFromDialog) {
             getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
             updateEmulationModeSummary();
             
-            populateDeviceList();
             
             setBluetoothDiscoverableCheck(BluetoothAdapter.getDefaultAdapter().getScanMode() == BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE);
             if (mBtDiscoverablePreference.isChecked()) {
@@ -261,17 +264,19 @@ public class Settings extends PreferenceActivity implements OnSharedPreferenceCh
         mBtDiscoverablePreference.setChecked(state);
         mBtDiscoverablePreference.setEnabled(!state);
         if (!state) {
-            DoLog.d(TAG, "down spoof");
             if (mSpoofer.isSpoofed()) mSpoofer.tearDownSpoofing();
             mBtDiscoverablePreference.setSummary(getResources().getString(R.string.msg_pref_summary_bluetooth_discoverable_click));
         } else {
             // TODO: hard-coded - Select mode properly
-            DoLog.d(TAG, "up spoof");
             if (!mSpoofer.isSpoofed()) mSpoofer.tearUpSpoofing(BluetoothAdapterSpoofer.SpoofMode.HID_GENERIC);
         }
     }
     
+    /**
+     * 
+     */
     private void populateDeviceList() {
+        mDeviceListCategory.removeAll();
         Set<BluetoothDevice> deviceSet = BluetoothAdapter.getDefaultAdapter().getBondedDevices();
         
         for (BluetoothDevice device: deviceSet) {

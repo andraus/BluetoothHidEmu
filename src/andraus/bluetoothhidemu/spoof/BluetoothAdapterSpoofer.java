@@ -116,6 +116,7 @@ public abstract class BluetoothAdapterSpoofer {
         }
         
         delHidDeviceSdpRecord();
+        mSpoofed = false;
     }
     
     /**

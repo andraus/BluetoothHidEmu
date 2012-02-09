@@ -256,6 +256,7 @@ public class BluetoothAdapterSpooferGeneric extends BluetoothAdapterSpoofer {
         if (shellResp.code != 0) {
             throw new IllegalStateException("Unexpected failure");
         }
+        mHidSdpHandle = 0;
         
         /*
          * response from hid_emu del_hid <handle> is like:

@@ -42,5 +42,7 @@
         <item quantity="one">Discoverable for one second...</item>
         <item quantity="other">Discoverable for %d seconds...</item>
     </plurals>
+    
+    <string name="Msg_pref_summary_bluetooth_discoverable_no_timeout">Discoverable - no countdown available -</string>
 
 </resources>

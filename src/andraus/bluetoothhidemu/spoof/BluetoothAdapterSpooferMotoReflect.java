@@ -111,6 +111,12 @@ public class BluetoothAdapterSpooferMotoReflect extends BluetoothAdapterSpoofer 
      * @return
      */
     public int addHidDeviceSdpRecord(SpoofMode mode) {
+
+        if (mHidSdpHandle != 0) {
+            DoLog.w(TAG, String.format("HID SDP record already present. Handle: 0x%06X",mHidSdpHandle));
+            return mHidSdpHandle;
+        }
+        
         Integer handle = 0;
         try {
             // TODO: must finish the frameworks implementation to validate this call
@@ -149,12 +155,19 @@ public class BluetoothAdapterSpooferMotoReflect extends BluetoothAdapterSpoofer 
      * @param adapter
      */
     protected void delHidDeviceSdpRecord() {
+        if (mHidSdpHandle == 0) {
+            DoLog.w(TAG, "No HID SDP record handle present.");
+            return;
+        }
+        
         try {
 
             Method removeServiceRecordMethod = BluetoothAdapter.class.getMethod("removeServiceRecord", new Class<?>[] { int.class });
             removeServiceRecordMethod.setAccessible(true);
             
             removeServiceRecordMethod.invoke(mAdapter, new Object[] { mHidSdpHandle });
+            
+            mHidSdpHandle = 0;
             
         } catch (SecurityException e) {
             DoLog.e(TAG, "reflection error: ", e);

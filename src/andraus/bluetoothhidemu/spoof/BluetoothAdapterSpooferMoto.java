@@ -2,6 +2,7 @@ package andraus.bluetoothhidemu.spoof;
 
 import java.io.IOException;
 
+import andraus.bluetoothhidemu.util.DoLog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
@@ -54,6 +55,11 @@ public class BluetoothAdapterSpooferMoto extends BluetoothAdapterSpoofer {
     @Override
     protected int addHidDeviceSdpRecord(SpoofMode mode) {
         
+        if (mHidSdpHandle != 0) {
+            DoLog.w(TAG, String.format("HID SDP record already present. Handle: 0x%06X",mHidSdpHandle));
+            return mHidSdpHandle;
+        }
+        
         mHidSdpHandle = (mode == SpoofMode.HID_GENERIC) ? mAdapter.addHidKeybSdpRecord() : mAdapter.addHidBdRemoteRecord();
 
         return mHidSdpHandle;
@@ -66,7 +72,14 @@ public class BluetoothAdapterSpooferMoto extends BluetoothAdapterSpoofer {
      */
     @Override
     protected void delHidDeviceSdpRecord() {
+        if (mHidSdpHandle == 0) {
+            DoLog.w(TAG, "No HID SDP record handle present.");
+            return;
+        }
+        
         mAdapter.removeServiceRecord(mHidSdpHandle);
+        
+        mHidSdpHandle = 0;
 
     }
 
