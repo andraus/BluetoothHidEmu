@@ -94,15 +94,14 @@ public class BluetoothHidEmuActivity extends Activity {
 	 * Register intent filters for this activity
 	 */
 	private void registerIntentFilters() {
-        IntentFilter intentFilter = new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED);
-        registerReceiver(mBluetoothReceiver, intentFilter);
+        registerReceiver(mBluetoothReceiver, new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED));
+        registerReceiver(mBluetoothReceiver, new IntentFilter(BluetoothAdapter.ACTION_SCAN_MODE_CHANGED));
         
         if (mBluetoothDeviceStateReceiver == null) {
             mBluetoothDeviceStateReceiver = new BluetoothDeviceStateReceiver(mBluetoothDeviceArrayAdapter);
         }
         
-        intentFilter = new IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED);
-        registerReceiver(mBluetoothDeviceStateReceiver, intentFilter);
+        registerReceiver(mBluetoothDeviceStateReceiver, new IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED));
 	}
 	
 	/**
@@ -694,6 +693,16 @@ public class BluetoothHidEmuActivity extends Activity {
             if (BluetoothAdapter.ACTION_STATE_CHANGED.equals(intent.getAction())) {
                 DoLog.d(TAG, "BluetoothAdapter turned off. Bailing out...");
                 finish();
+            } else if (BluetoothAdapter.ACTION_SCAN_MODE_CHANGED.equals(intent.getAction())) {
+                int scanMode = intent.getExtras().getInt(BluetoothAdapter.EXTRA_SCAN_MODE);
+                DoLog.d(TAG, "Scan mode changed: " + scanMode);
+                
+                /* 
+                 * TODO: implement here tearDown() / tearUp() logic for spoofer.
+                 * Note to self: remeber to check only against SCAN_MODE_CONNECTABLE_DISCOVERABLE for tearUp(), and in
+                 * "else" to tearDown() 
+                 */
+                
             }
             
         }
