@@ -1,5 +1,6 @@
 package andraus.bluetoothhidemu.settings;
 
+import andraus.bluetoothhidemu.BluetoothHidEmuActivity;
 import andraus.bluetoothhidemu.util.DoLog;
 import andraus.bluetoothhidemu.view.BluetoothDeviceArrayAdapter;
 import andraus.bluetoothhidemu.view.BluetoothDeviceView;
@@ -14,6 +15,8 @@ import android.preference.PreferenceCategory;
  * 
  */
 public class BluetoothDeviceStateReceiver extends BroadcastReceiver {
+    
+    private static final String TAG = BluetoothHidEmuActivity.TAG;
     
     private PreferenceCategory mBluetoothDevicePrefCategory = null;
     private BluetoothDeviceArrayAdapter mBluetoothDeviceArrayAdapter = null;
@@ -104,11 +107,12 @@ public class BluetoothDeviceStateReceiver extends BroadcastReceiver {
             
             if (deviceView.getAddress().equals(device.getAddress())) {
                 mBluetoothDeviceArrayAdapter.remove(deviceView);
-                mBluetoothDeviceArrayAdapter.notifyDataSetChanged();
+                DoLog.d(TAG, "removed: " + deviceView);
                 break;
             }
             
         }
+        
     }
     
     /**
@@ -166,7 +170,7 @@ public class BluetoothDeviceStateReceiver extends BroadcastReceiver {
         if (!exists) {
             mBluetoothDeviceArrayAdapter.add(new BluetoothDeviceView(device));
         }
-        mBluetoothDeviceArrayAdapter.notifyDataSetChanged();
+        //mBluetoothDeviceArrayAdapter.notifyDataSetChanged();
     }
     
     /**

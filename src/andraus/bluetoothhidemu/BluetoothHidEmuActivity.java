@@ -1,6 +1,7 @@
 package andraus.bluetoothhidemu;
 
-import java.util.HashSet;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import andraus.bluetoothhidemu.settings.BluetoothDeviceStateReceiver;
@@ -112,16 +113,16 @@ public class BluetoothHidEmuActivity extends Activity {
         DoLog.d(TAG, "restored from pref :" + storedDeviceAddr);
         
         Set<BluetoothDevice> deviceSet = mBluetoothAdapter.getBondedDevices();
-        Set<BluetoothDeviceView> deviceViewSet = new HashSet<BluetoothDeviceView>();
+        List<BluetoothDeviceView> deviceViewList = new ArrayList<BluetoothDeviceView>();
         for (BluetoothDevice device: deviceSet) {
             BluetoothDeviceView deviceView = new BluetoothDeviceView(device);
-            deviceViewSet.add(deviceView);
+            deviceViewList.add(deviceView);
         }
         
         if (mBluetoothDeviceArrayAdapter != null) {
             mBluetoothDeviceArrayAdapter.clear();
         }
-        mBluetoothDeviceArrayAdapter = new BluetoothDeviceArrayAdapter(this, deviceViewSet);
+        mBluetoothDeviceArrayAdapter = new BluetoothDeviceArrayAdapter(this, deviceViewList);
         mBluetoothDeviceArrayAdapter.setNotifyOnChange(true);
         mBluetoothDeviceArrayAdapter.sort(BluetoothDeviceView.getComparator());
         
@@ -366,7 +367,12 @@ public class BluetoothHidEmuActivity extends Activity {
 
 				@Override
 				public void onNothingSelected(AdapterView<?> adapterView) {
-					// TODO Auto-generated method stub
+
+				    mMainHandler.removeMessages(HANDLER_MONITOR_SOCKET);
+                    mMainHandler.removeMessages(HANDLER_CONNECT);
+                    
+                    stopSockets(false);
+                    setStatusIconState(StatusIconStates.OFF);
 					
 				}
 		
@@ -668,10 +674,11 @@ public class BluetoothHidEmuActivity extends Activity {
     	    case HANDLER_CONNECT:
     	        setStatusIconState(StatusIconStates.INTERMEDIATE);
 
-    	        mSocketManager.startSockets(mBluetoothAdapter, ((BluetoothDeviceView) mDeviceSpinner.getSelectedItem()).getBluetoothDevice());
-    	        
-    	        mMainHandler.sendEmptyMessageDelayed(HANDLER_MONITOR_SOCKET, 200);
-
+    	        BluetoothDeviceView deviceView = (BluetoothDeviceView) mDeviceSpinner.getSelectedItem();
+    	        if (deviceView != null) {
+    	            mSocketManager.startSockets(mBluetoothAdapter, deviceView.getBluetoothDevice());
+                    mMainHandler.sendEmptyMessageDelayed(HANDLER_MONITOR_SOCKET, 200);
+    	        }
     	        break;
     		}
     	}

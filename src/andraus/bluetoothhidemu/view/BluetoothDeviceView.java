@@ -10,7 +10,7 @@ public class BluetoothDeviceView {
     
     public BluetoothDeviceView(BluetoothDevice bluetoothDevice) {
         super();
-        this.mBluetoothDevice = bluetoothDevice;
+        mBluetoothDevice = bluetoothDevice;
     }
 
     public BluetoothDevice getBluetoothDevice() {
@@ -18,18 +18,20 @@ public class BluetoothDeviceView {
     }
 
     public void setBluetoothDevice(BluetoothDevice bluetoothDevice) {
-        this.mBluetoothDevice = bluetoothDevice;
+        mBluetoothDevice = bluetoothDevice;
     }
     
     public String getAddress() {
-        return this.mBluetoothDevice.getAddress();
+        return mBluetoothDevice.getAddress();
     }
     
-    
+    public String getName() {
+        return mBluetoothDevice.getName();
+    }
 
     @Override
     public boolean equals(Object o) {
-        return mBluetoothDevice != null ? mBluetoothDevice.equals(o) : false;
+        return mBluetoothDevice != null ? mBluetoothDevice.getAddress().equals(((BluetoothDeviceView)o).getAddress()) : false;
     }
 
     @Override
@@ -45,7 +47,7 @@ public class BluetoothDeviceView {
     public static Comparator<BluetoothDeviceView> getComparator() {
         Comparator<BluetoothDeviceView> comparator = new Comparator<BluetoothDeviceView>() {
             public int compare(BluetoothDeviceView device1, BluetoothDeviceView device2) {
-                return device1.getAddress().compareTo(device2.getAddress());
+                return device1.getName().compareTo(device2.getName());
             }
         };
         return comparator;
