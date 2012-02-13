@@ -45,7 +45,7 @@ public class Settings extends PreferenceActivity implements OnSharedPreferenceCh
     private Handler mUiUpdateHandler = null;
     
     // counter for bluetooth discoverability timeout
-    private int mCountDown = 0;
+    private int mCountdown = 0;
     
     // workaround for onResume() being called twice after bluetooth dialog
     private boolean mIsResumingFromDialog = false;
@@ -61,15 +61,15 @@ public class Settings extends PreferenceActivity implements OnSharedPreferenceCh
             if (BluetoothAdapter.getDefaultAdapter().getScanMode() == BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE) {
             
                 
-                if (mCountDown != Integer.MAX_VALUE && mCountDown > 0) {
+                if (mCountdown != Integer.MAX_VALUE && mCountdown > 0) {
                     mBtDiscoverablePreference.setSummary(
                             getResources().getQuantityString(
                                     R.plurals.msg_pref_summary_bluetooth_discoverable_timeout, 
-                                    mCountDown, 
-                                    mCountDown));
-                    mCountDown--;
+                                    mCountdown, 
+                                    mCountdown));
+                    mCountdown--;
                     
-                } else if (mCountDown == Integer.MAX_VALUE) {
+                } else if (mCountdown == Integer.MAX_VALUE) {
                     mBtDiscoverablePreference.setSummary(R.string.Msg_pref_summary_bluetooth_discoverable_no_timeout);
                 }
                 
@@ -167,7 +167,7 @@ public class Settings extends PreferenceActivity implements OnSharedPreferenceCh
             
             setBluetoothDiscoverableCheck(BluetoothAdapter.getDefaultAdapter().getScanMode() == BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE);
             if (mBtDiscoverablePreference.isChecked()) {
-                mCountDown = Integer.MAX_VALUE;
+                mCountdown = Integer.MAX_VALUE;
                 mUiUpdateHandler.post(mUpdateCountdownSummaryRunnable);
             }
         } else {
@@ -190,13 +190,11 @@ public class Settings extends PreferenceActivity implements OnSharedPreferenceCh
             setBluetoothDiscoverableCheck(true);
             
             mUiUpdateHandler.removeCallbacksAndMessages(null);
-            mCountDown = BLUETOOTH_DISCOVERABLE_DURATION;
+            mCountdown = BLUETOOTH_DISCOVERABLE_DURATION;
             mUiUpdateHandler.post(mUpdateCountdownSummaryRunnable);
             
-            //savePref(this, PREF_BT_DISCOVERABLE, true);
         } else if (requestCode == BLUETOOTH_REQUEST_OK && resultCode == RESULT_CANCELED) {
             setBluetoothDiscoverableCheck(false);
-            //savePref(this, PREF_BT_DISCOVERABLE, false);
         }
         
         super.onActivityResult(requestCode, resultCode, data);
