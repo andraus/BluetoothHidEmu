@@ -4,8 +4,6 @@ import java.util.Set;
 
 import andraus.bluetoothhidemu.BluetoothHidEmuActivity;
 import andraus.bluetoothhidemu.R;
-import andraus.bluetoothhidemu.spoof.BluetoothAdapterSpoofer;
-import andraus.bluetoothhidemu.spoof.BluetoothAdapterSpooferFactory;
 import andraus.bluetoothhidemu.util.DoLog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -39,8 +37,6 @@ public class Settings extends PreferenceActivity implements OnSharedPreferenceCh
     /* package */ final static String PREF_SPOOF = "spoof_enabled";
     private final static String PREF_BT_DISCOVERABLE = "bt_discoverable";
     private final static String PREF_DEVICE_LIST = "bt_device_list";
-    
-    private BluetoothAdapterSpoofer mSpoofer = null;
     
     private CheckBoxPreference mBtDiscoverablePreference = null;
     private PreferenceCategory mDeviceListCategory = null;
@@ -101,8 +97,6 @@ public class Settings extends PreferenceActivity implements OnSharedPreferenceCh
         populateDeviceList(mDeviceListCategory);
         IntentFilter intentFilter = new IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED);
         registerReceiver(mBluetoothDeviceReceiver, intentFilter);
-        
-        mSpoofer = BluetoothAdapterSpooferFactory.getInstance(getApplicationContext(), BluetoothAdapter.getDefaultAdapter());
         
         mUiUpdateHandler = new Handler();
         
@@ -282,11 +276,7 @@ public class Settings extends PreferenceActivity implements OnSharedPreferenceCh
         mBtDiscoverablePreference.setChecked(state);
         mBtDiscoverablePreference.setEnabled(!state);
         if (!state) {
-            if (mSpoofer.isSpoofed()) mSpoofer.tearDownSpoofing();
             mBtDiscoverablePreference.setSummary(getResources().getString(R.string.msg_pref_summary_bluetooth_discoverable_click));
-        } else {
-            // TODO: hard-coded - Select mode properly
-            if (!mSpoofer.isSpoofed()) mSpoofer.tearUpSpoofing(BluetoothAdapterSpoofer.SpoofMode.HID_GENERIC);
         }
     }
     
@@ -299,7 +289,7 @@ public class Settings extends PreferenceActivity implements OnSharedPreferenceCh
         
         for (BluetoothDevice device: deviceSet) {
             Preference devicePref = new Preference(this);
-            devicePref.setTitle(device.getName());
+            devicePref.setTitle(device.getName().equals("") ? device.getAddress() : device.getName());
             devicePref.setSummary(device.getAddress());
             
             deviceListCategory.addPreference(devicePref);

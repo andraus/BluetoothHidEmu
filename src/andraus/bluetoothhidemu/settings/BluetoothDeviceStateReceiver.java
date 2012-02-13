@@ -10,6 +10,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.preference.Preference;
 import android.preference.PreferenceCategory;
+import android.widget.Spinner;
 
 /**
  * 
@@ -19,10 +20,9 @@ public class BluetoothDeviceStateReceiver extends BroadcastReceiver {
     private static final String TAG = BluetoothHidEmuActivity.TAG;
     
     private PreferenceCategory mBluetoothDevicePrefCategory = null;
-    private BluetoothDeviceArrayAdapter mBluetoothDeviceArrayAdapter = null;
+    private Spinner mDeviceSpinner = null;
     
 
-    
     /**
      * 
      * @param bluetoothDevicePrefCategory
@@ -32,15 +32,15 @@ public class BluetoothDeviceStateReceiver extends BroadcastReceiver {
         
         mBluetoothDevicePrefCategory = bluetoothDevicePrefCategory;
     }
-
+    
     /**
      * 
      * @param bluetoothDeviceArrayAdapter
      */
-    public BluetoothDeviceStateReceiver(BluetoothDeviceArrayAdapter bluetoothDeviceArrayAdapter) {
+    public BluetoothDeviceStateReceiver(Spinner deviceSpinner) {
         super();
         
-        mBluetoothDeviceArrayAdapter = bluetoothDeviceArrayAdapter;
+        mDeviceSpinner = deviceSpinner;
     }
 
     /**
@@ -98,15 +98,16 @@ public class BluetoothDeviceStateReceiver extends BroadcastReceiver {
      */
     private void removeDeviceFromArrayAdapter(BluetoothDevice device) {
         
-        if (mBluetoothDeviceArrayAdapter == null) {
+        BluetoothDeviceArrayAdapter bluetoothDeviceArrayAdapter = (BluetoothDeviceArrayAdapter) mDeviceSpinner.getAdapter();
+        if (bluetoothDeviceArrayAdapter == null) {
             return;
         }
         
-        for (int i = 0; i < mBluetoothDeviceArrayAdapter.getCount(); i++) {
-            BluetoothDeviceView deviceView = mBluetoothDeviceArrayAdapter.getItem(i);
+        for (int i = 0; i < bluetoothDeviceArrayAdapter.getCount(); i++) {
+            BluetoothDeviceView deviceView = bluetoothDeviceArrayAdapter.getItem(i);
             
             if (deviceView.getAddress().equals(device.getAddress())) {
-                mBluetoothDeviceArrayAdapter.remove(deviceView);
+                bluetoothDeviceArrayAdapter.remove(deviceView);
                 DoLog.d(TAG, "removed: " + deviceView);
                 break;
             }
@@ -151,14 +152,16 @@ public class BluetoothDeviceStateReceiver extends BroadcastReceiver {
      * @param device
      */
     private void addDeviceToArrayAdapter(BluetoothDevice device) {
-        
-        if (mBluetoothDeviceArrayAdapter == null) {
+       
+        if (mDeviceSpinner == null) {
             return;
         }
+
+        BluetoothDeviceArrayAdapter bluetoothDeviceArrayAdapter = (BluetoothDeviceArrayAdapter) mDeviceSpinner.getAdapter();
         
         boolean exists = false;
-        for (int i = 0; i < mBluetoothDeviceArrayAdapter.getCount(); i++) {
-            BluetoothDeviceView deviceView = mBluetoothDeviceArrayAdapter.getItem(i);
+        for (int i = 0; i < bluetoothDeviceArrayAdapter.getCount(); i++) {
+            BluetoothDeviceView deviceView = bluetoothDeviceArrayAdapter.getItem(i);
             
             if (deviceView.getBluetoothDevice().getAddress().equals(device.getAddress())) {
                 deviceView.setBluetoothDevice(device);
@@ -168,18 +171,10 @@ public class BluetoothDeviceStateReceiver extends BroadcastReceiver {
         }
         
         if (!exists) {
-            mBluetoothDeviceArrayAdapter.add(new BluetoothDeviceView(device));
+            BluetoothDeviceView deviceView = new BluetoothDeviceView(device);
+            bluetoothDeviceArrayAdapter.add(deviceView);
+            mDeviceSpinner.setSelection(bluetoothDeviceArrayAdapter.getPosition(deviceView));
         }
-        //mBluetoothDeviceArrayAdapter.notifyDataSetChanged();
     }
     
-    /**
-     * Setter
-     * 
-     * @param bluetoothDeviceArrayAdapter
-     */
-    public void setBluetoothDeviceArrayAdapter(BluetoothDeviceArrayAdapter bluetoothDeviceArrayAdapter) {
-        mBluetoothDeviceArrayAdapter = bluetoothDeviceArrayAdapter;
-    }
-
 }

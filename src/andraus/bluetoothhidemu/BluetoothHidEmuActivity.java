@@ -98,7 +98,7 @@ public class BluetoothHidEmuActivity extends Activity {
         registerReceiver(mBluetoothReceiver, new IntentFilter(BluetoothAdapter.ACTION_SCAN_MODE_CHANGED));
         
         if (mBluetoothDeviceStateReceiver == null) {
-            mBluetoothDeviceStateReceiver = new BluetoothDeviceStateReceiver(mBluetoothDeviceArrayAdapter);
+            mBluetoothDeviceStateReceiver = new BluetoothDeviceStateReceiver(mDeviceSpinner);
         }
         
         registerReceiver(mBluetoothDeviceStateReceiver, new IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED));
@@ -172,9 +172,6 @@ public class BluetoothHidEmuActivity extends Activity {
         if (!mSpoofer.requirementsCheck()) {
             Toast.makeText(getApplicationContext(), mSpoofer.getSetupErrorMsg(), Toast.LENGTH_LONG).show();
             finish();
-        } else {
-            // TODO: check for preferences to choose spoof mode
-            //if (!mSpoofer.isSpoofed()) mSpoofer.tearUpSpoofing(BluetoothAdapterSpoofer.SpoofMode.HID_GENERIC);
         }
 
         mSocketManager = SocketManager.getInstance(mSpoofer);
@@ -697,11 +694,12 @@ public class BluetoothHidEmuActivity extends Activity {
                 int scanMode = intent.getExtras().getInt(BluetoothAdapter.EXTRA_SCAN_MODE);
                 DoLog.d(TAG, "Scan mode changed: " + scanMode);
                 
-                /* 
-                 * TODO: implement here tearDown() / tearUp() logic for spoofer.
-                 * Note to self: remeber to check only against SCAN_MODE_CONNECTABLE_DISCOVERABLE for tearUp(), and in
-                 * "else" to tearDown() 
-                 */
+                if (scanMode == BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE) {
+                    // TODO: check spoofing mode in preferences.
+                    if (!mSpoofer.isSpoofed()) mSpoofer.tearUpSpoofing(BluetoothAdapterSpoofer.SpoofMode.HID_GENERIC);
+                } else {
+                    if (mSpoofer.isSpoofed()) mSpoofer.tearDownSpoofing();
+                }
                 
             }
             
