@@ -421,9 +421,6 @@ public class BluetoothHidEmuActivity extends Activity {
         case R.id.menu_quit:
             finish();
             break;
-        case R.id.menu_refresh_devices:
-            populateBluetoothDeviceCombo();
-            break;
         case R.id.menu_settings:
             startActivity(new Intent(this, Settings.class));
         }

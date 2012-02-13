@@ -5,10 +5,6 @@
           android:icon="@android:drawable/ic_menu_preferences"
           android:title="@string/msg_menu_settings" />
     
-    <item android:id="@+id/menu_refresh_devices"
-          android:icon="@drawable/ic_menu_refresh"
-          android:title="@string/msg_menu_refresh_devices" />
-    
     <item android:id="@+id/menu_quit"
           android:icon="@android:drawable/ic_menu_close_clear_cancel"
           android:title="@string/msg_menu_quit" />
