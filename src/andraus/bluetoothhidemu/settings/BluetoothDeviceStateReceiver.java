@@ -98,11 +98,12 @@ public class BluetoothDeviceStateReceiver extends BroadcastReceiver {
      */
     private void removeDeviceFromArrayAdapter(BluetoothDevice device) {
         
-        BluetoothDeviceArrayAdapter bluetoothDeviceArrayAdapter = (BluetoothDeviceArrayAdapter) mDeviceSpinner.getAdapter();
-        if (bluetoothDeviceArrayAdapter == null) {
+        if (mDeviceSpinner == null) {
             return;
         }
         
+        BluetoothDeviceArrayAdapter bluetoothDeviceArrayAdapter = (BluetoothDeviceArrayAdapter) mDeviceSpinner.getAdapter();
+
         for (int i = 0; i < bluetoothDeviceArrayAdapter.getCount(); i++) {
             BluetoothDeviceView deviceView = bluetoothDeviceArrayAdapter.getItem(i);
             
