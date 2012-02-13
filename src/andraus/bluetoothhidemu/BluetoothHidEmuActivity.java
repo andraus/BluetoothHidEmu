@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import andraus.bluetoothhidemu.settings.BluetoothAdapterStateReceiver;
 import andraus.bluetoothhidemu.settings.BluetoothDeviceStateReceiver;
 import andraus.bluetoothhidemu.settings.OnSettingsChangeListener;
 import andraus.bluetoothhidemu.settings.Settings;
@@ -21,8 +22,6 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -84,24 +83,28 @@ public class BluetoothHidEmuActivity extends Activity {
 	
 	private BluetoothAdapter mBluetoothAdapter = null;
 	
-	private SocketManager mSocketManager = null;
-	private BluetoothAdapterSpoofer mSpoofer = null;
+	private static SocketManager mSocketManager = null;
+	private static BluetoothAdapterSpoofer mSpoofer = null;
 	private OnSettingsChangeListener mSettingsChangeListener = null;
 	
 	private BluetoothDeviceStateReceiver mBluetoothDeviceStateReceiver = null;
+    private BluetoothAdapterStateReceiver mBluetoothAdapterStateReceiver = null;
+
 
 	/**
 	 * Register intent filters for this activity
 	 */
 	private void registerIntentFilters() {
-        registerReceiver(mBluetoothReceiver, new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED));
-        registerReceiver(mBluetoothReceiver, new IntentFilter(BluetoothAdapter.ACTION_SCAN_MODE_CHANGED));
         
         if (mBluetoothDeviceStateReceiver == null) {
             mBluetoothDeviceStateReceiver = new BluetoothDeviceStateReceiver(mDeviceSpinner);
         }
-        
         registerReceiver(mBluetoothDeviceStateReceiver, new IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED));
+        if (mBluetoothAdapterStateReceiver == null) {
+            mBluetoothAdapterStateReceiver = new BluetoothAdapterStateReceiver(this, mSpoofer);
+        }
+        registerReceiver(mBluetoothAdapterStateReceiver, new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED));
+        registerReceiver(mBluetoothAdapterStateReceiver, new IntentFilter(BluetoothAdapter.ACTION_SCAN_MODE_CHANGED));
 	}
 	
 	/**
@@ -435,11 +438,15 @@ public class BluetoothHidEmuActivity extends Activity {
     protected void onDestroy() {
         DoLog.d(TAG, "...being destroyed");
         try {
-            unregisterReceiver(mBluetoothReceiver);
+            unregisterReceiver(mBluetoothAdapterStateReceiver);
         } catch (IllegalArgumentException e) {
             DoLog.w(TAG, "Receiver not registered - nothing done.");
         }
-        unregisterReceiver(mBluetoothDeviceStateReceiver);
+        try {
+            unregisterReceiver(mBluetoothDeviceStateReceiver);
+        } catch (IllegalArgumentException e) {
+            DoLog.w(TAG, "Receiver not registered - nothing done.");
+        }
         
         mMainHandler.removeCallbacksAndMessages(null);
         if (mSpoofer != null && mSpoofer.isSpoofed()) {
@@ -679,32 +686,5 @@ public class BluetoothHidEmuActivity extends Activity {
     		}
     	}
     };
-    
-    /**
-     * Receive notification of bluetooth adapter being turned off
-     */
-    private final BroadcastReceiver mBluetoothReceiver = new BroadcastReceiver() {
-
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if (BluetoothAdapter.ACTION_STATE_CHANGED.equals(intent.getAction())) {
-                DoLog.d(TAG, "BluetoothAdapter turned off. Bailing out...");
-                finish();
-            } else if (BluetoothAdapter.ACTION_SCAN_MODE_CHANGED.equals(intent.getAction())) {
-                int scanMode = intent.getExtras().getInt(BluetoothAdapter.EXTRA_SCAN_MODE);
-                DoLog.d(TAG, "Scan mode changed: " + scanMode);
-                
-                if (scanMode == BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE) {
-                    // TODO: check spoofing mode in preferences.
-                    if (!mSpoofer.isSpoofed()) mSpoofer.tearUpSpoofing(BluetoothAdapterSpoofer.SpoofMode.HID_GENERIC);
-                } else {
-                    if (mSpoofer.isSpoofed()) mSpoofer.tearDownSpoofing();
-                }
-                
-            }
-            
-        }
-        
-    };
-    	
+       	
 }

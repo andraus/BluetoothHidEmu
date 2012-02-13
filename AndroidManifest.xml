@@ -20,7 +20,8 @@
         <activity
             android:label="@string/app_name"
             android:name=".BluetoothHidEmuActivity"
-            android:configChanges="orientation">
+            android:configChanges="orientation"
+            android:clearTaskOnLaunch="true">
             <intent-filter >
                 <action android:name="android.intent.action.MAIN" />
 

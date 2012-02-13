@@ -51,6 +51,7 @@ public class Settings extends PreferenceActivity implements OnSharedPreferenceCh
     private boolean mIsResumingFromDialog = false;
     
     private BluetoothDeviceStateReceiver mBluetoothDeviceReceiver = null;
+    private BluetoothAdapterStateReceiver mBluetoothAdapterStateReceiver = null;
     
     
     // Runnable used with mUiUpdateHandler to display discoverability countdown
@@ -93,10 +94,13 @@ public class Settings extends PreferenceActivity implements OnSharedPreferenceCh
         
         mBtDiscoverablePreference = (CheckBoxPreference) findPreference(PREF_BT_DISCOVERABLE);
         mDeviceListCategory = (PreferenceCategory) findPreference(PREF_DEVICE_LIST);
-        mBluetoothDeviceReceiver = new BluetoothDeviceStateReceiver(mDeviceListCategory);
         populateDeviceList(mDeviceListCategory);
-        IntentFilter intentFilter = new IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED);
-        registerReceiver(mBluetoothDeviceReceiver, intentFilter);
+
+        mBluetoothDeviceReceiver = new BluetoothDeviceStateReceiver(mDeviceListCategory);
+        registerReceiver(mBluetoothDeviceReceiver, new IntentFilter(BluetoothDevice.ACTION_BOND_STATE_CHANGED));
+        
+        mBluetoothAdapterStateReceiver = new BluetoothAdapterStateReceiver(this);
+        registerReceiver(mBluetoothAdapterStateReceiver, new IntentFilter(BluetoothAdapter.ACTION_STATE_CHANGED));
         
         mUiUpdateHandler = new Handler();
         
@@ -130,6 +134,9 @@ public class Settings extends PreferenceActivity implements OnSharedPreferenceCh
 
         if (mBluetoothDeviceReceiver != null) {
             unregisterReceiver(mBluetoothDeviceReceiver);
+        }
+        if (mBluetoothAdapterStateReceiver != null) {
+            unregisterReceiver(mBluetoothAdapterStateReceiver);
         }
         
         super.onDestroy();
