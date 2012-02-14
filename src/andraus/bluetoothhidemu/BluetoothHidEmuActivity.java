@@ -36,6 +36,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewStub;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
@@ -168,6 +169,11 @@ public class BluetoothHidEmuActivity extends Activity {
 	private void setupApp() {
 		setContentView(R.layout.main);
 		
+		ViewStub stub = (ViewStub) findViewById(R.id.ControlsStub);
+		stub.setLayoutResource(R.layout.generic_controls_layout);
+		stub.inflate();
+		
+		
         if (!mSpoofer.requirementsCheck()) {
             Toast.makeText(getApplicationContext(), mSpoofer.getSetupErrorMsg(), Toast.LENGTH_LONG).show();
             finish();
@@ -181,8 +187,9 @@ public class BluetoothHidEmuActivity extends Activity {
 		
 		setupNavigationButtons();
 		
-		mControlsLayout = (View) findViewById(R.id.ControlsLayout);
-		mControlsLayout.setVisibility(View.INVISIBLE);
+		//mControlsLayout = (View) findViewById(R.id.ControlsLayout);
+		mControlsLayout = (View) stub;
+        mControlsLayout.setVisibility(View.INVISIBLE);
 		mTouchpadImageView = (ImageView) findViewById(R.id.TouchpadImageView);
 		mLeftClickImageView = (ImageView) findViewById(R.id.LeftButtonImageView);
 		mRightClickImageView = (ImageView) findViewById(R.id.RightButtonImageView);
