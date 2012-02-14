@@ -11,12 +11,6 @@
                         android:title="@string/msg_pref_title_bluetooth_discoverable"
                         android:persistent="false" />
 
-    <CheckBoxPreference android:key="spoof_enabled"
-                        android:title="@string/msg_pref_title_spoof"
-                        android:defaultValue="false"
-                        android:summaryOff="@string/msg_pref_summary_spoof_off"
-                        android:summaryOn="@string/msg_pref_summary_spoof_on" />
-                        
     <PreferenceCategory android:key="bt_device_list"
                         android:title="@string/msg_pref_title_device_list" />
 

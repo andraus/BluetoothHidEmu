@@ -20,8 +20,6 @@ public class OnSettingsChangeListener implements OnSharedPreferenceChangeListene
         
         if (key.equals(Settings.PREF_EMULATION_MODE)) {
             DoLog.d(TAG, "new emulation mode: " + sharedPreferences.getString(key, null));
-        } else if (key.equals(Settings.PREF_SPOOF)) {
-            DoLog.d(TAG, "spoof = " + sharedPreferences.getBoolean(key, false));
         }
 
     }

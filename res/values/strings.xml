@@ -30,11 +30,8 @@
     
     <string name="msg_pref_title_emulation_mode">Emulation mode</string>
     <string name="msg_pref_summary_emulation_mode">Mode: %s</string>
-    <string name="msg_pref_title_spoof">Spoof device</string>
-    <string name="msg_pref_summary_spoof_on">Spoofing is ON.</string>
-    <string name="msg_pref_summary_spoof_off">Spoofing is off.</string>
     <string name="msg_pref_title_bluetooth_discoverable">Bluetooth discoverable</string>
-    <string name="msg_pref_summary_bluetooth_discoverable_click">Tap to enable discovery mode.</string>
+    <string name="msg_pref_summary_bluetooth_discoverable_click">Tap to enable discovery and emulation mode.</string>
     
     <string name="msg_pref_title_device_list">Paired devices:</string>
     

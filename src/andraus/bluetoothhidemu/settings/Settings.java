@@ -34,10 +34,10 @@ public class Settings extends PreferenceActivity implements OnSharedPreferenceCh
     
     /* package */ final static String PREF_LAST_DEVICE = "last_device";
     /* package */ final static String PREF_EMULATION_MODE = "emulation_mode";
-    /* package */ final static String PREF_SPOOF = "spoof_enabled";
     private final static String PREF_BT_DISCOVERABLE = "bt_discoverable";
     private final static String PREF_DEVICE_LIST = "bt_device_list";
-    
+
+    private ListPreference mEmulationModeListPreference = null;
     private CheckBoxPreference mBtDiscoverablePreference = null;
     private PreferenceCategory mDeviceListCategory = null;
 
@@ -92,6 +92,7 @@ public class Settings extends PreferenceActivity implements OnSharedPreferenceCh
         DoLog.d(TAG, "onCreate()");
         addPreferencesFromResource(R.xml.main_preferences);
         
+        mEmulationModeListPreference = (ListPreference) findPreference(PREF_EMULATION_MODE);
         mBtDiscoverablePreference = (CheckBoxPreference) findPreference(PREF_BT_DISCOVERABLE);
         mDeviceListCategory = (PreferenceCategory) findPreference(PREF_DEVICE_LIST);
         populateDeviceList(mDeviceListCategory);
@@ -267,9 +268,8 @@ public class Settings extends PreferenceActivity implements OnSharedPreferenceCh
      * updateEmulationModeSummary
      */
     private void updateEmulationModeSummary() {
-        ListPreference emulationModePreference = (ListPreference) getPreferenceScreen().findPreference(PREF_EMULATION_MODE);
         String summary = getResources().getString(R.string.msg_pref_summary_emulation_mode);
-        emulationModePreference.setSummary(String.format(summary, emulationModePreference.getEntry()));
+        mEmulationModeListPreference.setSummary(String.format(summary, mEmulationModeListPreference.getEntry()));
         
     }
     
@@ -280,6 +280,7 @@ public class Settings extends PreferenceActivity implements OnSharedPreferenceCh
     private void setBluetoothDiscoverableCheck(boolean state) {
         mBtDiscoverablePreference.setChecked(state);
         mBtDiscoverablePreference.setEnabled(!state);
+        mEmulationModeListPreference.setEnabled(!state);
         if (!state) {
             mBtDiscoverablePreference.setSummary(getResources().getString(R.string.msg_pref_summary_bluetooth_discoverable_click));
         }
