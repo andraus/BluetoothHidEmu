@@ -12,7 +12,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.CheckBoxPreference;
@@ -27,7 +26,7 @@ import android.preference.PreferenceManager;
 /**
  * Main Settings screen.
  */
-public class Settings extends PreferenceActivity implements OnSharedPreferenceChangeListener {
+public class Settings extends PreferenceActivity {
 
     private static final String TAG = BluetoothHidEmuActivity.TAG;
     
@@ -132,7 +131,7 @@ public class Settings extends PreferenceActivity implements OnSharedPreferenceCh
             @Override
             public boolean onPreferenceChange(Preference preference, Object newValue) {
                 
-                updateEmulationModeSummary();
+                updateEmulationModeSummary(Integer.valueOf((String) newValue));
                 
                 return true;
             }
@@ -157,18 +156,6 @@ public class Settings extends PreferenceActivity implements OnSharedPreferenceCh
     }
 
     /**
-     * onPause
-     */
-    @Override
-    protected void onPause() {
-        
-        getPreferenceScreen().getSharedPreferences().unregisterOnSharedPreferenceChangeListener(this);
-        mUiUpdateHandler.removeCallbacksAndMessages(null);
-
-        super.onPause();
-    }
-
-    /**
      * onResume
      */
     @Override
@@ -176,8 +163,8 @@ public class Settings extends PreferenceActivity implements OnSharedPreferenceCh
         super.onResume();
         
         if (!mIsResumingFromDialog) {
-            getPreferenceScreen().getSharedPreferences().registerOnSharedPreferenceChangeListener(this);
-            updateEmulationModeSummary();
+            
+            updateEmulationModeSummary(Integer.valueOf(PreferenceManager.getDefaultSharedPreferences(this).getString(PREF_EMULATION_MODE, "-1")));
             
             setBluetoothDiscoverableCheck(BluetoothAdapter.getDefaultAdapter().getScanMode() == BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE);
             if (mBtDiscoverablePreference.isChecked()) {
@@ -280,24 +267,15 @@ public class Settings extends PreferenceActivity implements OnSharedPreferenceCh
     }
     
     /**
-     * onSharedPreferenceChanged
-     * 
-     */
-    @Override
-    public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
-        if (key.equals(Settings.PREF_EMULATION_MODE)) {
-            updateEmulationModeSummary();
-        }
-        
-    }
-    
-    /**
      * updateEmulationModeSummary
+     * 
+     * @param modeIndex
      */
-    private void updateEmulationModeSummary() {
+    private void updateEmulationModeSummary(int modeIndex) {
         String summary = getResources().getString(R.string.msg_pref_summary_emulation_mode);
-        mEmulationModeListPreference.setSummary(String.format(summary, mEmulationModeListPreference.getEntry()));
-        
+        String[] modeNames = getResources().getStringArray(R.array.emulation_mode_names);
+        mEmulationModeListPreference.setSummary(String.format(summary, modeNames[modeIndex]));
+
     }
     
     /**
