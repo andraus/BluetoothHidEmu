@@ -19,7 +19,7 @@ import android.os.ParcelUuid;
 public class BluetoothAdapterSpooferMotoReflect extends BluetoothAdapterSpoofer {
     
     private static final String TAG = BluetoothHidEmuActivity.TAG;
-    private Integer mHidSdpHandle;
+    private int mHidSdpHandle;
 
     /**
      * 
@@ -80,7 +80,7 @@ public class BluetoothAdapterSpooferMotoReflect extends BluetoothAdapterSpoofer 
         Integer newClass = 0;
         try {
 
-            Method spoofAdapterClassMethod = BluetoothAdapter.class.getMethod("spoofAdapterClass", new Class<?>[] { int.class });
+            final Method spoofAdapterClassMethod = BluetoothAdapter.class.getMethod("spoofAdapterClass", new Class<?>[] { int.class });
             spoofAdapterClassMethod.setAccessible(true);
             
             newClass = (Integer) spoofAdapterClassMethod.invoke(mAdapter, new Object[] { deviceClass });
@@ -117,11 +117,11 @@ public class BluetoothAdapterSpooferMotoReflect extends BluetoothAdapterSpoofer 
             return mHidSdpHandle;
         }
         
+        final String methodName = ( mode == SpoofMode.HID_GENERIC) ? "addHidKeybSdpRecord" : "addHidBdRemoteSdpRecord";
         Integer handle = 0;
         try {
-            // TODO: must finish the frameworks implementation to validate this call
-            
-            Method addHidSdpRecordMethod = BluetoothAdapter.class.getMethod("addHidKeybSdpRecord", (Class<?>[]) null);
+
+            Method addHidSdpRecordMethod = BluetoothAdapter.class.getMethod(methodName, (Class<?>[]) null);
             addHidSdpRecordMethod.setAccessible(true);
             
             handle = (Integer) addHidSdpRecordMethod.invoke(mAdapter, (Object[]) null);

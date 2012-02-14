@@ -10,7 +10,7 @@ import android.content.Context;
 
 public class BluetoothAdapterSpooferMoto extends BluetoothAdapterSpoofer {
 
-    private Object mHidSdpHandle;
+    private int mHidSdpHandle;
 
     BluetoothAdapterSpooferMoto(BluetoothAdapter adapter) {
         super(null, adapter);

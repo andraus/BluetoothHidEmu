@@ -1,23 +1,23 @@
-From 2c9704a4420cfa33d927c3ba0d1df6706ed569f4 Mon Sep 17 00:00:00 2001
+From a74d5b7c4507e0aff7c55bb8d22c7ad06d1dd55e Mon Sep 17 00:00:00 2001
 From: Augusto Andraus <andraus@gmail.com>
 Date: Fri, 30 Dec 2011 12:41:03 -0200
-Subject: [PATCH] new APIs for bluetooth HID keyboard emulation
+Subject: [PATCH] new APIs for bluetooth HID emulation
 
-Change-Id: Iaea76c8ddef84071ec9be69123f2c8c6f0753989
+Change-Id: Ibfa7cb0250259761560e46fcff18c6b54f2dcb75
 ---
- core/java/android/bluetooth/BluetoothAdapter.java |   71 ++++++++++++++
+ core/java/android/bluetooth/BluetoothAdapter.java |   94 ++++++++++++++
  core/java/android/bluetooth/BluetoothDevice.java  |   15 +++
- core/java/android/bluetooth/IBluetooth.aidl       |    4 +
- core/java/android/server/BluetoothService.java    |  108 ++++++++++++++++++++-
- core/jni/android_bluetooth_BluetoothSocket.cpp    |   13 +++-
- core/jni/android_server_BluetoothService.cpp      |   50 ++++++++++
- 6 files changed, 259 insertions(+), 2 deletions(-)
+ core/java/android/bluetooth/IBluetooth.aidl       |    5 +
+ core/java/android/server/BluetoothService.java    |  139 ++++++++++++++++++++-
+ core/jni/android_bluetooth_BluetoothSocket.cpp    |   13 ++-
+ core/jni/android_server_BluetoothService.cpp      |   66 ++++++++++
+ 6 files changed, 330 insertions(+), 2 deletions(-)
 
 diff --git a/core/java/android/bluetooth/BluetoothAdapter.java b/core/java/android/bluetooth/BluetoothAdapter.java
-index 510fd2b..95d9394 100644
+index 510fd2b..512c9f3 100644
 --- a/core/java/android/bluetooth/BluetoothAdapter.java
 +++ b/core/java/android/bluetooth/BluetoothAdapter.java
-@@ -969,8 +969,79 @@ public final class BluetoothAdapter {
+@@ -969,8 +969,102 @@ public final class BluetoothAdapter {
          }
          return socket;
      }
@@ -46,6 +46,29 @@ index 510fd2b..95d9394 100644
 +    }
 +    
 +    /**
++     * Add HID PS3 BD Remote profile to sdp record. Requires BLUETOOTH_ADMIN permission
++     * 
++     * Note: BluetoothService will track when the process who requested this handle dies,
++     * and will kill the SDP record accordingly, so it's not necessary to explicitly to remove
++     * the SDP record afterwards.
++     * 
++     * @return handle to record
++     * 
++     * @hide
++     */
++    public int addHidBdRemoteSdpRecord() {
++    	int handle = -1;
++    	
++    	try {
++    		handle = mService.addHidBdRemoteServiceRecord(new Binder());
++    	} catch (RemoteException e) {
++    		Log.e(TAG, "RemoteException: ", e);
++    	}
++    	
++    	return handle;
++    }
+ 
+     /**
 +     * Spoof adapter device number. Original value will be restored once the 
 +     * calling process dies, or the bluetooth device is reset.
 +     * 
@@ -79,8 +102,8 @@ index 510fd2b..95d9394 100644
 +        }
 +        return ret;
 +    }
- 
-     /**
++
++    /**
 +     * @hide 
 +     * 
 +     * @param handle
@@ -124,7 +147,7 @@ index b3a9103..f1b0389 100644
      /**
       * Create an RFCOMM {@link BluetoothSocket} ready to start a secure
 diff --git a/core/java/android/bluetooth/IBluetooth.aidl b/core/java/android/bluetooth/IBluetooth.aidl
-index c4f62a9..bfb22c3 100644
+index c4f62a9..bdaba67 100644
 --- a/core/java/android/bluetooth/IBluetooth.aidl
 +++ b/core/java/android/bluetooth/IBluetooth.aidl
 @@ -27,6 +27,7 @@ package android.bluetooth;
@@ -135,18 +158,19 @@ index c4f62a9..bfb22c3 100644
  
  /**
   * System private API for talking with the Bluetooth service.
-@@ -86,6 +87,9 @@ interface IBluetooth
+@@ -86,6 +87,10 @@ interface IBluetooth
      boolean isBluetoothDock(in String address);
  
      int addRfcommServiceRecord(in String serviceName, in ParcelUuid uuid, int channel, IBinder b);
 +    int addHidKeybServiceRecord(IBinder b);
++    int addHidBdRemoteServiceRecord(IBinder b);
 +    int spoofAdapterClass(int newClass, IBinder b);
 +    int getAdapterClass();
      void removeServiceRecord(int handle);
  
      boolean connectHeadset(String address);
 diff --git a/core/java/android/server/BluetoothService.java b/core/java/android/server/BluetoothService.java
-index 3ed449e..84b0d88 100644
+index 3ed449e..3bcaabc 100644
 --- a/core/java/android/server/BluetoothService.java
 +++ b/core/java/android/server/BluetoothService.java
 @@ -187,6 +187,7 @@ public class BluetoothService extends IBluetooth.Stub {
@@ -166,7 +190,7 @@ index 3ed449e..84b0d88 100644
      public synchronized String getAddress() {
          mContext.enforceCallingOrSelfPermission(BLUETOOTH_PERM, "Need BLUETOOTH permission");
          return getProperty("Address");
-@@ -2004,7 +2005,89 @@ public class BluetoothService extends IBluetooth.Stub {
+@@ -2004,7 +2005,119 @@ public class BluetoothService extends IBluetooth.Stub {
          } catch (RemoteException e) {}
          return handle;
      }
@@ -202,6 +226,36 @@ index 3ed449e..84b0d88 100644
 +    }
 +
 +    /**
++     * b is a handle to a Binder instance, so that this service can be notified
++     * for Applications that terminate unexpectedly, to clean there service
++     * records
++     * 
++     * @param b
++     * @return
++     */
++    public synchronized int addHidBdRemoteServiceRecord(IBinder b) {
++        mContext.enforceCallingOrSelfPermission(BLUETOOTH_ADMIN_PERM,
++                "Need BLUETOOTH_ADMIN permission");
++        if (!isEnabledInternal())
++            return -1;
++
++        // TODO: check if a HID Keyb SDP record doesn't exist already.
++        int handle = addHidBdRemoteServiceRecordNative();
++        if (DBG)
++            log("new HID bd remote handle: " + Integer.toHexString(handle));
++
++        if (handle != -1) {
++            int pid = Binder.getCallingPid();
++            mServiceRecordToPid.put(new Integer(handle), new Integer(pid));
++            try {
++                b.linkToDeath(new Reaper(handle, pid), 0);
++            } catch (RemoteException e) {
++            }
++        }
++        return handle;
++    }
+ 
++    /**
 +     * API to spoof the bluetooth device class. This is a "spoofing" of the the device class, and not 
 +     * a permanent change; the PID of the calling process will be tied using a binder, so the original 
 +     * device class will be automatically restored once the calling PID dies.
@@ -235,7 +289,7 @@ index 3ed449e..84b0d88 100644
 +
 +        return ret;
 +    }
- 
++
 +    /**
 +     * Retrieves the current bluetooth device class number
 +     * 
@@ -256,7 +310,7 @@ index 3ed449e..84b0d88 100644
      public void removeServiceRecord(int handle) {
          mContext.enforceCallingOrSelfPermission(BLUETOOTH_PERM,
                                                  "Need BLUETOOTH permission");
-@@ -2036,6 +2119,26 @@ public class BluetoothService extends IBluetooth.Stub {
+@@ -2036,6 +2149,26 @@ public class BluetoothService extends IBluetooth.Stub {
              }
          }
      }
@@ -283,11 +337,12 @@ index 3ed449e..84b0d88 100644
  
      private final BroadcastReceiver mReceiver = new BroadcastReceiver() {
          @Override
-@@ -2593,6 +2696,9 @@ public class BluetoothService extends IBluetooth.Stub {
+@@ -2593,6 +2726,10 @@ public class BluetoothService extends IBluetooth.Stub {
  
      private native int addRfcommServiceRecordNative(String name, long uuidMsb, long uuidLsb,
              short channel);
 +    private native int addHidKeybServiceRecordNative();
++    private native int addHidBdRemoteServiceRecordNative();
 +    private native int spoofAdapterClassNative(int newClass);
 +    private native int getAdapterClassNative();
      private native boolean removeServiceRecordNative(int handle);
@@ -332,10 +387,10 @@ index 31ebf8c..37df1e9 100644
          sndbuf = RFCOMM_SO_SNDBUF;
          if (setsockopt(fd, SOL_SOCKET, SO_SNDBUF, &sndbuf, sizeof(sndbuf))) {
 diff --git a/core/jni/android_server_BluetoothService.cpp b/core/jni/android_server_BluetoothService.cpp
-index be2e5f3..e846bebe 100644
+index be2e5f3..dfc34f4 100644
 --- a/core/jni/android_server_BluetoothService.cpp
 +++ b/core/jni/android_server_BluetoothService.cpp
-@@ -982,6 +982,53 @@ static jint addRfcommServiceRecordNative(JNIEnv *env, jobject object,
+@@ -982,6 +982,68 @@ static jint addRfcommServiceRecordNative(JNIEnv *env, jobject object,
      return -1;
  }
  
@@ -347,6 +402,21 @@ index be2e5f3..e846bebe 100644
 +        DBusMessage *reply = dbus_func_args(env, nat->conn,
 +                           get_adapter_path(env, object),
 +                           DBUS_ADAPTER_IFACE, "AddHidKeybServiceRecord",
++                           DBUS_TYPE_INVALID);
++        return reply ? dbus_returns_uint32(env, reply) : -1;
++    }
++#endif
++    return -1;
++}
++
++static jint addHidBdRemoteServiceRecordNative(JNIEnv *env, jobject object) {
++    LOGV(__FUNCTION__);
++#ifdef HAVE_BLUETOOTH
++    native_data_t *nat = get_native_data(env, object);
++    if (nat) {
++        DBusMessage *reply = dbus_func_args(env, nat->conn,
++                           get_adapter_path(env, object),
++                           DBUS_ADAPTER_IFACE, "AddHidBdRemoteServiceRecord",
 +                           DBUS_TYPE_INVALID);
 +        return reply ? dbus_returns_uint32(env, reply) : -1;
 +    }
@@ -389,11 +459,12 @@ index be2e5f3..e846bebe 100644
  static jboolean removeServiceRecordNative(JNIEnv *env, jobject object, jint handle) {
      LOGV(__FUNCTION__);
  #ifdef HAVE_BLUETOOTH
-@@ -1067,6 +1114,9 @@ static JNINativeMethod sMethods[] = {
+@@ -1067,6 +1129,10 @@ static JNINativeMethod sMethods[] = {
      {"createDeviceNative", "(Ljava/lang/String;)Z", (void *)createDeviceNative},
      {"discoverServicesNative", "(Ljava/lang/String;Ljava/lang/String;)Z", (void *)discoverServicesNative},
      {"addRfcommServiceRecordNative", "(Ljava/lang/String;JJS)I", (void *)addRfcommServiceRecordNative},
 +    {"addHidKeybServiceRecordNative", "()I", (void *)addHidKeybServiceRecordNative},
++    {"addHidBdRemoteServiceRecordNative", "()I", (void *)addHidBdRemoteServiceRecordNative},
 +    {"spoofAdapterClassNative", "(I)I", (void *)spoofAdapterClassNative},
 +    {"getAdapterClassNative", "()I", (void *)getAdapterClassNative},
      {"removeServiceRecordNative", "(I)Z", (void *)removeServiceRecordNative},

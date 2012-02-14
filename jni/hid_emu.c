@@ -278,7 +278,7 @@ static sdp_record_t *create_hid_generic_record()
 }
 
 /**
- * Creates the SDP record for BD remtoe HID emulation. Probably works with PS3 only
+ * Creates the SDP record for BD remtoe HID emulation. Probably works with PS3 only (experimental)
  */
 static sdp_record_t *create_hid_bdremote_record()
 {
