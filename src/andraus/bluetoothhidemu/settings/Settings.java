@@ -4,6 +4,7 @@ import java.util.Set;
 
 import andraus.bluetoothhidemu.BluetoothHidEmuActivity;
 import andraus.bluetoothhidemu.R;
+import andraus.bluetoothhidemu.spoof.BluetoothAdapterSpoofer.SpoofMode;
 import andraus.bluetoothhidemu.util.DoLog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -17,6 +18,7 @@ import android.os.Handler;
 import android.preference.CheckBoxPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
+import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceCategory;
@@ -124,7 +126,18 @@ public class Settings extends PreferenceActivity implements OnSharedPreferenceCh
             }
             
         });
-
+        
+        mEmulationModeListPreference.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
+            
+            @Override
+            public boolean onPreferenceChange(Preference preference, Object newValue) {
+                
+                updateEmulationModeSummary();
+                
+                return true;
+            }
+        });
+        
     }
     
     /**
@@ -207,10 +220,24 @@ public class Settings extends PreferenceActivity implements OnSharedPreferenceCh
      * @param context
      * @return
      */
-    public static int getEmulationMode(Context context) {
-        String value = PreferenceManager.getDefaultSharedPreferences(context).getString(PREF_EMULATION_MODE, "-1");
+    public static SpoofMode getEmulationMode(Context context) {
+        int value = Integer.valueOf(PreferenceManager.getDefaultSharedPreferences(context).getString(PREF_EMULATION_MODE, "-1"));
         
-        return Integer.valueOf(value);
+        /*
+         * Corolary: BluetoothAdapterSpoofer.SpoofEnum match emulation modes string arrays in arrays.xml
+         */
+        
+        switch (value) {
+        case 0:
+            return SpoofMode.HID_GENERIC;
+        case 1:
+            return SpoofMode.HID_BDREMOTE;
+        default:
+            throw new IllegalStateException("Invalid Emulation mode");
+            
+        }
+        
+        
     }
     
     /**

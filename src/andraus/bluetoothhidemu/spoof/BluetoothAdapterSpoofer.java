@@ -16,6 +16,7 @@ public abstract class BluetoothAdapterSpoofer {
     
     protected static final String TAG = BluetoothHidEmuActivity.TAG;
 
+    // must match "emulation_mode_names" / "emulation_mode_values" in arrays.xml
     public static enum SpoofMode { HID_GENERIC, HID_BDREMOTE };
     
     protected static final int DEV_CLASS_HID_GENERIC = 0x002540;

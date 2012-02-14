@@ -2,6 +2,7 @@ package andraus.bluetoothhidemu.settings;
 
 import andraus.bluetoothhidemu.BluetoothHidEmuActivity;
 import andraus.bluetoothhidemu.spoof.BluetoothAdapterSpoofer;
+import andraus.bluetoothhidemu.spoof.BluetoothAdapterSpoofer.SpoofMode;
 import andraus.bluetoothhidemu.util.DoLog;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
@@ -56,8 +57,10 @@ public class BluetoothAdapterStateReceiver extends BroadcastReceiver {
             DoLog.d(TAG, "Scan mode changed: " + scanMode);
 
             if (scanMode == BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE) {
-                // TODO: check spoofing mode in preferences.
-                if (!mSpoofer.isSpoofed()) mSpoofer.tearUpSpoofing(BluetoothAdapterSpoofer.SpoofMode.HID_GENERIC);
+                
+                SpoofMode spoofMode = Settings.getEmulationMode(context);
+                
+                if (!mSpoofer.isSpoofed()) mSpoofer.tearUpSpoofing(spoofMode);
             } else {
                 if (mSpoofer.isSpoofed()) mSpoofer.tearDownSpoofing();
             }

@@ -6,7 +6,6 @@ import java.util.Set;
 
 import andraus.bluetoothhidemu.settings.BluetoothAdapterStateReceiver;
 import andraus.bluetoothhidemu.settings.BluetoothDeviceStateReceiver;
-import andraus.bluetoothhidemu.settings.OnSettingsChangeListener;
 import andraus.bluetoothhidemu.settings.Settings;
 import andraus.bluetoothhidemu.sock.SocketManager;
 import andraus.bluetoothhidemu.sock.payload.HidPointerPayload;
@@ -25,13 +24,11 @@ import android.bluetooth.BluetoothDevice;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
-import android.preference.PreferenceManager;
 import android.text.method.KeyListener;
 import android.view.Gravity;
 import android.view.KeyEvent;
@@ -85,8 +82,7 @@ public class BluetoothHidEmuActivity extends Activity {
 	
 	private static SocketManager mSocketManager = null;
 	private static BluetoothAdapterSpoofer mSpoofer = null;
-	private OnSettingsChangeListener mSettingsChangeListener = null;
-	
+
 	private BluetoothDeviceStateReceiver mBluetoothDeviceStateReceiver = null;
     private BluetoothAdapterStateReceiver mBluetoothAdapterStateReceiver = null;
 
@@ -388,10 +384,6 @@ public class BluetoothHidEmuActivity extends Activity {
         mSpoofer = BluetoothAdapterSpooferFactory.getInstance(getApplicationContext(), mBluetoothAdapter);
         Thread.setDefaultUncaughtExceptionHandler(new CleanupExceptionHandler(mSpoofer));
 
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        mSettingsChangeListener = new OnSettingsChangeListener();
-        sharedPreferences.registerOnSharedPreferenceChangeListener(mSettingsChangeListener);
-        
         if (!mBluetoothAdapter.isEnabled()) {
             requestBluetoothAdapterOn();
         } else { 
@@ -459,11 +451,6 @@ public class BluetoothHidEmuActivity extends Activity {
         if (mDisableBluetoothUponExit) {
             mBluetoothAdapter.disable();
         }
-        
-        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(this);
-        mSettingsChangeListener = new OnSettingsChangeListener();
-        sharedPreferences.unregisterOnSharedPreferenceChangeListener(mSettingsChangeListener);
-        
         
         super.onDestroy();
     }
