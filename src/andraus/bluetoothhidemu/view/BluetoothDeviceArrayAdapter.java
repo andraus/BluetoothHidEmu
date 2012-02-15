@@ -4,6 +4,7 @@ import java.util.List;
 
 import andraus.bluetoothhidemu.R;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.widget.ArrayAdapter;
 
 /**
@@ -12,10 +13,21 @@ import android.widget.ArrayAdapter;
  */
 public class BluetoothDeviceArrayAdapter extends ArrayAdapter<BluetoothDeviceView> {
     
+    private static final String PREF_DEVICES = "bt_devices";
+    
+    private SharedPreferences mSharedPref = null;
+    
     
     public BluetoothDeviceArrayAdapter(Context context, List<BluetoothDeviceView> objects) {
         super(context, R.layout.spinner_layout, objects);
         setDropDownViewResource(R.layout.spinner_dropdown_layout);
+        
+        mSharedPref = context.getSharedPreferences(PREF_DEVICES, Context.MODE_PRIVATE);
+        
+        SharedPreferences.Editor editor = mSharedPref.edit();
+        editor.putString("uga", "buga");
+        editor.apply();
+        
     }
 
     public int getPositionByAddress(String bluetoothAddress) {

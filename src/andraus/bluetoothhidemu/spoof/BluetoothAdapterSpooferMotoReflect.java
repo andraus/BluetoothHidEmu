@@ -6,6 +6,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import andraus.bluetoothhidemu.BluetoothHidEmuActivity;
+import andraus.bluetoothhidemu.spoof.Spoof.SpoofMode;
 import andraus.bluetoothhidemu.util.DoLog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;

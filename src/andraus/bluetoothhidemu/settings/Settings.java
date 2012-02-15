@@ -4,7 +4,8 @@ import java.util.Set;
 
 import andraus.bluetoothhidemu.BluetoothHidEmuActivity;
 import andraus.bluetoothhidemu.R;
-import andraus.bluetoothhidemu.spoof.BluetoothAdapterSpoofer.SpoofMode;
+import andraus.bluetoothhidemu.spoof.Spoof;
+import andraus.bluetoothhidemu.spoof.Spoof.SpoofMode;
 import andraus.bluetoothhidemu.util.DoLog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -130,7 +131,7 @@ public class Settings extends PreferenceActivity {
             
             @Override
             public boolean onPreferenceChange(Preference preference, Object newValue) {
-                
+
                 updateEmulationModeSummary(Integer.valueOf((String) newValue));
                 
                 return true;
@@ -210,20 +211,7 @@ public class Settings extends PreferenceActivity {
     public static SpoofMode getEmulationMode(Context context) {
         int value = Integer.valueOf(PreferenceManager.getDefaultSharedPreferences(context).getString(PREF_EMULATION_MODE, "-1"));
         
-        /*
-         * Corolary: BluetoothAdapterSpoofer.SpoofEnum match emulation modes string arrays in arrays.xml
-         */
-        
-        switch (value) {
-        case 0:
-            return SpoofMode.HID_GENERIC;
-        case 1:
-            return SpoofMode.HID_BDREMOTE;
-        default:
-            throw new IllegalStateException("Invalid Emulation mode");
-            
-        }
-        
+        return Spoof.fromInt(value);
         
     }
     

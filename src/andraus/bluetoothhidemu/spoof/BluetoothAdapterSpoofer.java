@@ -3,6 +3,7 @@ package andraus.bluetoothhidemu.spoof;
 import java.io.IOException;
 
 import andraus.bluetoothhidemu.BluetoothHidEmuActivity;
+import andraus.bluetoothhidemu.spoof.Spoof.SpoofMode;
 import andraus.bluetoothhidemu.util.DoLog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
@@ -16,12 +17,6 @@ public abstract class BluetoothAdapterSpoofer {
     
     protected static final String TAG = BluetoothHidEmuActivity.TAG;
 
-    // must match "emulation_mode_names" / "emulation_mode_values" in arrays.xml
-    public static enum SpoofMode { HID_GENERIC, HID_BDREMOTE };
-    
-    protected static final int DEV_CLASS_HID_GENERIC = 0x002540;
-    protected static final int DEV_CLASS_HID_BDREMOTE = 0x000140;
-    
     protected boolean mSpoofed = false;
     protected String mSetupErrorMsg;
     protected Context mContext;
@@ -94,7 +89,7 @@ public abstract class BluetoothAdapterSpoofer {
         
         DoLog.d(TAG, "original class = 0x" + Integer.toHexString(getBluetoothDeviceClass()));
 
-        int newClass = (mode == SpoofMode.HID_GENERIC) ? DEV_CLASS_HID_GENERIC : DEV_CLASS_HID_BDREMOTE;
+        int newClass = Spoof.getBluetoothDeviceClass(mode);
         int err = spoofBluetoothDeviceClass(newClass);
         DoLog.d(TAG, "set class ret = " + err);
 

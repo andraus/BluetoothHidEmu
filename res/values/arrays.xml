@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     
-    <!--  Must match BluetoothAdapterSpoofer.SpoofMode enum -->
+    <!--  Must match Spoof.SpoofMode enum -->
 	    <string-array name="emulation_mode_names">
 	        <item>Generic HID device</item>
 	        <item>PS3 BD Remote device</item>
@@ -11,7 +11,7 @@
 	        <item>0</item>
 	        <item>1</item>
 	    </string-array>
-	<!--  match BluetoothAdapterSpoofer.SpoofMode -->
+	<!--  match Spoof.SpoofMode -->
 
     
 </resources>

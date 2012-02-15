@@ -12,6 +12,7 @@ import andraus.bluetoothhidemu.sock.payload.HidPointerPayload;
 import andraus.bluetoothhidemu.spoof.BluetoothAdapterSpoofer;
 import andraus.bluetoothhidemu.spoof.BluetoothAdapterSpooferFactory;
 import andraus.bluetoothhidemu.spoof.CleanupExceptionHandler;
+import andraus.bluetoothhidemu.spoof.Spoof.SpoofMode;
 import andraus.bluetoothhidemu.util.DoLog;
 import andraus.bluetoothhidemu.view.BluetoothDeviceArrayAdapter;
 import andraus.bluetoothhidemu.view.BluetoothDeviceView;

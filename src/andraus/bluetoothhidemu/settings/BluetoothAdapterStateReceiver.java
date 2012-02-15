@@ -2,7 +2,7 @@ package andraus.bluetoothhidemu.settings;
 
 import andraus.bluetoothhidemu.BluetoothHidEmuActivity;
 import andraus.bluetoothhidemu.spoof.BluetoothAdapterSpoofer;
-import andraus.bluetoothhidemu.spoof.BluetoothAdapterSpoofer.SpoofMode;
+import andraus.bluetoothhidemu.spoof.Spoof.SpoofMode;
 import andraus.bluetoothhidemu.util.DoLog;
 import android.app.Activity;
 import android.bluetooth.BluetoothAdapter;
