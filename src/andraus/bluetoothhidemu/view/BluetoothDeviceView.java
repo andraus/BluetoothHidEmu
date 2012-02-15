@@ -2,19 +2,31 @@ package andraus.bluetoothhidemu.view;
 
 import java.util.Comparator;
 
+import andraus.bluetoothhidemu.spoof.Spoof.SpoofMode;
 import android.bluetooth.BluetoothDevice;
 
 public class BluetoothDeviceView {
     
     private BluetoothDevice mBluetoothDevice = null;
+    private SpoofMode mSpoofMode;
     
-    public BluetoothDeviceView(BluetoothDevice bluetoothDevice) {
+    /**
+     * 
+     * @param bluetoothDevice
+     * @param spoofMode
+     */
+    public BluetoothDeviceView(BluetoothDevice bluetoothDevice, SpoofMode spoofMode) {
         super();
         mBluetoothDevice = bluetoothDevice;
+        mSpoofMode = spoofMode;
     }
 
     public BluetoothDevice getBluetoothDevice() {
         return mBluetoothDevice;
+    }
+    
+    public SpoofMode getSpoofMode() {
+        return mSpoofMode;
     }
 
     public void setBluetoothDevice(BluetoothDevice bluetoothDevice) {

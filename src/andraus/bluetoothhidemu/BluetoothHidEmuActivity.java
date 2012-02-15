@@ -8,7 +8,6 @@ import andraus.bluetoothhidemu.sock.payload.HidPointerPayload;
 import andraus.bluetoothhidemu.spoof.BluetoothAdapterSpoofer;
 import andraus.bluetoothhidemu.spoof.BluetoothAdapterSpooferFactory;
 import andraus.bluetoothhidemu.spoof.CleanupExceptionHandler;
-import andraus.bluetoothhidemu.spoof.Spoof.SpoofMode;
 import andraus.bluetoothhidemu.util.DoLog;
 import andraus.bluetoothhidemu.view.BluetoothDeviceArrayAdapter;
 import andraus.bluetoothhidemu.view.BluetoothDeviceView;
@@ -69,10 +68,18 @@ public class BluetoothHidEmuActivity extends Activity {
 	private ViewFlipper mMainViewFlipper = null;
 	
 	private ViewStub mControlsLayout = null;
+	
 	private EchoEditText mEchoEditText = null;
 	private ImageView mTouchpadImageView = null;
 	private ImageView mLeftClickImageView = null;
 	private ImageView mRightClickImageView = null;
+
+	private KeyboardKeyListener mKeyboardKeyListener = null;
+    private KeyboardTextWatcher mKeyboardTextWatcher = null;
+    private TouchpadListener mTouchpadListener = null;
+    private ButtonClickListener mLeftClickListener = null;
+    private ButtonClickListener mRightClickListener = null;
+    private HidPointerPayload mHidPayload;
 	
 	private BluetoothDeviceArrayAdapter mBluetoothDeviceArrayAdapter = null;
 	
@@ -155,23 +162,34 @@ public class BluetoothHidEmuActivity extends Activity {
 	 * Initialize UI elements
 	 * 
 	 */
-	private void setupApp(SpoofMode spoofMode) {
-		setContentView(R.layout.main);
-		
-        if (!mSpoofer.requirementsCheck()) {
-            Toast.makeText(getApplicationContext(), mSpoofer.getSetupErrorMsg(), Toast.LENGTH_LONG).show();
-            finish();
-        }
+	private void setupApp() {
+	       setContentView(R.layout.main);
+	        
+	        if (!mSpoofer.requirementsCheck()) {
+	            Toast.makeText(getApplicationContext(), mSpoofer.getSetupErrorMsg(), Toast.LENGTH_LONG).show();
+	            finish();
+	        }
 
-        mSocketManager = SocketManager.getInstance(mSpoofer);
+	        mSocketManager = SocketManager.getInstance(mSpoofer);
 
-		mDeviceSpinner = (Spinner) findViewById(R.id.DeviceSpinner);
-		mStatusTextView = (TextView) findViewById(R.id.StatusTextView);
-		mStatusTextView.setShadowLayer(6, 0f, 0f, Color.BLACK);
-		
-        mControlsLayout = (ViewStub) findViewById(R.id.ControlsStub);
+	        mDeviceSpinner = (Spinner) findViewById(R.id.DeviceSpinner);
+	        mStatusTextView = (TextView) findViewById(R.id.StatusTextView);
+	        mStatusTextView.setShadowLayer(6, 0f, 0f, Color.BLACK);
+	        
+	        mControlsLayout = (ViewStub) findViewById(R.id.ControlsStub);
 
-        switch (spoofMode) {
+	}
+
+	private void setupScreenControls() {
+	    
+	    BluetoothDeviceView device = (BluetoothDeviceView) mDeviceSpinner.getSelectedItem();
+	    
+	    if (device == null) {
+	        DoLog.w(TAG, "No emulated devices found");
+	        return;
+	    }
+
+        switch (device.getSpoofMode()) {
 		case HID_GENERIC:
 	        mControlsLayout.setLayoutResource(R.layout.generic_controls_layout);
 	        mControlsLayout.inflate();
@@ -186,17 +204,6 @@ public class BluetoothHidEmuActivity extends Activity {
 	        mEchoEditText = (EchoEditText) findViewById(R.id.EchoEditText);
 	        mEchoEditText.setGravity(Gravity.CENTER);
 	        mEchoEditText.setImeOptions(EditorInfo.IME_FLAG_NO_EXTRACT_UI);
-	        
-	        /*
-	         * EchoEditText needs both listeners below:
-	         * KeyboardKeyListener is used to intercept a couple of key events - enter and backspace.
-	         * KeyboardTextWatcher is used to intercept regular text keys.
-	         * 
-	         * I would love to only use one of them, but unfortunately, it's not reliable.
-	         * 
-	         */
-	        mEchoEditText.setKeyListener(new KeyboardKeyListener(mSocketManager));
-	        mEchoEditText.addTextChangedListener(new KeyboardTextWatcher(mSocketManager));
 	        
 	        setupSpecialKeys();
 	        break;
@@ -307,6 +314,7 @@ public class BluetoothHidEmuActivity extends Activity {
 	 */
 	private void toggleScreenElements(int visibility) {
 	    
+	    
 	    final int duration = 250;
 	    
 	    if (mControlsLayout.getVisibility() == visibility) {
@@ -377,7 +385,7 @@ public class BluetoothHidEmuActivity extends Activity {
 				}
 		
 	};
-	
+
     /**
      * 
      */
@@ -392,9 +400,9 @@ public class BluetoothHidEmuActivity extends Activity {
         if (!mBluetoothAdapter.isEnabled()) {
             requestBluetoothAdapterOn();
         } else { 
-            // TODO: use device spoof mode
-            setupApp(SpoofMode.HID_GENERIC);
+            setupApp();
             setupDeviceSpinner();
+            setupScreenControls();
             registerIntentFilters();
         }
 
@@ -630,27 +638,56 @@ public class BluetoothHidEmuActivity extends Activity {
      * @param on
      */
     private void setControlListeners(boolean on) {
-        
+
         if (mControlsLayout.getLayoutResource() != R.layout.generic_controls_layout) {
             return;
         }
         
         if (on) {
-            HidPointerPayload hidPayload = new HidPointerPayload();
-            mTouchpadImageView.setOnTouchListener(new TouchpadListener(getApplicationContext(), mSocketManager, mLeftClickImageView, hidPayload));
+            if (mHidPayload == null) {
+                mHidPayload = new HidPointerPayload();
+            }
+            if (mTouchpadListener == null) {
+                mTouchpadListener = new TouchpadListener(getApplicationContext(), mSocketManager, mLeftClickImageView, mHidPayload);                
+            }
+            mTouchpadImageView.setOnTouchListener(mTouchpadListener);
             
-            ButtonClickListener leftClickListener = new ButtonClickListener(getApplicationContext(), mSocketManager, HidPointerPayload.MOUSE_BUTTON_1, true, hidPayload);
-            mLeftClickImageView.setOnClickListener(leftClickListener);
-            mLeftClickImageView.setOnLongClickListener(leftClickListener);
-            ButtonClickListener rightClickListener = new ButtonClickListener(getApplicationContext(), mSocketManager, HidPointerPayload.MOUSE_BUTTON_2, false, hidPayload);
-            mRightClickImageView.setOnClickListener(rightClickListener);
-            mRightClickImageView.setOnLongClickListener(rightClickListener);
+            if (mLeftClickListener == null) {
+                mLeftClickListener = new ButtonClickListener(getApplicationContext(), mSocketManager, HidPointerPayload.MOUSE_BUTTON_1, true, mHidPayload);
+            }
+            mLeftClickImageView.setOnClickListener(mLeftClickListener);
+            mLeftClickImageView.setOnLongClickListener(mLeftClickListener);
+            if (mRightClickListener == null) {
+                mRightClickListener = new ButtonClickListener(getApplicationContext(), mSocketManager, HidPointerPayload.MOUSE_BUTTON_2, false, mHidPayload);
+            }
+            mRightClickImageView.setOnClickListener(mRightClickListener);
+            mRightClickImageView.setOnLongClickListener(mRightClickListener);
+            
+            /*
+             * EchoEditText needs both listeners below:
+             * KeyboardKeyListener is used to intercept a couple of key events - enter and backspace.
+             * KeyboardTextWatcher is used to intercept regular text keys.
+             * 
+             * I would love to only use one of them, but unfortunately, it's not reliable.
+             * 
+             */
+            if (mKeyboardKeyListener == null) {
+                mKeyboardKeyListener = new KeyboardKeyListener(mSocketManager);
+            }
+            mEchoEditText.setKeyListener(mKeyboardKeyListener);
+            if (mKeyboardTextWatcher == null) {
+                mKeyboardTextWatcher = new KeyboardTextWatcher(mSocketManager);
+            }
+            mEchoEditText.addTextChangedListener(mKeyboardTextWatcher);
+            
+            
         } else {
             mTouchpadImageView.setOnTouchListener(null);
             mLeftClickImageView.setOnClickListener(null);
             mLeftClickImageView.setOnLongClickListener(null);
             mRightClickImageView.setOnClickListener(null);
             mRightClickImageView.setOnLongClickListener(null);
+            mEchoEditText.setKeyListener(null);
         }
         
     }
@@ -668,9 +705,9 @@ public class BluetoothHidEmuActivity extends Activity {
     	    switch (msg.what) {
     	    
     	    case HANDLER_BLUETOOTH_ENABLED:
-    	        //TODO: use proper spoof mode
-    	        setupApp(SpoofMode.HID_GENERIC);
-    	        setupDeviceSpinner();
+    	        setupApp();
+                setupDeviceSpinner();
+                setupScreenControls();
                 registerIntentFilters();
     	        ((ProgressDialog)msg.obj).dismiss();
     	        break;
@@ -684,6 +721,7 @@ public class BluetoothHidEmuActivity extends Activity {
 
     	        BluetoothDeviceView deviceView = (BluetoothDeviceView) mDeviceSpinner.getSelectedItem();
     	        if (deviceView != null) {
+    	            
     	            mSocketManager.startSockets(mBluetoothAdapter, deviceView.getBluetoothDevice());
                     mMainHandler.sendEmptyMessageDelayed(HANDLER_MONITOR_SOCKET, 200);
     	        }

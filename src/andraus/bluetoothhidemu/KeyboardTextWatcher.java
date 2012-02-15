@@ -48,7 +48,7 @@ public class KeyboardTextWatcher implements TextWatcher {
     @Override
     public void beforeTextChanged(CharSequence charSeq, int start, int count, int after) {
         // TODO Auto-generated method stub
-        DoLog.d(TAG, String.format("beforeTextChanged(%s, %d, %d, %d)", charSeq, start, count, after));
+        DoLog.d(TAG, String.format("%s - beforeTextChanged(%s, %d, %d, %d)", this, charSeq, start, count, after));
 
     }
 

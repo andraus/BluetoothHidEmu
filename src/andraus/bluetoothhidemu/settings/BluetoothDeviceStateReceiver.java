@@ -1,6 +1,7 @@
 package andraus.bluetoothhidemu.settings;
 
 import andraus.bluetoothhidemu.BluetoothHidEmuActivity;
+import andraus.bluetoothhidemu.spoof.Spoof.SpoofMode;
 import andraus.bluetoothhidemu.util.DoLog;
 import andraus.bluetoothhidemu.view.BluetoothDeviceArrayAdapter;
 import andraus.bluetoothhidemu.view.BluetoothDeviceView;
@@ -59,7 +60,8 @@ public class BluetoothDeviceStateReceiver extends BroadcastReceiver {
             switch (state) {
             case BluetoothDevice.BOND_BONDED:
                 addDeviceToPreference(context, device);
-                addDeviceToArrayAdapter(device);
+                addDeviceToArrayAdapter(device, Settings.getPrefEmulationMode(context));
+                Settings.storeDeviceEmulationMode(context, device, Settings.getPrefEmulationMode(context));
                 break;
             case BluetoothDevice.BOND_NONE:
                 removeDeviceFromPreference(device);
@@ -85,7 +87,14 @@ public class BluetoothDeviceStateReceiver extends BroadcastReceiver {
         for (int i = 0; i < mBluetoothDevicePrefCategory.getPreferenceCount(); i++) {
             Preference pref = (Preference) mBluetoothDevicePrefCategory.getPreference(i);
             
-            if (pref.getSummary().equals(device.getAddress())) {
+            /*
+             * Summary has format of <address>/n<Emulation:lorem...>
+             * Need to compare only with address.
+             */
+            String summary = pref.getSummary().toString();
+            String[] token = summary.split("\n"); 
+            
+            if (token[0].equals(device.getAddress())) {
                 mBluetoothDevicePrefCategory.removePreference(pref);
                 break;
             }
@@ -152,7 +161,7 @@ public class BluetoothDeviceStateReceiver extends BroadcastReceiver {
      * 
      * @param device
      */
-    private void addDeviceToArrayAdapter(BluetoothDevice device) {
+    private void addDeviceToArrayAdapter(BluetoothDevice device, SpoofMode spoofMode) {
        
         if (mDeviceSpinner == null) {
             return;
@@ -172,7 +181,7 @@ public class BluetoothDeviceStateReceiver extends BroadcastReceiver {
         }
         
         if (!exists) {
-            BluetoothDeviceView deviceView = new BluetoothDeviceView(device);
+            BluetoothDeviceView deviceView = new BluetoothDeviceView(device, spoofMode);
             bluetoothDeviceArrayAdapter.add(deviceView);
             mDeviceSpinner.setSelection(bluetoothDeviceArrayAdapter.getPosition(deviceView));
         }

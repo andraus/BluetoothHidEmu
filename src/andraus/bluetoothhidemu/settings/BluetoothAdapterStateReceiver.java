@@ -58,7 +58,7 @@ public class BluetoothAdapterStateReceiver extends BroadcastReceiver {
 
             if (scanMode == BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE) {
                 
-                SpoofMode spoofMode = Settings.getEmulationMode(context);
+                SpoofMode spoofMode = Settings.getPrefEmulationMode(context);
                 
                 if (!mSpoofer.isSpoofed()) mSpoofer.tearUpSpoofing(spoofMode);
             } else {

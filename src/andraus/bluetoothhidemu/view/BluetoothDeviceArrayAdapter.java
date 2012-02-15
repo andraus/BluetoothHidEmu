@@ -3,9 +3,10 @@ package andraus.bluetoothhidemu.view;
 import java.util.Set;
 
 import andraus.bluetoothhidemu.R;
+import andraus.bluetoothhidemu.settings.Settings;
+import andraus.bluetoothhidemu.spoof.Spoof.SpoofMode;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.widget.ArrayAdapter;
 
 /**
@@ -14,10 +15,6 @@ import android.widget.ArrayAdapter;
  */
 public class BluetoothDeviceArrayAdapter extends ArrayAdapter<BluetoothDeviceView> {
     
-    private static final String PREF_DEVICES = "bt_devices";
-    
-    private SharedPreferences mSharedPref = null;
-
     /**
      * Constructor
      * 
@@ -43,7 +40,7 @@ public class BluetoothDeviceArrayAdapter extends ArrayAdapter<BluetoothDeviceVie
         }
         
         for (BluetoothDevice device: bondedDeviceSet) {
-            BluetoothDeviceView deviceView = new BluetoothDeviceView(device);
+            BluetoothDeviceView deviceView = new BluetoothDeviceView(device, Settings.getEmulationMode(getContext(), device));
             add(deviceView);
         }
         
@@ -67,12 +64,14 @@ public class BluetoothDeviceArrayAdapter extends ArrayAdapter<BluetoothDeviceVie
         return -1;
     }
     
-    /*
-    mSharedPref = context.getSharedPreferences(PREF_DEVICES, Context.MODE_PRIVATE);
-    SharedPreferences.Editor editor = mSharedPref.edit();
-    editor.putString("uga", "buga");
-    editor.apply();
-    */
-    
-    
+    /**
+     * 
+     */
+    @Override
+    public void add(BluetoothDeviceView deviceView) {
+        if (deviceView.getSpoofMode() != SpoofMode.INVALID) {
+            super.add(deviceView);
+        }
+    }
+
 }

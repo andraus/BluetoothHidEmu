@@ -40,6 +40,8 @@
         <item quantity="other">Discoverable for %d seconds...</item>
     </plurals>
     
-    <string name="Msg_pref_summary_bluetooth_discoverable_no_timeout">Discoverable - no countdown available -</string>
+    <string name="msg_pref_summary_bluetooth_discoverable_no_timeout">Discoverable - no countdown available -</string>
+    <string name="msg_pref_summary_device_emulation_mode">Emulation: %s</string>
+    <string name="msg_pref_summary_device_emulation_mode_invalid">None - Not paired under emulation</string>
 
 </resources>

@@ -4,7 +4,7 @@
     <!--  Must match Spoof.SpoofMode enum -->
 	    <string-array name="emulation_mode_names">
 	        <item>Generic HID device</item>
-	        <item>PS3 BD Remote device</item>
+	        <item>PS3 BD remote device</item>
 	    </string-array>
 	    
 	    <string-array name="emulation_mode_values">
