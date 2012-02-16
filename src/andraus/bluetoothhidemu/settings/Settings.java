@@ -32,7 +32,7 @@ public class Settings extends PreferenceActivity {
     private static final String TAG = BluetoothHidEmuActivity.TAG;
     
     public static final int BLUETOOTH_REQUEST_OK = 1;
-    public static final int BLUETOOTH_DISCOVERABLE_DURATION = 300;
+    public static final int BLUETOOTH_DISCOVERABLE_DURATION = 100;
     
     public static final String FILE_PREF_DEVICES = "bt_devices";
     /* package */ final static String PREF_LAST_DEVICE = "last_device";

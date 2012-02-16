@@ -136,10 +136,13 @@ public class BluetoothHidEmuActivity extends Activity {
         int posStoredDevice = mBluetoothDeviceArrayAdapter.getPositionByAddress(storedDeviceAddr);
         
         mDeviceSpinner.setAdapter(mBluetoothDeviceArrayAdapter);
+        mDeviceSpinner.setOnItemSelectedListener(mSelectDeviceListener);
+
         if (posStoredDevice >= 0) {
             mDeviceSpinner.setSelection(posStoredDevice);
+        } else {
+            showNoBondedDevicesDialog();
         }
-        mDeviceSpinner.setOnItemSelectedListener(mSelectDeviceListener);
 	}
 
 	/**
@@ -160,6 +163,7 @@ public class BluetoothHidEmuActivity extends Activity {
 	        mDeviceSpinner = (Spinner) findViewById(R.id.DeviceSpinner);
 	        mStatusTextView = (TextView) findViewById(R.id.StatusTextView);
 	        mStatusTextView.setShadowLayer(6, 0f, 0f, Color.BLACK);
+	        
 	}
 	
 	/**
@@ -463,7 +467,8 @@ public class BluetoothHidEmuActivity extends Activity {
                     
                     stopSockets(false);
                     setStatusIconState(StatusIconStates.OFF);
-					
+                    
+                    showNoBondedDevicesDialog();
 				}
 		
 	};
