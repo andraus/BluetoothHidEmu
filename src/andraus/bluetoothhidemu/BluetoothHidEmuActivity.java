@@ -8,6 +8,7 @@ import andraus.bluetoothhidemu.sock.payload.HidPointerPayload;
 import andraus.bluetoothhidemu.spoof.BluetoothAdapterSpoofer;
 import andraus.bluetoothhidemu.spoof.BluetoothAdapterSpooferFactory;
 import andraus.bluetoothhidemu.spoof.CleanupExceptionHandler;
+import andraus.bluetoothhidemu.spoof.Spoof.SpoofMode;
 import andraus.bluetoothhidemu.util.DoLog;
 import andraus.bluetoothhidemu.view.BluetoothDeviceArrayAdapter;
 import andraus.bluetoothhidemu.view.BluetoothDeviceView;
@@ -17,6 +18,7 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -28,11 +30,11 @@ import android.os.Message;
 import android.text.method.KeyListener;
 import android.view.Gravity;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewStub;
 import android.view.animation.AccelerateInterpolator;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
@@ -65,14 +67,25 @@ public class BluetoothHidEmuActivity extends Activity {
 	private Spinner mDeviceSpinner = null;
 	
 	private RadioGroup mTabsRadioGroup = null;
-	private ViewFlipper mMainViewFlipper = null;
+	private ViewFlipper mGenericHidViewFlipper = null;
 	
-	private ViewStub mControlsLayout = null;
+	private LinearLayout mMainLayout = null;
+	private LinearLayout mControlsLayout = null;
 	
 	private EchoEditText mEchoEditText = null;
 	private ImageView mTouchpadImageView = null;
 	private ImageView mLeftClickImageView = null;
 	private ImageView mRightClickImageView = null;
+	
+	View mUpButton = null;
+	View mDownButton = null;
+	View mLeftButton = null;
+	View mRightButton = null;
+	View mEnterButton = null;
+	View mEscButton = null;
+	View mMediaPrevButton = null;
+	View mMediaForwButton = null;
+	View mMediaPlayButton = null;
 
 	private KeyboardKeyListener mKeyboardKeyListener = null;
     private KeyboardTextWatcher mKeyboardTextWatcher = null;
@@ -130,35 +143,6 @@ public class BluetoothHidEmuActivity extends Activity {
 	}
 
 	/**
-	 * Setup top RadioButtons and ViewFlipper
-	 */
-	private void setupNavigationButtons() {
-		mTabsRadioGroup = (RadioGroup) findViewById(R.id.NavRadioGroup);
-		mMainViewFlipper = (ViewFlipper) findViewById(R.id.MainViewFlipper);
-		
-		mTabsRadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-			
-			@Override
-			public void onCheckedChanged(RadioGroup group, int checkedId) {
-				
-				switch (checkedId) {
-				case R.id.TouchpadRadioButton:
-					mMainViewFlipper.setDisplayedChild(0);
-					break;
-				case R.id.NavKeysRadioButton:
-					mMainViewFlipper.setDisplayedChild(1);
-					break;
-				case R.id.MediaKeysRadioButton:
-				    mMainViewFlipper.setDisplayedChild(2);
-				    break;
-				}
-				
-			}
-		});
-		
-	}
-	
-	/**
 	 * Initialize UI elements
 	 * 
 	 */
@@ -172,31 +156,40 @@ public class BluetoothHidEmuActivity extends Activity {
 
 	        mSocketManager = SocketManager.getInstance(mSpoofer);
 
+	        mMainLayout = (LinearLayout) findViewById(R.id.MainLayout);
 	        mDeviceSpinner = (Spinner) findViewById(R.id.DeviceSpinner);
 	        mStatusTextView = (TextView) findViewById(R.id.StatusTextView);
 	        mStatusTextView.setShadowLayer(6, 0f, 0f, Color.BLACK);
-	        
-	        mControlsLayout = (ViewStub) findViewById(R.id.ControlsStub);
-
 	}
+	
+	/**
+	 * 
+	 */
+	private void setupScreenControls(BluetoothDeviceView device) {
+	    
+        if (mControlsLayout != null) {
+            if (mControlsLayout.getVisibility() == View.VISIBLE) {
+                animateControlsScreen(View.INVISIBLE);
+            }
+            mMainLayout.removeView(mControlsLayout);
+        }
 
-	private void setupScreenControls() {
-	    
-	    BluetoothDeviceView device = (BluetoothDeviceView) mDeviceSpinner.getSelectedItem();
-	    
 	    if (device == null) {
 	        DoLog.w(TAG, "No emulated devices found");
 	        return;
 	    }
+	    
+        final LayoutInflater inflaterService = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+        
+        final int resId = device.getSpoofMode() == SpoofMode.HID_GENERIC ? R.layout.generic_controls_layout : R.layout.bdremote_controls_layout;
+        mControlsLayout = (LinearLayout) inflaterService.inflate(resId, null);
+        mControlsLayout.setVisibility(View.INVISIBLE);
+
+        mMainLayout.addView(mControlsLayout);
 
         switch (device.getSpoofMode()) {
 		case HID_GENERIC:
-	        mControlsLayout.setLayoutResource(R.layout.generic_controls_layout);
-	        mControlsLayout.inflate();
-	        mControlsLayout.setVisibility(View.INVISIBLE);
-
-	        setupNavigationButtons();
-	        
+		    
 	        mTouchpadImageView = (ImageView) findViewById(R.id.TouchpadImageView);
 	        mLeftClickImageView = (ImageView) findViewById(R.id.LeftButtonImageView);
 	        mRightClickImageView = (ImageView) findViewById(R.id.RightButtonImageView);
@@ -204,48 +197,136 @@ public class BluetoothHidEmuActivity extends Activity {
 	        mEchoEditText = (EchoEditText) findViewById(R.id.EchoEditText);
 	        mEchoEditText.setGravity(Gravity.CENTER);
 	        mEchoEditText.setImeOptions(EditorInfo.IME_FLAG_NO_EXTRACT_UI);
-	        
-	        setupSpecialKeys();
-	        break;
 
+            setupGenericHidControlTabs(true);
+	        setupGenericHidButtons(true);
+	        break;
 		case HID_BDREMOTE:
-	        mControlsLayout.setLayoutResource(R.layout.bdremote_controls_layout);
-	        mControlsLayout.inflate();
-	        mControlsLayout.setVisibility(View.INVISIBLE);
+		    
+		    mTouchpadImageView = null;
+		    mLeftClickImageView = null;
+		    mRightClickImageView = null;
+		    
+		    mEchoEditText = null;
+		    
+		    setupGenericHidControlTabs(false);
+		    setupGenericHidButtons(false);
 		    break;
 		}
 		
+	}
 
-        if (mBluetoothAdapter.getBondedDevices().isEmpty()) {
-            showNoBondedDevicesDialog();
+	/**
+	 * 
+	 * @param enable
+	 */
+    private void setupGenericHidControlTabs(boolean enable) {
+        
+        if (enable) { // enable nav buttons
+            mTabsRadioGroup = (RadioGroup) findViewById(R.id.NavRadioGroup);
+            mGenericHidViewFlipper = (ViewFlipper) findViewById(R.id.MainViewFlipper);
+            
+            mTabsRadioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
+                
+                @Override
+                public void onCheckedChanged(RadioGroup group, int checkedId) {
+                    
+                    switch (checkedId) {
+                    case R.id.TouchpadRadioButton:
+                        mGenericHidViewFlipper.setDisplayedChild(0);
+                        break;
+                    case R.id.NavKeysRadioButton:
+                        mGenericHidViewFlipper.setDisplayedChild(1);
+                        break;
+                    case R.id.MediaKeysRadioButton:
+                        mGenericHidViewFlipper.setDisplayedChild(2);
+                        break;
+                    }
+                    
+                }
+            });
+            
+        } else { // disable nav buttons
+            if (mTabsRadioGroup != null) {
+                mTabsRadioGroup.setOnCheckedChangeListener(null);
+                mTabsRadioGroup = null;
+            }
+            mGenericHidViewFlipper = null;
         }
         
-	}
-	
-	private void setupSpecialKeys() {
-	    SpecialKeyListener specialKeyListener = new SpecialKeyListener(getApplicationContext(), mSocketManager);
+    }
+
+    /**
+     * 
+     * @param enable
+     */
+	private void setupGenericHidButtons(boolean enable) {
 	    
-	    View view = (View) findViewById(R.id.UpButton);
-	    view.setOnTouchListener(specialKeyListener);
-	    view = (View) findViewById(R.id.DownButton);
-        view.setOnTouchListener(specialKeyListener);
-        view = (View) findViewById(R.id.LeftButton);
-        view.setOnTouchListener(specialKeyListener);
-        view = (View) findViewById(R.id.RightButton);
-        view.setOnTouchListener(specialKeyListener);
-        
-        view = (View) findViewById(R.id.EnterButton);
-        view.setOnTouchListener(specialKeyListener);
-        view = (View) findViewById(R.id.EscButton);
-        view.setOnTouchListener(specialKeyListener);
-        
-        
-        view = (View) findViewById(R.id.PrevMediaButton);
-        view.setOnTouchListener(specialKeyListener);
-        view = (View) findViewById(R.id.PlayMediaButton);
-        view.setOnTouchListener(specialKeyListener);
-        view = (View) findViewById(R.id.ForwardMediaButton);
-        view.setOnTouchListener(specialKeyListener);
+	    if (enable) { // enable media keys
+    	    SpecialKeyListener specialKeyListener = new SpecialKeyListener(getApplicationContext(), mSocketManager);
+    	    
+    	    mUpButton = (View) findViewById(R.id.UpButton);
+    	    mUpButton.setOnTouchListener(specialKeyListener);
+    	    mDownButton = (View) findViewById(R.id.DownButton);
+            mDownButton.setOnTouchListener(specialKeyListener);
+            mLeftButton = (View) findViewById(R.id.LeftButton);
+            mLeftButton.setOnTouchListener(specialKeyListener);
+            mRightButton = (View) findViewById(R.id.RightButton);
+            mRightButton.setOnTouchListener(specialKeyListener);
+            
+            mEnterButton = (View) findViewById(R.id.EnterButton);
+            mEnterButton.setOnTouchListener(specialKeyListener);
+            mEscButton = (View) findViewById(R.id.EscButton);
+            mEscButton.setOnTouchListener(specialKeyListener);
+            
+            mMediaPrevButton = (View) findViewById(R.id.PrevMediaButton);
+            mMediaPrevButton.setOnTouchListener(specialKeyListener);
+            mMediaPlayButton = (View) findViewById(R.id.PlayMediaButton);
+            mMediaPlayButton.setOnTouchListener(specialKeyListener);
+            mMediaForwButton = (View) findViewById(R.id.ForwardMediaButton);
+            mMediaForwButton.setOnTouchListener(specialKeyListener);
+            
+	    } else { // disable media keys
+	        if (mUpButton != null) {
+	            mUpButton.setOnTouchListener(null);
+	            mUpButton = null;
+	        }
+            if (mDownButton != null) {
+                mDownButton.setOnTouchListener(null);
+                mDownButton = null;
+            }
+            if (mLeftButton != null) {
+                mLeftButton.setOnTouchListener(null);
+                mLeftButton = null;
+            }
+            if (mRightButton != null) {
+                mRightButton.setOnTouchListener(null);
+                mRightButton = null;
+            }
+            
+            if (mEnterButton != null) {
+                mEnterButton.setOnTouchListener(null);
+                mEnterButton = null;
+            }
+            if (mEscButton != null) {
+                mEscButton.setOnTouchListener(null);
+                mEscButton = null;
+            }
+            
+            if (mMediaPrevButton != null) {
+                mMediaPrevButton.setOnTouchListener(null);
+                mMediaPrevButton = null;
+            }
+            if (mMediaForwButton != null) {
+                mMediaForwButton.setOnTouchListener(null);
+                mMediaForwButton = null;
+            }
+            if (mMediaPlayButton != null) {
+                mMediaPlayButton.setOnTouchListener(null);
+                mMediaPlayButton = null;
+            }
+            
+	    }
 	    
 	}
 	
@@ -270,7 +351,7 @@ public class BluetoothHidEmuActivity extends Activity {
 	        mStatusTextView.setShadowLayer(6, 0f, 0f, Color.BLACK);
 	        mStatusTextView.setText(getResources().getString(R.string.msg_status_connected));
 	        
-	        toggleScreenElements(View.VISIBLE);
+	        animateControlsScreen(View.VISIBLE);
 	        if (mEchoEditText != null) mEchoEditText.requestFocus();
 	        
 	        break;
@@ -283,7 +364,7 @@ public class BluetoothHidEmuActivity extends Activity {
             mStatusTextView.setShadowLayer(6, 0f, 0f, Color.BLACK);
             mStatusTextView.setText(getResources().getString(R.string.msg_status_disconnected));
             
-            toggleScreenElements(View.INVISIBLE);
+            animateControlsScreen(View.INVISIBLE);
 
 	        break;
 	    case INTERMEDIATE:
@@ -300,8 +381,7 @@ public class BluetoothHidEmuActivity extends Activity {
             
             mStatusTextView.startAnimation(alphaAnim);
             
-            toggleScreenElements(View.INVISIBLE);
-            
+            animateControlsScreen(View.INVISIBLE);
 	        break;
 	    }
 	    mStatusState = state;
@@ -312,14 +392,14 @@ public class BluetoothHidEmuActivity extends Activity {
 	 * 
 	 * @param visibility
 	 */
-	private void toggleScreenElements(int visibility) {
-	    
-	    
+	private void animateControlsScreen(int visibility) {
+
 	    final int duration = 250;
 	    
 	    if (mControlsLayout.getVisibility() == visibility) {
 	        return;
 	    }
+	    
 	    mControlsLayout.clearAnimation();
 	    if (visibility == View.VISIBLE) {
 	        mControlsLayout.setVisibility(visibility);
@@ -370,7 +450,9 @@ public class BluetoothHidEmuActivity extends Activity {
 					mMainHandler.removeMessages(HANDLER_MONITOR_SOCKET);
 					mMainHandler.removeMessages(HANDLER_CONNECT);
 					
-					stopSockets(true);
+                    stopSockets(true);
+					setupScreenControls(device);
+					
 				}
 
 				@Override
@@ -402,7 +484,6 @@ public class BluetoothHidEmuActivity extends Activity {
         } else { 
             setupApp();
             setupDeviceSpinner();
-            setupScreenControls();
             registerIntentFilters();
         }
 
@@ -588,7 +669,7 @@ public class BluetoothHidEmuActivity extends Activity {
 		mSocketManager.stopSockets();
 		
 		if (reconnect) {
-		    mMainHandler.sendEmptyMessageDelayed(HANDLER_CONNECT, 1500 /*ms */);
+		    mMainHandler.sendEmptyMessageDelayed(HANDLER_CONNECT, 500 /*ms */);
 		} 
     }
     
@@ -635,33 +716,33 @@ public class BluetoothHidEmuActivity extends Activity {
 
     /**
      * 
-     * @param on
+     * @param enable
      */
-    private void setControlListeners(boolean on) {
+    private void setControlListeners(boolean enable) {
 
-        if (mControlsLayout.getLayoutResource() != R.layout.generic_controls_layout) {
-            return;
-        }
-        
-        if (on) {
+        if (enable) {
             if (mHidPayload == null) {
                 mHidPayload = new HidPointerPayload();
             }
             if (mTouchpadListener == null) {
                 mTouchpadListener = new TouchpadListener(getApplicationContext(), mSocketManager, mLeftClickImageView, mHidPayload);                
             }
-            mTouchpadImageView.setOnTouchListener(mTouchpadListener);
+            if (mTouchpadImageView != null) mTouchpadImageView.setOnTouchListener(mTouchpadListener);
             
             if (mLeftClickListener == null) {
                 mLeftClickListener = new ButtonClickListener(getApplicationContext(), mSocketManager, HidPointerPayload.MOUSE_BUTTON_1, true, mHidPayload);
             }
-            mLeftClickImageView.setOnClickListener(mLeftClickListener);
-            mLeftClickImageView.setOnLongClickListener(mLeftClickListener);
+            if (mLeftClickImageView != null) {
+                mLeftClickImageView.setOnClickListener(mLeftClickListener);
+                mLeftClickImageView.setOnLongClickListener(mLeftClickListener);
+            }
             if (mRightClickListener == null) {
                 mRightClickListener = new ButtonClickListener(getApplicationContext(), mSocketManager, HidPointerPayload.MOUSE_BUTTON_2, false, mHidPayload);
             }
-            mRightClickImageView.setOnClickListener(mRightClickListener);
-            mRightClickImageView.setOnLongClickListener(mRightClickListener);
+            if (mRightClickImageView != null) {
+                mRightClickImageView.setOnClickListener(mRightClickListener);
+                mRightClickImageView.setOnLongClickListener(mRightClickListener);
+            }
             
             /*
              * EchoEditText needs both listeners below:
@@ -674,11 +755,11 @@ public class BluetoothHidEmuActivity extends Activity {
             if (mKeyboardKeyListener == null) {
                 mKeyboardKeyListener = new KeyboardKeyListener(mSocketManager);
             }
-            mEchoEditText.setKeyListener(mKeyboardKeyListener);
+            if (mEchoEditText != null) mEchoEditText.setKeyListener(mKeyboardKeyListener);
             if (mKeyboardTextWatcher == null) {
                 mKeyboardTextWatcher = new KeyboardTextWatcher(mSocketManager);
             }
-            mEchoEditText.addTextChangedListener(mKeyboardTextWatcher);
+            if (mEchoEditText != null) mEchoEditText.addTextChangedListener(mKeyboardTextWatcher);
             
             
         } else {
@@ -688,6 +769,7 @@ public class BluetoothHidEmuActivity extends Activity {
             mRightClickImageView.setOnClickListener(null);
             mRightClickImageView.setOnLongClickListener(null);
             mEchoEditText.setKeyListener(null);
+            mEchoEditText.removeTextChangedListener(mKeyboardTextWatcher);
         }
         
     }
@@ -707,7 +789,6 @@ public class BluetoothHidEmuActivity extends Activity {
     	    case HANDLER_BLUETOOTH_ENABLED:
     	        setupApp();
                 setupDeviceSpinner();
-                setupScreenControls();
                 registerIntentFilters();
     	        ((ProgressDialog)msg.obj).dismiss();
     	        break;
