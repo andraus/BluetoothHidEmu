@@ -1,6 +1,8 @@
 package andraus.bluetoothhidemu.settings;
 
 import andraus.bluetoothhidemu.BluetoothHidEmuActivity;
+import andraus.bluetoothhidemu.R;
+import andraus.bluetoothhidemu.spoof.Spoof;
 import andraus.bluetoothhidemu.spoof.Spoof.SpoofMode;
 import andraus.bluetoothhidemu.util.DoLog;
 import andraus.bluetoothhidemu.view.BluetoothDeviceArrayAdapter;
@@ -59,7 +61,7 @@ public class BluetoothDeviceStateReceiver extends BroadcastReceiver {
             
             switch (state) {
             case BluetoothDevice.BOND_BONDED:
-                addDeviceToPreference(context, device);
+                addDeviceToPreference(context, device, Settings.getPrefEmulationMode(context));
                 addDeviceToArrayAdapter(device, Settings.getPrefEmulationMode(context));
                 Settings.storeDeviceEmulationMode(context, device, Settings.getPrefEmulationMode(context));
                 break;
@@ -131,18 +133,32 @@ public class BluetoothDeviceStateReceiver extends BroadcastReceiver {
      * @param context
      * @param device
      */
-    private void addDeviceToPreference(Context context, BluetoothDevice device) {
+    private void addDeviceToPreference(Context context, BluetoothDevice device, SpoofMode spoofMode) {
         
         if (mBluetoothDevicePrefCategory == null) {
             return;
         }
         
+        String emulationSummary = (spoofMode == SpoofMode.INVALID) ? 
+                context.getResources().getString(R.string.msg_pref_summary_device_emulation_mode_invalid) :
+                Settings.getEmulationModeSummary(context, Spoof.intValue(spoofMode)); 
+        
         boolean exists = false;
         for (int i = 0; i < mBluetoothDevicePrefCategory.getPreferenceCount(); i++) {
             Preference pref = (Preference) mBluetoothDevicePrefCategory.getPreference(i);
             
-            if (pref.getSummary().equals(device.getAddress())) {
+            /*
+             * Summary has format of <address>/n<Emulation:lorem...>
+             * Need to compare only with address.
+             */
+            String summary = pref.getSummary().toString();
+            String[] token = summary.split("\n"); 
+            
+            if (token[0].equals(device.getAddress())) {
                 pref.setTitle(device.getName());
+                pref.setSummary(device.getAddress() + "\n" 
+                        + String.format(context.getResources().getString(R.string.msg_pref_summary_device_emulation_mode), 
+                                emulationSummary));
                 exists = true;
                 break;
             }
@@ -151,7 +167,9 @@ public class BluetoothDeviceStateReceiver extends BroadcastReceiver {
         if (!exists) {
             Preference devicePref = new Preference(context);
             devicePref.setTitle(device.getName());
-            devicePref.setSummary(device.getAddress());
+            devicePref.setSummary(device.getAddress() + "\n" 
+                    + String.format(context.getResources().getString(R.string.msg_pref_summary_device_emulation_mode), 
+                            emulationSummary));
             
             mBluetoothDevicePrefCategory.addPreference(devicePref);
         }

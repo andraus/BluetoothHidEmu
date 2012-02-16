@@ -32,7 +32,7 @@ public class Settings extends PreferenceActivity {
     private static final String TAG = BluetoothHidEmuActivity.TAG;
     
     public static final int BLUETOOTH_REQUEST_OK = 1;
-    public static final int BLUETOOTH_DISCOVERABLE_DURATION = 30;
+    public static final int BLUETOOTH_DISCOVERABLE_DURATION = 300;
     
     public static final String FILE_PREF_DEVICES = "bt_devices";
     /* package */ final static String PREF_LAST_DEVICE = "last_device";
@@ -134,7 +134,7 @@ public class Settings extends PreferenceActivity {
             public boolean onPreferenceChange(Preference preference, Object newValue) {
 
                 
-                mEmulationModeListPreference.setSummary(getEmulationModeSummary(Integer.valueOf((String) newValue)));
+                mEmulationModeListPreference.setSummary(getEmulationModeSummary(getApplicationContext(), Integer.valueOf((String) newValue)));
                 
                 return true;
             }
@@ -168,7 +168,7 @@ public class Settings extends PreferenceActivity {
         if (!mIsResumingFromDialog) {
             
             mEmulationModeListPreference.setSummary(
-                    getEmulationModeSummary(Integer.valueOf(
+                    getEmulationModeSummary(this, Integer.valueOf(
                             PreferenceManager.getDefaultSharedPreferences(this).getString(PREF_EMULATION_MODE, "-1"))));
             
             setBluetoothDiscoverableCheck(BluetoothAdapter.getDefaultAdapter().getScanMode() == BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE);
@@ -287,12 +287,12 @@ public class Settings extends PreferenceActivity {
     }
     
     /**
-     * updateEmulationModeSummary
+     * getEmulationModeSummary
      * 
      * @param modeIndex
      */
-    private String getEmulationModeSummary(int modeIndex) {
-        String[] modeNames = getResources().getStringArray(R.array.emulation_mode_names);
+    public static String getEmulationModeSummary(Context context, int modeIndex) {
+        String[] modeNames = context.getResources().getStringArray(R.array.emulation_mode_names);
         
         return modeNames[modeIndex];
     }
@@ -324,7 +324,7 @@ public class Settings extends PreferenceActivity {
             SpoofMode spoofMode = getEmulationMode(this, device);
             String emulationSummary = (spoofMode == SpoofMode.INVALID) ? 
                     getResources().getString(R.string.msg_pref_summary_device_emulation_mode_invalid) :
-                    getEmulationModeSummary(Spoof.intValue(spoofMode)); 
+                    getEmulationModeSummary(this, Spoof.intValue(spoofMode)); 
             
             devicePref.setSummary(device.getAddress() + "\n" 
                         + String.format(getResources().getString(R.string.msg_pref_summary_device_emulation_mode), 
