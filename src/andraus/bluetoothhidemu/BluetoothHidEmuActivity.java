@@ -482,6 +482,11 @@ public class BluetoothHidEmuActivity extends Activity {
         
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         mSpoofer = BluetoothAdapterSpooferFactory.getInstance(getApplicationContext(), mBluetoothAdapter);
+        
+        if (mBluetoothAdapter.getScanMode() == BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE) {
+            mSpoofer.tearUpSpoofing(Settings.getPrefEmulationMode(this));
+        }
+        
         Thread.setDefaultUncaughtExceptionHandler(new CleanupExceptionHandler(mSpoofer));
 
         if (!mBluetoothAdapter.isEnabled()) {
