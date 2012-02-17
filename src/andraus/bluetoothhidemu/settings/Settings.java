@@ -193,9 +193,13 @@ public class Settings extends PreferenceActivity {
      * @return
      */
     public static SpoofMode getPrefEmulationMode(Context context) {
-        int value = Integer.valueOf(PreferenceManager.getDefaultSharedPreferences(context).getString(PREF_EMULATION_MODE, "-1"));
+        /*
+         * TODO: different emulation modes are not supported for now
+         * 
+         * int value = Integer.valueOf(PreferenceManager.getDefaultSharedPreferences(context).getString(PREF_EMULATION_MODE, "-1"));
+         */
         
-        return Spoof.fromInt(value);
+        return SpoofMode.HID_GENERIC;
         
     }
     
