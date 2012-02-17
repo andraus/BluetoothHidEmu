@@ -212,7 +212,7 @@ public class BluetoothHidEmuActivity extends Activity {
             setupGenericHidControlTabs(true);
 	        setupGenericHidButtons(true);
 	        break;
-		case HID_BDREMOTE:
+		default:
 		    
 		    mTouchpadImageView = null;
 		    mLeftClickImageView = null;
@@ -461,8 +461,13 @@ public class BluetoothHidEmuActivity extends Activity {
 					mMainHandler.removeMessages(HANDLER_MONITOR_SOCKET);
 					mMainHandler.removeMessages(HANDLER_CONNECT);
 					
-                    stopSockets(true);
-					setupScreenControls(device);
+					if (!device.isNull()) {
+                        stopSockets(true);
+					} else {
+					    stopSockets(false);
+					    setStatusIconState(StatusIconStates.OFF);
+					}
+                    setupScreenControls(device);
 					
 				}
 

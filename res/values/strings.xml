@@ -28,6 +28,8 @@
     <string name="msg_status_connecting">Connecting</string>
     <string name="msg_status_disconnected">Offline</string>
     
+    <string name="msg_device_list_null">&lt;Disconnect&gt;</string>
+    
     <string name="msg_pref_title_emulation_mode">Emulation mode</string>
     <string name="msg_pref_summary_emulation_mode">Mode: %s</string>
     <string name="msg_pref_title_bluetooth_discoverable">Bluetooth discoverable</string>

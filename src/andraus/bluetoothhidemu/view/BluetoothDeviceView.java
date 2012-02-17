@@ -10,7 +10,32 @@ public class BluetoothDeviceView {
     private BluetoothDevice mBluetoothDevice = null;
     private SpoofMode mSpoofMode;
     
+    private String mOverridenName = null; 
+
     /**
+     * Returns a "null" BluetoothDevice. Used to add a dummy item to the arraylist
+     * 
+     * @param name
+     * @return
+     */
+    public static BluetoothDeviceView getNullBluetoothDeviceView(String name) {
+        
+        BluetoothDeviceView device = new BluetoothDeviceView(name);
+        
+        return device;
+    }
+
+    /**
+     * Private constructor to get a dummy null BluetoothDeviceView
+     * @param name
+     */
+    private BluetoothDeviceView (String name) {
+        this(null, SpoofMode.HID_GENERIC);
+        mOverridenName = name;
+    }
+    
+    /**
+     * Note: bluetoothDevice may be a null value. This bean will handle properly such scenario
      * 
      * @param bluetoothDevice
      * @param spoofMode
@@ -34,11 +59,11 @@ public class BluetoothDeviceView {
     }
     
     public String getAddress() {
-        return mBluetoothDevice.getAddress();
+        return (mBluetoothDevice != null) ? mBluetoothDevice.getAddress() : "";
     }
     
     public String getName() {
-        return mBluetoothDevice.getName();
+        return (mBluetoothDevice != null) ? mBluetoothDevice.getName() : mOverridenName;
     }
 
     @Override
@@ -52,7 +77,7 @@ public class BluetoothDeviceView {
             String name = mBluetoothDevice.getName();
             return name != null && !"".equals(name) ? name : mBluetoothDevice.getAddress();
         } else {
-            return null;
+            return mOverridenName;
         }
     }
     
@@ -63,6 +88,14 @@ public class BluetoothDeviceView {
             }
         };
         return comparator;
+    }
+    
+    /**
+     * 
+     * @return
+     */
+    public boolean isNull() {
+        return mBluetoothDevice == null;
     }
     
     

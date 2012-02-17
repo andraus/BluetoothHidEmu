@@ -7,7 +7,10 @@ import andraus.bluetoothhidemu.settings.Settings;
 import andraus.bluetoothhidemu.spoof.Spoof.SpoofMode;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
+import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
+import android.widget.TextView;
 
 /**
  * Custom ArrayAdapter
@@ -39,6 +42,9 @@ public class BluetoothDeviceArrayAdapter extends ArrayAdapter<BluetoothDeviceVie
             clear();
         }
         
+        //Add "null" element
+        add(BluetoothDeviceView.getNullBluetoothDeviceView(getContext().getResources().getString(R.string.msg_device_list_null)));
+        
         for (BluetoothDevice device: bondedDeviceSet) {
             BluetoothDeviceView deviceView = new BluetoothDeviceView(device, Settings.getEmulationMode(getContext(), device));
             add(deviceView);
@@ -65,6 +71,21 @@ public class BluetoothDeviceArrayAdapter extends ArrayAdapter<BluetoothDeviceVie
     }
     
     /**
+     * Returns the position for null element (tipically 0)
+     * @return
+     */
+    public int getNullPosition() {
+        for (int i = 0; i < getCount(); i++) {
+            BluetoothDeviceView deviceView = getItem(i);
+            if (deviceView.isNull()) {
+                return i;
+            }
+        }
+        
+        throw new IllegalStateException("No null value found!");
+    }
+    
+    /**
      * 
      */
     @Override
@@ -73,5 +94,22 @@ public class BluetoothDeviceArrayAdapter extends ArrayAdapter<BluetoothDeviceVie
             super.add(deviceView);
         }
     }
+
+    /**
+     * 
+     */
+    @Override
+    public View getView(int position, View convertView, ViewGroup parent) {
+
+        // Set spinner text to "empty" if null element is selected (disconnect option)
+        View view = super.getView(position, convertView, parent);
+        if (getItem(position).isNull()) {
+            ((TextView) view).setText("");
+        }
+        
+        return view;
+    }
+    
+    
 
 }

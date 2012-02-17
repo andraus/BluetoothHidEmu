@@ -125,6 +125,7 @@ public class BluetoothDeviceStateReceiver extends BroadcastReceiver {
             }
             
         }
+        mDeviceSpinner.setSelection(bluetoothDeviceArrayAdapter.getNullPosition());
         
     }
     
@@ -191,7 +192,7 @@ public class BluetoothDeviceStateReceiver extends BroadcastReceiver {
         for (int i = 0; i < bluetoothDeviceArrayAdapter.getCount(); i++) {
             BluetoothDeviceView deviceView = bluetoothDeviceArrayAdapter.getItem(i);
             
-            if (deviceView.getBluetoothDevice().getAddress().equals(device.getAddress())) {
+            if (device.getAddress().equals(deviceView.getAddress())) {
                 deviceView.setBluetoothDevice(device);
                 exists = true;
                 break;
@@ -201,7 +202,7 @@ public class BluetoothDeviceStateReceiver extends BroadcastReceiver {
         if (!exists) {
             BluetoothDeviceView deviceView = new BluetoothDeviceView(device, spoofMode);
             bluetoothDeviceArrayAdapter.add(deviceView);
-            mDeviceSpinner.setSelection(bluetoothDeviceArrayAdapter.getPosition(deviceView));
+            mDeviceSpinner.setSelection(bluetoothDeviceArrayAdapter.getNullPosition());
         }
     }
     
