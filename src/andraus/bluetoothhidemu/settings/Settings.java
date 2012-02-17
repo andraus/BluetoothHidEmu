@@ -16,9 +16,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.CheckBoxPreference;
-import android.preference.ListPreference;
 import android.preference.Preference;
-import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceCategory;
@@ -40,7 +38,6 @@ public class Settings extends PreferenceActivity {
     private final static String PREF_BT_DISCOVERABLE = "bt_discoverable";
     private final static String PREF_DEVICE_LIST = "bt_device_list";
 
-    private ListPreference mEmulationModeListPreference = null;
     private CheckBoxPreference mBtDiscoverablePreference = null;
     private PreferenceCategory mDeviceListCategory = null;
 
@@ -95,7 +92,6 @@ public class Settings extends PreferenceActivity {
         DoLog.d(TAG, "onCreate()");
         addPreferencesFromResource(R.xml.main_preferences);
         
-        mEmulationModeListPreference = (ListPreference) findPreference(PREF_EMULATION_MODE);
         mBtDiscoverablePreference = (CheckBoxPreference) findPreference(PREF_BT_DISCOVERABLE);
         mDeviceListCategory = (PreferenceCategory) findPreference(PREF_DEVICE_LIST);
         populateDeviceList(mDeviceListCategory);
@@ -128,18 +124,6 @@ public class Settings extends PreferenceActivity {
             
         });
         
-        mEmulationModeListPreference.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
-            
-            @Override
-            public boolean onPreferenceChange(Preference preference, Object newValue) {
-
-                
-                mEmulationModeListPreference.setSummary(getEmulationModeSummary(getApplicationContext(), Integer.valueOf((String) newValue)));
-                
-                return true;
-            }
-        });
-        
     }
     
     /**
@@ -166,10 +150,6 @@ public class Settings extends PreferenceActivity {
         super.onResume();
         
         if (!mIsResumingFromDialog) {
-            
-            mEmulationModeListPreference.setSummary(
-                    getEmulationModeSummary(this, Integer.valueOf(
-                            PreferenceManager.getDefaultSharedPreferences(this).getString(PREF_EMULATION_MODE, "-1"))));
             
             setBluetoothDiscoverableCheck(BluetoothAdapter.getDefaultAdapter().getScanMode() == BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE);
             if (mBtDiscoverablePreference.isChecked()) {
@@ -304,7 +284,6 @@ public class Settings extends PreferenceActivity {
     private void setBluetoothDiscoverableCheck(boolean state) {
         mBtDiscoverablePreference.setChecked(state);
         mBtDiscoverablePreference.setEnabled(!state);
-        mEmulationModeListPreference.setEnabled(!state);
         if (!state) {
             mBtDiscoverablePreference.setSummary(getResources().getString(R.string.msg_pref_summary_bluetooth_discoverable_click));
         }

@@ -1,12 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
 
-    <ListPreference android:key="emulation_mode"
-                    android:title="@string/msg_pref_title_emulation_mode"
-                    android:defaultValue="0"
-                    android:entries="@array/emulation_mode_names"
-                    android:entryValues="@array/emulation_mode_values" />
-                    
     <CheckBoxPreference android:key="bt_discoverable"
                         android:title="@string/msg_pref_title_bluetooth_discoverable"
                         android:persistent="false" />

@@ -8,7 +8,6 @@ import andraus.bluetoothhidemu.sock.payload.HidPointerPayload;
 import andraus.bluetoothhidemu.spoof.BluetoothAdapterSpoofer;
 import andraus.bluetoothhidemu.spoof.BluetoothAdapterSpooferFactory;
 import andraus.bluetoothhidemu.spoof.CleanupExceptionHandler;
-import andraus.bluetoothhidemu.spoof.Spoof.SpoofMode;
 import andraus.bluetoothhidemu.util.DoLog;
 import andraus.bluetoothhidemu.view.BluetoothDeviceArrayAdapter;
 import andraus.bluetoothhidemu.view.BluetoothDeviceView;
@@ -185,7 +184,15 @@ public class BluetoothHidEmuActivity extends Activity {
 	    
         final LayoutInflater inflaterService = (LayoutInflater) getSystemService(Context.LAYOUT_INFLATER_SERVICE);
         
-        final int resId = device.getSpoofMode() == SpoofMode.HID_GENERIC ? R.layout.generic_controls_layout : R.layout.bdremote_controls_layout;
+        final int resId;
+        switch (device.getSpoofMode()) {
+        case HID_GENERIC: 
+            resId = R.layout.generic_controls_layout;
+            break;
+        default:
+            throw new IllegalStateException("Unsupported emulation mode");
+        }
+
         mControlsLayout = (LinearLayout) inflaterService.inflate(resId, null);
         mControlsLayout.setVisibility(View.INVISIBLE);
 
