@@ -24,6 +24,9 @@ import android.preference.PreferenceManager;
 
 /**
  * Main Settings screen.
+ * 
+ * TODO: Implement mechanism to "rename" bluetooth devices.
+ * 
  */
 public class Settings extends PreferenceActivity {
 
