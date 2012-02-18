@@ -81,10 +81,20 @@ public class BluetoothDeviceView {
         }
     }
     
+    
+    /**
+     * comparator
+     * 
+     * @return
+     */
     public static Comparator<BluetoothDeviceView> getComparator() {
         Comparator<BluetoothDeviceView> comparator = new Comparator<BluetoothDeviceView>() {
             public int compare(BluetoothDeviceView device1, BluetoothDeviceView device2) {
-                return device1.getName().compareTo(device2.getName());
+            	
+            	String s1 = device1.isNull() ? "" : device1.getName();
+            	String s2 = device2.isNull() ? "" : device2.getName();
+            	
+                return s1.compareTo(s2);
             }
         };
         return comparator;
