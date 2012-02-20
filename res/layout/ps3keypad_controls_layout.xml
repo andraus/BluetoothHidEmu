@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/Ps3KeypadControlsLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical" >
+
+    <RadioGroup
+        android:id="@+id/NavRadioGroup"
+        android:layout_width="match_parent"
+        android:layout_height="45dp"
+        android:orientation="horizontal" >
+
+        <RadioButton
+            android:id="@+id/TouchpadRadioButton"
+            android:layout_width="0dip"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:checked="true"
+            android:button="@drawable/ic_menu_touchpad"
+            android:background="@drawable/button_radio_tab"
+            android:gravity="center"
+            android:text="@string/msg_button_touchpad" />
+
+        <RadioButton
+            android:id="@+id/NavKeysRadioButton"
+            android:layout_width="0dip"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:button="@android:drawable/ic_dialog_dialer"
+            android:background="@drawable/button_radio_tab"
+            android:text="@string/msg_button_nav" />
+                    
+    </RadioGroup>
+    
+    <andraus.bluetoothhidemu.view.EchoEditText
+        android:id="@+id/EchoEditText"
+        android:layout_width="match_parent"
+        android:layout_height="35dp"
+        android:layout_gravity="center"
+        android:textStyle="normal"
+        android:maxLines="1"
+        android:scrollHorizontally="true"
+        android:textAppearance="?android:attr/textAppearanceSmall">
+    
+            <requestFocus />
+        </andraus.bluetoothhidemu.view.EchoEditText>
+        
+    <ViewFlipper android:id="@+id/MainViewFlipper"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+        
+        <include android:id="@+id/TouchpadLayout"  layout="@layout/touchpad_controls" />
+        <include android:id="@+id/NavKeysLayout" layout="@layout/nav_controls" />
+                        
+    </ViewFlipper>
+
+</LinearLayout>

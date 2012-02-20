@@ -7,16 +7,21 @@ import andraus.bluetoothhidemu.R;
 import andraus.bluetoothhidemu.spoof.Spoof;
 import andraus.bluetoothhidemu.spoof.Spoof.SpoofMode;
 import andraus.bluetoothhidemu.util.DoLog;
+import andraus.bluetoothhidemu.view.BluetoothDeviceView;
+import android.app.AlertDialog;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.Handler;
 import android.preference.CheckBoxPreference;
+import android.preference.ListPreference;
 import android.preference.Preference;
+import android.preference.Preference.OnPreferenceChangeListener;
 import android.preference.Preference.OnPreferenceClickListener;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceCategory;
@@ -42,6 +47,7 @@ public class Settings extends PreferenceActivity {
     private final static String PREF_DEVICE_LIST = "bt_device_list";
 
     private CheckBoxPreference mBtDiscoverablePreference = null;
+    private ListPreference mEmulationModeListPreference = null;
     private PreferenceCategory mDeviceListCategory = null;
 
     // Handler to update screen elements
@@ -96,6 +102,7 @@ public class Settings extends PreferenceActivity {
         addPreferencesFromResource(R.xml.main_preferences);
         
         mBtDiscoverablePreference = (CheckBoxPreference) findPreference(PREF_BT_DISCOVERABLE);
+        mEmulationModeListPreference = (ListPreference) findPreference(PREF_EMULATION_MODE);
         mDeviceListCategory = (PreferenceCategory) findPreference(PREF_DEVICE_LIST);
         populateDeviceList(mDeviceListCategory);
 
@@ -127,6 +134,19 @@ public class Settings extends PreferenceActivity {
             
         });
         
+        mEmulationModeListPreference.setOnPreferenceChangeListener(new OnPreferenceChangeListener() {
+        	            
+        	            @Override
+        	            public boolean onPreferenceChange(Preference preference, Object newValue) {
+        	
+        	                
+        	                mEmulationModeListPreference.setSummary(getEmulationModeSummary(getApplicationContext(), Integer.valueOf((String) newValue)));
+        	                
+        	                return true;
+        	            }
+        	        });
+
+        
     }
     
     /**
@@ -155,6 +175,10 @@ public class Settings extends PreferenceActivity {
         if (!mIsResumingFromDialog) {
             
             setBluetoothDiscoverableCheck(BluetoothAdapter.getDefaultAdapter().getScanMode() == BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE);
+            mEmulationModeListPreference.setSummary(
+            		                    getEmulationModeSummary(this, Integer.valueOf(
+            		                            PreferenceManager.getDefaultSharedPreferences(this).getString(PREF_EMULATION_MODE, "-1"))));
+
             if (mBtDiscoverablePreference.isChecked()) {
                 mCountdown = Integer.MAX_VALUE;
                 mUiUpdateHandler.post(mUpdateCountdownSummaryRunnable);
@@ -196,13 +220,10 @@ public class Settings extends PreferenceActivity {
      * @return
      */
     public static SpoofMode getPrefEmulationMode(Context context) {
-        /*
-         * TODO: different emulation modes are not supported for now
-         * 
-         * int value = Integer.valueOf(PreferenceManager.getDefaultSharedPreferences(context).getString(PREF_EMULATION_MODE, "-1"));
-         */
-        
-        return SpoofMode.HID_GENERIC;
+    	
+    	int value = Integer.valueOf(PreferenceManager.getDefaultSharedPreferences(context).getString(PREF_EMULATION_MODE, "-1"));
+
+        return Spoof.fromInt(value);
         
     }
     
@@ -291,6 +312,7 @@ public class Settings extends PreferenceActivity {
     private void setBluetoothDiscoverableCheck(boolean state) {
         mBtDiscoverablePreference.setChecked(state);
         mBtDiscoverablePreference.setEnabled(!state);
+        mEmulationModeListPreference.setEnabled(!state);
         if (!state) {
             mBtDiscoverablePreference.setSummary(getResources().getString(R.string.msg_pref_summary_bluetooth_discoverable_click));
         }
@@ -307,6 +329,8 @@ public class Settings extends PreferenceActivity {
             Preference devicePref = new Preference(this);
             devicePref.setTitle(device.getName().equals("") ? device.getAddress() : device.getName());
             
+            BluetoothDeviceView.isBluetoothDevicePs3(device);
+            
             SpoofMode spoofMode = getEmulationMode(this, device);
             String emulationSummary = (spoofMode == SpoofMode.INVALID) ? 
                     getResources().getString(R.string.msg_pref_summary_device_emulation_mode_invalid) :
@@ -321,4 +345,30 @@ public class Settings extends PreferenceActivity {
         
     }
     
+    /**
+     * 
+     * @param context
+     */
+    public static void showPs3InvalidModeDialog(Context context) {
+    	
+	    AlertDialog dialog =  new AlertDialog.Builder(context).create();
+	    dialog.setTitle(context.getResources().getString(R.string.msg_dialog_invalid_ps3_bonding_title));
+	    dialog.setMessage(String.format(
+	    						context.getResources().getString(R.string.msg_dialog_invalid_ps3_bonding_text), 
+	    						getEmulationModeSummary(context, Spoof.intValue(SpoofMode.HID_GENERIC)),
+	    						getEmulationModeSummary(context, Spoof.intValue(SpoofMode.HID_PS3KEYPAD))
+	    						));
+	    dialog.setButton(DialogInterface.BUTTON_NEUTRAL, context.getResources().getString(android.R.string.ok), new DialogInterface.OnClickListener() {
+			
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				dialog.dismiss();
+				
+			}
+		});
+	    
+	    dialog.show();
+
+    }
+        
 }

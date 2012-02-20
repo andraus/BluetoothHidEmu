@@ -89,11 +89,14 @@ public abstract class BluetoothAdapterSpoofer {
         
         DoLog.d(TAG, "original class = 0x" + Integer.toHexString(getBluetoothDeviceClass()));
 
-        int newClass = Spoof.getBluetoothDeviceClass(mode);
-        int err = spoofBluetoothDeviceClass(newClass);
-        DoLog.d(TAG, "set class ret = " + err);
+        final int newClass = Spoof.getBluetoothDeviceClass(mode);
+        
+        if (newClass != 0) {
+        	int err = spoofBluetoothDeviceClass(newClass);
+        	DoLog.d(TAG, "set class ret = " + err);
+        }
 
-        int sdpRecHandle = addHidDeviceSdpRecord(mode);
+        final int sdpRecHandle = addHidDeviceSdpRecord(mode);
         
         DoLog.d(TAG, "SDP record handle = " + Integer.toHexString(sdpRecHandle));
         mSpoofed = true;

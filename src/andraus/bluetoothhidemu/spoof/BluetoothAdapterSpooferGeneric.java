@@ -37,6 +37,7 @@ public class BluetoothAdapterSpooferGeneric extends BluetoothAdapterSpoofer {
     
     private static final String CMD_ADD_HID_SDP_GENERIC = " add_hid_generic\n";
     private static final String CMD_ADD_HID_SDP_BDREMOTE = " add_hid_bdremote\n";
+    private static final String CMD_ADD_HID_SDP_PS3KEYPAD = " add_hid_ps3keypad\n";
     private static final String CMD_ADD_HID_SDP_RESP = "handle";
     
     private static final String CMD_DEL_HID_SDP = " del_hid 0x%06X\n";
@@ -218,8 +219,19 @@ public class BluetoothAdapterSpooferGeneric extends BluetoothAdapterSpoofer {
             DoLog.w(TAG, String.format("HID SDP record already present. Handle: 0x%06X",mHidSdpHandle));
             return mHidSdpHandle;
         }
-        
-        String cmd = (mode == SpoofMode.HID_GENERIC) ? CMD_ADD_HID_SDP_GENERIC : CMD_ADD_HID_SDP_BDREMOTE; 
+        String cmd;
+        switch (mode) {
+        case HID_BDREMOTE:
+        	cmd = CMD_ADD_HID_SDP_BDREMOTE;
+        	break;
+        case HID_PS3KEYPAD:
+        	cmd = CMD_ADD_HID_SDP_PS3KEYPAD;
+        	break;
+        case HID_GENERIC:
+        default:
+        	cmd = CMD_ADD_HID_SDP_GENERIC;
+        	break;
+        }
         
         ShellResponse shellResp = executeShellCmd(mHidEmuPath + cmd);
         

@@ -5,6 +5,12 @@
                         android:title="@string/msg_pref_title_bluetooth_discoverable"
                         android:persistent="false" />
 
+ <ListPreference android:key="emulation_mode"
+                    android:title="@string/msg_pref_title_emulation_mode"
+                    android:defaultValue="0"
+                    android:entries="@array/emulation_mode_names"
+                    android:entryValues="@array/emulation_mode_values" />
+    
     <PreferenceCategory android:key="bt_device_list"
                         android:title="@string/msg_pref_title_device_list" />
 

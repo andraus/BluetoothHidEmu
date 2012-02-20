@@ -8,6 +8,7 @@ import andraus.bluetoothhidemu.sock.payload.HidPointerPayload;
 import andraus.bluetoothhidemu.spoof.BluetoothAdapterSpoofer;
 import andraus.bluetoothhidemu.spoof.BluetoothAdapterSpooferFactory;
 import andraus.bluetoothhidemu.spoof.CleanupExceptionHandler;
+import andraus.bluetoothhidemu.spoof.Spoof.SpoofMode;
 import andraus.bluetoothhidemu.util.DoLog;
 import andraus.bluetoothhidemu.view.BluetoothDeviceArrayAdapter;
 import andraus.bluetoothhidemu.view.BluetoothDeviceView;
@@ -189,6 +190,9 @@ public class BluetoothHidEmuActivity extends Activity {
         case HID_GENERIC: 
             resId = R.layout.generic_controls_layout;
             break;
+        case HID_PS3KEYPAD:
+        	resId = R.layout.ps3keypad_controls_layout;
+        	break;
         default:
             throw new IllegalStateException("Unsupported emulation mode");
         }
@@ -199,7 +203,8 @@ public class BluetoothHidEmuActivity extends Activity {
         mMainLayout.addView(mControlsLayout);
 
         switch (device.getSpoofMode()) {
-		case HID_GENERIC:
+        case HID_GENERIC:
+		case HID_PS3KEYPAD:
 		    
 	        mTouchpadImageView = (ImageView) findViewById(R.id.TouchpadImageView);
 	        mLeftClickImageView = (ImageView) findViewById(R.id.LeftButtonImageView);
@@ -210,7 +215,7 @@ public class BluetoothHidEmuActivity extends Activity {
 	        mEchoEditText.setImeOptions(EditorInfo.IME_FLAG_NO_EXTRACT_UI);
 
             setupGenericHidControlTabs(true);
-	        setupGenericHidButtons(true);
+	        setupGenericHidButtons(true, device.getSpoofMode());
 	        break;
 		default:
 		    
@@ -221,7 +226,7 @@ public class BluetoothHidEmuActivity extends Activity {
 		    mEchoEditText = null;
 		    
 		    setupGenericHidControlTabs(false);
-		    setupGenericHidButtons(false);
+		    setupGenericHidButtons(false, device.getSpoofMode());
 		    break;
 		}
 		
@@ -270,8 +275,9 @@ public class BluetoothHidEmuActivity extends Activity {
     /**
      * 
      * @param enable
+     * @param mode
      */
-	private void setupGenericHidButtons(boolean enable) {
+	private void setupGenericHidButtons(boolean enable, SpoofMode mode) {
 	    
 	    if (enable) { // enable media keys
     	    SpecialKeyListener specialKeyListener = new SpecialKeyListener(getApplicationContext(), mSocketManager);
@@ -290,12 +296,14 @@ public class BluetoothHidEmuActivity extends Activity {
             mEscButton = (View) findViewById(R.id.EscButton);
             mEscButton.setOnTouchListener(specialKeyListener);
             
-            mMediaPrevButton = (View) findViewById(R.id.PrevMediaButton);
-            mMediaPrevButton.setOnTouchListener(specialKeyListener);
-            mMediaPlayButton = (View) findViewById(R.id.PlayMediaButton);
-            mMediaPlayButton.setOnTouchListener(specialKeyListener);
-            mMediaForwButton = (View) findViewById(R.id.ForwardMediaButton);
-            mMediaForwButton.setOnTouchListener(specialKeyListener);
+            if (mode == SpoofMode.HID_GENERIC) {
+            	mMediaPrevButton = (View) findViewById(R.id.PrevMediaButton);
+            	mMediaPrevButton.setOnTouchListener(specialKeyListener);
+            	mMediaPlayButton = (View) findViewById(R.id.PlayMediaButton);
+            	mMediaPlayButton.setOnTouchListener(specialKeyListener);
+            	mMediaForwButton = (View) findViewById(R.id.ForwardMediaButton);
+            	mMediaForwButton.setOnTouchListener(specialKeyListener);
+            }
             
 	    } else { // disable media keys
 	        if (mUpButton != null) {

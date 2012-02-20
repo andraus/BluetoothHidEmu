@@ -7,6 +7,7 @@ import andraus.bluetoothhidemu.spoof.Spoof.SpoofMode;
 import andraus.bluetoothhidemu.util.DoLog;
 import andraus.bluetoothhidemu.view.BluetoothDeviceArrayAdapter;
 import andraus.bluetoothhidemu.view.BluetoothDeviceView;
+import android.app.Activity;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -51,31 +52,49 @@ public class BluetoothDeviceStateReceiver extends BroadcastReceiver {
      */
     @Override
     public void onReceive(Context context, Intent intent) {
+    	
+    	DoLog.d(TAG, "context: " + context);
         
         if (intent.getAction().equals(BluetoothDevice.ACTION_BOND_STATE_CHANGED)) {
-            BluetoothDevice device = (BluetoothDevice) intent.getExtras().get(BluetoothDevice.EXTRA_DEVICE);
-            int state = intent.getExtras().getInt(BluetoothDevice.EXTRA_BOND_STATE);
-            int prevState = intent.getExtras().getInt(BluetoothDevice.EXTRA_PREVIOUS_BOND_STATE);
+            final BluetoothDevice device = (BluetoothDevice) intent.getExtras().get(BluetoothDevice.EXTRA_DEVICE);
+            final int state = intent.getExtras().getInt(BluetoothDevice.EXTRA_BOND_STATE);
+            final int prevState = intent.getExtras().getInt(BluetoothDevice.EXTRA_PREVIOUS_BOND_STATE);
             
             DoLog.d("BluetoothHidEmu", String.format("device receiver: device = %s | state = %s | prevState = %s", device, state, prevState));
             
             switch (state) {
             case BluetoothDevice.BOND_BONDED:
-                addDeviceToPreference(context, device, Settings.getPrefEmulationMode(context));
-                addDeviceToArrayAdapter(device, Settings.getPrefEmulationMode(context));
-                Settings.storeDeviceEmulationMode(context, device, Settings.getPrefEmulationMode(context));
+            	
+            	SpoofMode emulationMode = Settings.getPrefEmulationMode(context);
+            	
+            	if (BluetoothDeviceView.isBluetoothDevicePs3(device) && emulationMode != SpoofMode.HID_PS3KEYPAD) {
+            		emulationMode = SpoofMode.INVALID;
+
+            		/*
+            		 *  There are two instances of BluetoothDeviceStateReceiver: one is created
+            		 *  for the Settings activity, the other for the main activity. We need to
+            		 *  verify which one is on foreground before showing this dialog.
+            		 *  
+            		 */
+            		
+               		if ( ((Activity) context).hasWindowFocus() ) {
+               			Settings.showPs3InvalidModeDialog(context);
+               		}
+               	 
+            	}
+            	
+        		addDeviceToPreference(context, device, emulationMode);
+        		addDeviceToArrayAdapter(device, emulationMode);
+        		Settings.storeDeviceEmulationMode(context, device, emulationMode);
                 break;
             case BluetoothDevice.BOND_NONE:
                 removeDeviceFromPreference(device);
                 removeDeviceFromArrayAdapter(device);
                 break;
             }
-            
-            
         }
-
     }
-    
+
     /**
      * 
      * @param device

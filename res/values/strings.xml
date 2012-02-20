@@ -21,8 +21,11 @@
         
     <string name="msg_dialog_no_bonded_devices_title">No paired devices found.</string>
     <string name="msg_dialog_no_bonded_devices_text">Please, pair your host to this device.\n</string>
+
+    <string name="msg_dialog_invalid_ps3_bonding_title">Invalid pairing emulation.</string>
+    <string name="msg_dialog_invalid_ps3_bonding_text">You selected \"%1$s\" emulation mode,\n However the host is a PS3 console.\n\nPlease, unpair this device and select \"Emulation mode\" as \"%2$s\" before pairing.</string>
     
-    <string name="msg_dialog_enabling_bluetooth">Configuring Bluetooth device...</string>
+    <string name="msg_dialog_enabling_bluetooth">Configuring Bluetooth device#8230;</string>
     
     <string name="msg_status_connected">Connected</string>
     <string name="msg_status_connecting">Connecting</string>

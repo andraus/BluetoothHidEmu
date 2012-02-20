@@ -1,7 +1,7 @@
 package andraus.bluetoothhidemu.spoof;
 
 public final class Spoof {
-    public static enum SpoofMode { INVALID, HID_GENERIC, HID_BDREMOTE }
+    public static enum SpoofMode { INVALID, HID_GENERIC, HID_PS3KEYPAD, HID_BDREMOTE }
     
     private static final int DEV_CLASS_HID_GENERIC = 0x002540;
     private static final int DEV_CLASS_HID_BDREMOTE = 0x000140;
@@ -16,7 +16,8 @@ public final class Spoof {
         switch (mode) {
         case INVALID: return -1;
         case HID_GENERIC: return 0;
-        case HID_BDREMOTE: return 1;
+        case HID_PS3KEYPAD: return 1;
+        case HID_BDREMOTE: return 2;
         default: return errorInvalidMode(mode);
         }
         
@@ -49,6 +50,7 @@ public final class Spoof {
         switch (mode) {
         case HID_GENERIC: return DEV_CLASS_HID_GENERIC;
         case HID_BDREMOTE: return DEV_CLASS_HID_BDREMOTE;
+        case HID_PS3KEYPAD: return DEV_CLASS_HID_GENERIC; // same as generic
         default: return errorInvalidMode(mode);
         }
         
