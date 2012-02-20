@@ -186,7 +186,7 @@ public class BluetoothDeviceStateReceiver extends BroadcastReceiver {
         }
         if (!exists) {
             Preference devicePref = new Preference(context);
-            devicePref.setTitle(device.getName());
+            devicePref.setTitle(device.getName().equals("") ? device.getAddress() : device.getName());
             devicePref.setSummary(device.getAddress() + "\n" 
                     + String.format(context.getResources().getString(R.string.msg_pref_summary_device_emulation_mode), 
                             emulationSummary));
