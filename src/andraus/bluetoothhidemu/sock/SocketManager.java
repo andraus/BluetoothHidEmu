@@ -1,12 +1,13 @@
 package andraus.bluetoothhidemu.sock;
 
 import java.io.IOException;
-import java.util.Set;
 
 import andraus.bluetoothhidemu.BluetoothHidEmuActivity;
 import andraus.bluetoothhidemu.sock.payload.HidPayload;
 import andraus.bluetoothhidemu.spoof.BluetoothAdapterSpoofer;
+import andraus.bluetoothhidemu.spoof.Spoof.SpoofMode;
 import andraus.bluetoothhidemu.util.DoLog;
+import andraus.bluetoothhidemu.view.BluetoothDeviceView;
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
@@ -106,16 +107,11 @@ public class SocketManager {
      * Init sockets and threads
      * 
      * @param adapter
-     * @param hostDevice
+     * @param deviceView
      */
-    public void startSockets(BluetoothAdapter adapter, BluetoothDevice hostDevice) {
+    public void startSockets(BluetoothAdapter adapter, BluetoothDeviceView deviceView) {
         
-        Set<BluetoothDevice> pairedDevices = adapter.getBondedDevices();
-        
-        if (pairedDevices.isEmpty()) {
-            DoLog.w(TAG, "no paired devices found");
-            return;
-        }
+        BluetoothDevice hostDevice = deviceView.getBluetoothDevice();
         
         if (hostDevice == null) {
             DoLog.w(TAG, "no hosts not found");
@@ -127,8 +123,22 @@ public class SocketManager {
         // discovery is a heavy process. Apps must always cancel it when connecting.
         adapter.cancelDiscovery();
         
+        /*
+         * PS3 wireless keypad doesn't respond to connections if the spoofing is down
+         * the spoofOnConnect logic below is implemented to take care of that.
+         */
+        boolean spoofOnConnect = false;
+        if (deviceView.getSpoofMode() == SpoofMode.HID_PS3KEYPAD && !mSpoofer.isSpoofed()) {
+            spoofOnConnect = true;
+            mSpoofer.tearUpSpoofing(deviceView.getSpoofMode());
+        }
+        
         mCtrlThread = initThread(mCtrlThread, "ctrl", hostDevice, 0x11);
         mIntrThread = initThread(mIntrThread, "intr", hostDevice, 0x13);
+        
+        if (spoofOnConnect) {
+            mSpoofer.tearDownSpoofing();
+        }
 
         mCtrlThread.start();
         mIntrThread.start();

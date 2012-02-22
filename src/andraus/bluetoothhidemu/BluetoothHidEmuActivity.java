@@ -833,7 +833,7 @@ public class BluetoothHidEmuActivity extends Activity {
     	        BluetoothDeviceView deviceView = (BluetoothDeviceView) mDeviceSpinner.getSelectedItem();
     	        if (deviceView != null) {
     	            
-    	            mSocketManager.startSockets(mBluetoothAdapter, deviceView.getBluetoothDevice());
+    	            mSocketManager.startSockets(mBluetoothAdapter, deviceView);
                     mMainHandler.sendEmptyMessageDelayed(HANDLER_MONITOR_SOCKET, 200);
     	        }
     	        break;
