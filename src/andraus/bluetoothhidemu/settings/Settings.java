@@ -38,7 +38,9 @@ public class Settings extends PreferenceActivity {
     private static final String TAG = BluetoothHidEmuActivity.TAG;
     
     public static final int BLUETOOTH_REQUEST_OK = 1;
-    public static final int BLUETOOTH_DISCOVERABLE_DURATION = 100;
+    public static final int BLUETOOTH_REQUEST_DISCOVERABLE_FOR_PS3_OK = 2;
+    public static final int BLUETOOTH_DISCOVERABLE_DURATION_100 = 100;
+    public static final int BLUETOOTH_DISCOVERABLE_DURATION_5 = 5;
     
     public static final String FILE_PREF_DEVICES = "bt_devices";
     /* package */ final static String PREF_LAST_DEVICE = "last_device";
@@ -124,9 +126,7 @@ public class Settings extends PreferenceActivity {
                 
                 if (!mBtDiscoverablePreference.isChecked()) {
                 
-                    Intent bluetoothIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
-                    bluetoothIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, Settings.BLUETOOTH_DISCOVERABLE_DURATION);
-                    startActivityForResult(bluetoothIntent, Settings.BLUETOOTH_REQUEST_OK);
+                    startActivityForResult(createBluetoothDiscoverableIntent(Settings.BLUETOOTH_DISCOVERABLE_DURATION_100), Settings.BLUETOOTH_REQUEST_OK);
                 }
                 
                 return false;
@@ -199,11 +199,11 @@ public class Settings extends PreferenceActivity {
         DoLog.d(TAG, "onActivityResult: " + requestCode + " " + resultCode);
         mIsResumingFromDialog = true;
         
-        if (requestCode == BLUETOOTH_REQUEST_OK && resultCode == BLUETOOTH_DISCOVERABLE_DURATION) {
+        if (requestCode == BLUETOOTH_REQUEST_OK && resultCode == BLUETOOTH_DISCOVERABLE_DURATION_100) {
             setBluetoothDiscoverableCheck(true);
             
             mUiUpdateHandler.removeCallbacksAndMessages(null);
-            mCountdown = BLUETOOTH_DISCOVERABLE_DURATION;
+            mCountdown = BLUETOOTH_DISCOVERABLE_DURATION_100;
             mUiUpdateHandler.post(mUpdateCountdownSummaryRunnable);
             
         } else if (requestCode == BLUETOOTH_REQUEST_OK && resultCode == RESULT_CANCELED) {
@@ -369,6 +369,18 @@ public class Settings extends PreferenceActivity {
 	    
 	    dialog.show();
 
+    }
+    
+    /**
+     * 
+     * @param duration
+     * @return
+     */
+    public static Intent createBluetoothDiscoverableIntent(final int duration) {
+        Intent bluetoothIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
+        bluetoothIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, duration);
+        
+        return bluetoothIntent;
     }
         
 }

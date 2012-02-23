@@ -1,6 +1,8 @@
 package andraus.bluetoothhidemu.spoof;
 
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 import andraus.bluetoothhidemu.BluetoothHidEmuActivity;
 import andraus.bluetoothhidemu.spoof.Spoof.SpoofMode;
@@ -116,6 +118,51 @@ public abstract class BluetoothAdapterSpoofer {
         
         delHidDeviceSdpRecord();
         mSpoofed = false;
+    }
+    
+    /**
+     * Sets bluetooth adapter in discoverable mode for <b>duration</b> seconds.
+     * 
+     * Implemented through reflection, since BluetoothAdapter.setScanMode() is not visible.
+     * 
+     * Note: setScanMode enforces android.permission.WRITE_SECURE_SETTINGS which is only availabel
+     * for applications signed on platform, so this method is deprecated for now.
+     * 
+     * @deprecated
+     * 
+     * @param duration
+     * @return
+     */
+    public boolean setDiscoverableScanMode(final int duration) {
+        Boolean success;
+        try {
+
+            final Method setScanModeMethod = BluetoothAdapter.class
+                                        .getMethod("setScanMode", new Class<?>[] { int.class, int.class });
+            
+            setScanModeMethod.setAccessible(true);
+            
+            success = (Boolean) setScanModeMethod
+                            .invoke(mAdapter, new Object[] { BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE, duration });
+            
+        } catch (SecurityException e) {
+            DoLog.e(TAG, "reflection error: ", e);
+            throw new IllegalStateException(e);
+        } catch (NoSuchMethodException e) {
+            DoLog.e(TAG, "reflection error: ", e);
+            throw new IllegalStateException(e);
+        } catch (IllegalArgumentException e) {
+            DoLog.e(TAG, "reflection error: ", e);
+            throw new IllegalStateException(e);
+        } catch (IllegalAccessException e) {
+            DoLog.e(TAG, "reflection error: ", e);
+            throw new IllegalStateException(e);
+        } catch (InvocationTargetException e) {
+            DoLog.e(TAG, "reflection error: ", e);
+            throw new IllegalStateException(e);
+        }
+        
+        return Boolean.valueOf(success);
     }
     
     /**

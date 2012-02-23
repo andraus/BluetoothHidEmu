@@ -646,8 +646,19 @@ public class BluetoothHidEmuActivity extends Activity {
 	        Message msg = Message.obtain(mMainHandler, HANDLER_BLUETOOTH_ENABLED, btEnableDialog);
 	        mMainHandler.sendMessageDelayed(msg, 5000 /* ms */);
 
-	    } else if (requestCode == Settings.BLUETOOTH_REQUEST_OK && resultCode == RESULT_CANCELED) { // request cancelled
+	    } else if (requestCode == Settings.BLUETOOTH_REQUEST_OK && resultCode == RESULT_CANCELED) { // bt enable cancelled
+	        
 	        finish();
+	        
+	    } else if (requestCode == Settings.BLUETOOTH_REQUEST_DISCOVERABLE_FOR_PS3_OK && resultCode == Settings.BLUETOOTH_DISCOVERABLE_DURATION_5) { // discoverable for ps3
+
+	        mSocketManager.startSockets(mBluetoothAdapter, (BluetoothDeviceView) mDeviceSpinner.getSelectedItem());
+            mMainHandler.sendEmptyMessageDelayed(HANDLER_MONITOR_SOCKET, 200);
+	        
+	    } else if (requestCode == Settings.BLUETOOTH_REQUEST_DISCOVERABLE_FOR_PS3_OK && resultCode == RESULT_CANCELED) { // discoverable for ps3 cancelled
+
+	        mDeviceSpinner.setSelection(((BluetoothDeviceArrayAdapter) mDeviceSpinner.getAdapter()).getNullPosition());
+	        
 	    }
 	    
         super.onActivityResult(requestCode, resultCode, data);
@@ -832,9 +843,22 @@ public class BluetoothHidEmuActivity extends Activity {
 
     	        BluetoothDeviceView deviceView = (BluetoothDeviceView) mDeviceSpinner.getSelectedItem();
     	        if (deviceView != null) {
+
+    	            /*
+    	             * PS3 hosts requires the HID device to be discoverable upon connection.
+    	             * Android doesn't allow us to do this silently, so we need to request the user.
+    	             */
     	            
-    	            mSocketManager.startSockets(mBluetoothAdapter, deviceView);
-                    mMainHandler.sendEmptyMessageDelayed(HANDLER_MONITOR_SOCKET, 200);
+    	            if (deviceView.isPs3() && mBluetoothAdapter.getScanMode() != BluetoothAdapter.SCAN_MODE_CONNECTABLE_DISCOVERABLE) {
+
+    	                startActivityForResult(Settings.createBluetoothDiscoverableIntent(
+    	                                                        Settings.BLUETOOTH_DISCOVERABLE_DURATION_5),
+    	                                                        Settings.BLUETOOTH_REQUEST_DISCOVERABLE_FOR_PS3_OK);
+    	            } else {
+    	            
+    	                mSocketManager.startSockets(mBluetoothAdapter, deviceView);
+    	                mMainHandler.sendEmptyMessageDelayed(HANDLER_MONITOR_SOCKET, 200);
+    	            }
     	        }
     	        break;
     		}

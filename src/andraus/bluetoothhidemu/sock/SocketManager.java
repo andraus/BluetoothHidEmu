@@ -5,7 +5,6 @@ import java.io.IOException;
 import andraus.bluetoothhidemu.BluetoothHidEmuActivity;
 import andraus.bluetoothhidemu.sock.payload.HidPayload;
 import andraus.bluetoothhidemu.spoof.BluetoothAdapterSpoofer;
-import andraus.bluetoothhidemu.spoof.Spoof.SpoofMode;
 import andraus.bluetoothhidemu.util.DoLog;
 import andraus.bluetoothhidemu.view.BluetoothDeviceView;
 import android.bluetooth.BluetoothAdapter;
@@ -107,39 +106,25 @@ public class SocketManager {
      * Init sockets and threads
      * 
      * @param adapter
-     * @param deviceView
+     * @param device
      */
     public void startSockets(BluetoothAdapter adapter, BluetoothDeviceView deviceView) {
         
-        BluetoothDevice hostDevice = deviceView.getBluetoothDevice();
+        BluetoothDevice device = deviceView.getBluetoothDevice();
         
-        if (hostDevice == null) {
+        if (device == null) {
             DoLog.w(TAG, "no hosts not found");
             return;
         } else {
-            DoLog.d(TAG, "host selected: " + hostDevice);
+            DoLog.d(TAG, "host selected: " + device);
         }
     
         // discovery is a heavy process. Apps must always cancel it when connecting.
         adapter.cancelDiscovery();
         
-        /*
-         * PS3 wireless keypad doesn't respond to connections if the spoofing is down
-         * the spoofOnConnect logic below is implemented to take care of that.
-         */
-        boolean spoofOnConnect = false;
-        if (deviceView.getSpoofMode() == SpoofMode.HID_PS3KEYPAD && !mSpoofer.isSpoofed()) {
-            spoofOnConnect = true;
-            mSpoofer.tearUpSpoofing(deviceView.getSpoofMode());
-        }
+        mCtrlThread = initThread(mCtrlThread, "ctrl", device, 0x11);
+        mIntrThread = initThread(mIntrThread, "intr", device, 0x13);
         
-        mCtrlThread = initThread(mCtrlThread, "ctrl", hostDevice, 0x11);
-        mIntrThread = initThread(mIntrThread, "intr", hostDevice, 0x13);
-        
-        if (spoofOnConnect) {
-            mSpoofer.tearDownSpoofing();
-        }
-
         mCtrlThread.start();
         mIntrThread.start();
     }

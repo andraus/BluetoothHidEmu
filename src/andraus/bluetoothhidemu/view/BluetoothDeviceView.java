@@ -82,6 +82,15 @@ public class BluetoothDeviceView {
         }
     }
     
+    /**
+     * logString()
+     * 
+     * @return
+     */
+    public String logString() {
+        return toString() + " | " + mSpoofMode;
+    }
+    
     
     /**
      * comparator
