@@ -2,7 +2,6 @@ package andraus.bluetoothhidemu;
 
 import andraus.bluetoothhidemu.sock.SocketManager;
 import andraus.bluetoothhidemu.sock.payload.HidKeyboardPayload;
-import andraus.bluetoothhidemu.util.DoLog;
 import android.os.Handler;
 import android.os.Message;
 import android.text.Editable;
@@ -13,7 +12,7 @@ import android.text.TextWatcher;
  */
 public class KeyboardTextWatcher implements TextWatcher {
     
-    private static final String TAG = BluetoothHidEmuActivity.TAG;
+    //private static final String TAG = BluetoothHidEmuActivity.TAG;
     
     private static final int MSG_START_COUNT = 0;
     
@@ -32,8 +31,7 @@ public class KeyboardTextWatcher implements TextWatcher {
     
     @Override
     public void afterTextChanged(Editable content) {
-        // TODO Auto-generated method stub
-        DoLog.d(TAG, String.format("afterTextChanged(%s)",content));
+        //DoLog.d(TAG, String.format("afterTextChanged(%s)",content));
         
         mHandler.removeMessages(MSG_START_COUNT);
         
@@ -47,14 +45,13 @@ public class KeyboardTextWatcher implements TextWatcher {
 
     @Override
     public void beforeTextChanged(CharSequence charSeq, int start, int count, int after) {
-        // TODO Auto-generated method stub
-        DoLog.d(TAG, String.format("%s - beforeTextChanged(%s, %d, %d, %d)", this, charSeq, start, count, after));
+        //DoLog.d(TAG, String.format("%s - beforeTextChanged(%s, %d, %d, %d)", this, charSeq, start, count, after));
 
     }
 
     @Override
     public void onTextChanged(CharSequence charSeq, int start, int before, int count) {
-        DoLog.d(TAG, String.format("onTextChanged(%s, %d, %d, %d)", charSeq, start, before, count));
+        //DoLog.d(TAG, String.format("onTextChanged(%s, %d, %d, %d)", charSeq, start, before, count));
         
         if (count > 0) {
             // character added

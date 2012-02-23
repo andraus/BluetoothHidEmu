@@ -13,7 +13,7 @@ import android.view.View.OnTouchListener;
 
 public class SpecialKeyListener implements OnTouchListener {
 
-	private static final String TAG = BluetoothHidEmuActivity.TAG;
+	//private static final String TAG = BluetoothHidEmuActivity.TAG;
 	
 	private SocketManager mSocketManager = null;
 	

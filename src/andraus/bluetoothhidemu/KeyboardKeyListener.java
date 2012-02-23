@@ -3,7 +3,6 @@ package andraus.bluetoothhidemu;
 import andraus.bluetoothhidemu.sock.SocketManager;
 import andraus.bluetoothhidemu.sock.payload.HidKeyPair;
 import andraus.bluetoothhidemu.sock.payload.HidKeyboardPayload;
-import andraus.bluetoothhidemu.util.DoLog;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.method.KeyListener;
@@ -17,7 +16,7 @@ import android.view.View;
  */
 public class KeyboardKeyListener implements KeyListener {
     
-    private static final String TAG = BluetoothHidEmuActivity.TAG;
+    //private static final String TAG = BluetoothHidEmuActivity.TAG;
     
     private SocketManager mSocketManager = null;
     
