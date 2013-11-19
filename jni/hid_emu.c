@@ -928,6 +928,7 @@ int main(int argc, char *argv[]) {
 	int i;
 
 	if (argc == 1) {
+	    LOGD("debug version: %s\n", HIDEMU_VERSION);
 		printf("version : %s\n", HIDEMU_VERSION);
 		return 0;
 	}

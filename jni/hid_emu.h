@@ -1,11 +1,10 @@
 #ifndef __HID_EMU_H__
 #define __HID_EMU_H__
 
-#define LOG_DEBUG 0
-#define LOG_NDDEBUG 0
-#define LOG_NIDEBUG 0
+#include <android/log.h>
+#include <errno.h>
 
-#define HIDEMU_VERSION "1.03"
+#define HIDEMU_VERSION "1.04"
 
 #define LOG_TAG "HidEmu_jni"
 
@@ -13,13 +12,12 @@
 #define HID_MODE_PS3KEYPAD 1
 #define HID_MODE_BDREMOTE 2
 
-#include "cutils/logger.h"
-#include "cutils/logprint.h"
-
-/* set DBG_CONSOLE to 1 to print debug messages to console */
 #define DBG_CONSOLE 0
 
-/* enabling $define below will print error messages to console */
-/* #define LOGE(...) prinf(...) */
+#define LOGE(...) ((void)__android_log_print(ANDROID_LOG_ERROR, LOG_TAG, __VA_ARGS__))
+
+#define LOGI(...) ((void)__android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__))
+
+#define LOGD(...) ((void)__android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__))
 
 #endif

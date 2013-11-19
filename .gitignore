@@ -1,3 +1,8 @@
 bin/
 gen/
 dump/
+.idea/
+libs/
+obj/
+out/
+BluetoothHidEmu.iml
