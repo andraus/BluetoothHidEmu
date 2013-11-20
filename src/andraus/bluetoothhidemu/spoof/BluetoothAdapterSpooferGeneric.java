@@ -1,5 +1,11 @@
 package andraus.bluetoothhidemu.spoof;
 
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothSocket;
+import android.content.Context;
+import android.os.ParcelUuid;
+
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.File;
@@ -14,12 +20,8 @@ import java.lang.reflect.InvocationTargetException;
 
 import andraus.bluetoothhidemu.R;
 import andraus.bluetoothhidemu.spoof.Spoof.SpoofMode;
+import andraus.bluetoothhidemu.spoof.jni.BluetoothSocketJni;
 import andraus.bluetoothhidemu.util.DoLog;
-import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothSocket;
-import android.content.Context;
-import android.os.ParcelUuid;
 
 public class BluetoothAdapterSpooferGeneric extends BluetoothAdapterSpoofer {
     
@@ -170,27 +172,17 @@ public class BluetoothAdapterSpooferGeneric extends BluetoothAdapterSpoofer {
 
     @Override
     protected int getBluetoothDeviceClass() {
-        ShellResponse shellResp = executeShellCmd(mHidEmuPath + CMD_READ_CLASS);
-        
-        if (shellResp.code != 0) {
-            throw new IllegalStateException("Unexpected failure");
-        }
-        
-        /*
-         * response from hid_emu read_class is like:
-         * class: 0xaabbcc
-         * 
-         * using ": 0x" as reg. exp for split, will result in
-         * token[0] = class
-         * token[1] = aabbcc
+        int[] clazz = BluetoothSocketJni.readBluetoothDeviceClass();
+
+        /**
+         * result is 0xaabbcc
+         *  so:
+         *  clazz[2] = aa
+         *  clazz[1] = bb
+         *  clazz[0] = cc
          */
-        String[] token = shellResp.msg.split(": 0x");
-        int deviceClass = 0;
-        if (CMD_READ_CLASS_RESP.equals(token[0])) {
-            deviceClass = Integer.parseInt(token[1], 16);
-        }
-        
-        return deviceClass;
+
+        return (clazz[2] << 16) + (clazz[1] << 8) + (clazz[0]);
     }
 
     @Override
@@ -280,7 +272,18 @@ public class BluetoothAdapterSpooferGeneric extends BluetoothAdapterSpoofer {
 
     @Override
     public BluetoothSocket connectL2capSocket(BluetoothDevice device, int port,
-            boolean auth, boolean encrypt) throws IOException {
+                                              boolean auth, boolean encrypt) throws IOException {
+
+        int fd = BluetoothSocketJni.createL2capFileDescriptor(auth, encrypt);
+
+        DoLog.d(TAG, "L2CAP socket File descriptor: " + fd);
+
+        return createL2capBluetoothSocket(device, port, auth, encrypt, fd);
+
+    }
+
+    private BluetoothSocket createL2capBluetoothSocket(BluetoothDevice device, int port,
+            boolean auth, boolean encrypt, int fd) throws IOException {
         
         final int TYPE_L2CAP = 3;
         
@@ -294,7 +297,7 @@ public class BluetoothAdapterSpooferGeneric extends BluetoothAdapterSpoofer {
                                      ParcelUuid.class /* uuid */ };
         
         Object[] args = new Object[] {  Integer.valueOf(TYPE_L2CAP),
-                                        Integer.valueOf(-1),
+                                        Integer.valueOf(fd),
                                         Boolean.valueOf(auth),
                                         Boolean.valueOf(encrypt),
                                         device,

@@ -1,8 +1,9 @@
 #ifndef __HID_EMU_H__
 #define __HID_EMU_H__
 
-#include <android/log.h>
+#include <stdint.h>
 #include <errno.h>
+#include <android/log.h>
 
 #define HIDEMU_VERSION "1.04"
 
@@ -19,5 +20,8 @@
 #define LOGI(...) ((void)__android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__))
 
 #define LOGD(...) ((void)__android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__))
+
+
+int read_device_class(int hdev, uint8_t *cls);
 
 #endif

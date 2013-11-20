@@ -12,6 +12,25 @@ LOCAL_C_INCLUDES := $(LOCAL_PATH)/jni/bluez
 
 include $(PREBUILT_SHARED_LIBRARY)
 
+###############################################
+#  bluetoothsocket lib
+##############################################
+
+include $(CLEAR_VARS)
+
+LOCAL_MODULE := bluetoothsocket
+
+LOCAL_SRC_FILES := hid_emu.c \
+                   bluetooth_socket.c
+
+LOCAL_C_INCLUDES := \
+    $(LOCAL_PATH)/bluez
+
+LOCAL_LDLIBS := -llog
+LOCAL_SHARED_LIBRARIES := lib-bluetooth
+
+include $(BUILD_SHARED_LIBRARY)
+
 ##############################################
 # makefile for hid_emu
 #############################################

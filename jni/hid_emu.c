@@ -1,11 +1,12 @@
 
-#include <hid_emu.h>
+#include "hid_emu.h"
 
 #include <bluetooth/bluetooth.h>
 #include <bluetooth/hci.h>
 #include <bluetooth/hci_lib.h>
 #include <bluetooth/sdp.h>
 #include <bluetooth/sdp_lib.h>
+
 
 sdp_session_t *sdp_session;
 sdp_record_t *sdp_record = NULL;
@@ -878,7 +879,7 @@ int read_device_class(int hdev, uint8_t *cls) {
 /**
  * Spoofs the device class. cls is a string in the format 0xffffff.
  */
-int spoof_device_class(int hdev, char *cls) {
+    int spoof_device_class(int hdev, char *cls) {
 	int s = hci_open_dev(hdev);
 	if (s < 0) {
 		LOGE("Cannot open device hci%d: %s (%d)\n", hdev, strerror(errno), errno);
