@@ -11,6 +11,8 @@ import andraus.bluetoothhidemu.BluetoothHidEmuActivity;
 public abstract class HidPayload {
 	
     protected static final String TAG = BluetoothHidEmuActivity.TAG;
+
+    public static final int REQ_SET_PROTOCOL = 0x70;
     
     protected byte[] mPayload = null;
     

@@ -1,5 +1,9 @@
 package andraus.bluetoothhidemu.sock;
 
+import android.bluetooth.BluetoothAdapter;
+import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothSocket;
+
 import java.io.IOException;
 
 import andraus.bluetoothhidemu.BluetoothHidEmuActivity;
@@ -7,9 +11,6 @@ import andraus.bluetoothhidemu.sock.payload.HidPayload;
 import andraus.bluetoothhidemu.spoof.BluetoothAdapterSpoofer;
 import andraus.bluetoothhidemu.util.DoLog;
 import andraus.bluetoothhidemu.view.BluetoothDeviceView;
-import android.bluetooth.BluetoothAdapter;
-import android.bluetooth.BluetoothDevice;
-import android.bluetooth.BluetoothSocket;
 
 /**
  * Singleton
@@ -34,7 +35,6 @@ public class SocketManager {
     
     /**
      * 
-     * @param bluetoothAdapter
      * @param connHelper
      */
     private SocketManager(BluetoothAdapterSpoofer connHelper) {
@@ -106,7 +106,7 @@ public class SocketManager {
      * Init sockets and threads
      * 
      * @param adapter
-     * @param device
+     * @param deviceView
      */
     public void startSockets(BluetoothAdapter adapter, BluetoothDeviceView deviceView) {
         
@@ -125,8 +125,8 @@ public class SocketManager {
         mCtrlThread = initThread(mCtrlThread, "ctrl", device, 0x11);
         mIntrThread = initThread(mIntrThread, "intr", device, 0x13);
         
-        mCtrlThread.start();
-        mIntrThread.start();
+        new Thread(mCtrlThread).start();
+        new Thread(mIntrThread).start();
     }
     
     /**

@@ -1,15 +1,16 @@
 package andraus.bluetoothhidemu.sock;
 
+import android.bluetooth.BluetoothSocket;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
-
 import andraus.bluetoothhidemu.BluetoothHidEmuActivity;
+import andraus.bluetoothhidemu.sock.payload.HidPayload;
 import andraus.bluetoothhidemu.util.DoLog;
-import android.bluetooth.BluetoothSocket;
 
-public class BluetoothSocketThread extends Thread {
+public class BluetoothSocketThread implements Runnable {
 	
 	private String TAG = BluetoothHidEmuActivity.TAG + "Comm";
 	
@@ -30,6 +31,8 @@ public class BluetoothSocketThread extends Thread {
 	
 	private InputStream mInputStream = null;
 	private OutputStream mOutputStream = null;
+
+    private String name;
 	
 	
 	public BluetoothSocketThread(String name) {
@@ -42,12 +45,13 @@ public class BluetoothSocketThread extends Thread {
 	    
 	}
 	public BluetoothSocketThread(BluetoothSocket socket, String name) {
-        super(name);
-		
+        super();
+
 		if (socket == null) {
 		    throw new IllegalStateException("socket is null");
 		}
-		
+
+        setName(name);
 		mSocket = socket;
 	}
 	
@@ -75,10 +79,7 @@ public class BluetoothSocketThread extends Thread {
 					
 					if (mInputStream.available() > 0 && (numBytes = mInputStream.read(bytes)) >= 0) {
 						
-						String s = getByteString(bytes, numBytes);
-
-						DoLog.d(TAG, getName() + " - received: " + s);
-						DoLog.d(TAG, getName() + " - size: " + numBytes);
+						handleRequest(bytes,numBytes);
 					}
 					try {
 						Thread.sleep(500);
@@ -141,6 +142,10 @@ public class BluetoothSocketThread extends Thread {
 	    //DoLog.d(TAG,getName() + " state - " + mState);
 		return mState;
 	}
+
+    public boolean isAlive() {
+        return mState == STATE_ACCEPTED;
+    }
 	
 	public int getSuggestedRetryTimeMs() {
 	    return mSuggestedRetryTimeMs;
@@ -159,5 +164,37 @@ public class BluetoothSocketThread extends Thread {
 		
 		return s.toString();
 	}
-	
+
+    /**
+     * Method to handle incoming requests from the host
+     * @param bytes
+     * @param length
+     */
+    private void handleRequest(byte[] bytes, int length) {
+
+        if (length == 1) {
+            switch (bytes[0]) {
+                case (HidPayload.REQ_SET_PROTOCOL): // Request SET_PROTOCOL Boot Protocol Mode
+                case (HidPayload.REQ_SET_PROTOCOL | 1): // Request SET_PROTOCOL Report Protocol Mode
+
+                    // ACK the request immediately:
+                    final byte[] ack = { 0x00 };
+                    sendBytes(ack);
+                    break;
+            }
+        }
+
+        String s = getByteString(bytes, length);
+
+        DoLog.i(TAG, getName() + " - received: " + s);
+        DoLog.d(TAG, getName() + " - size: " + length);
+    }
+
+    public String getName() {
+        return name;
+    }
+
+    public void setName(String name) {
+        this.name = name;
+    }
 }
