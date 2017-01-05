@@ -1,4 +1,4 @@
-Bluetooth HID Emulator (Android)
+[![DOI](https://zenodo.org/badge/9749636.svg)](https://zenodo.org/badge/latestdoi/9749636)
 ====================
 
 #### BRIEF HISTORY
